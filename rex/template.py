@@ -1,0 +1,3 @@
+"""
+generate project template
+"""
