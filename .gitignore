@@ -130,3 +130,5 @@ dmypy.json
 
 # self-defined
 .vscode/
+data/IPRE/raw
+data/IPRE/formatted
