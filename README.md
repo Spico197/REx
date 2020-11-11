@@ -1,4 +1,6 @@
 # REx
+[![Build Status](https://travis-ci.org/Spico197/REx.svg?branch=main)](https://travis-ci.org/Spico197/REx)
+![Codecov](https://img.shields.io/codecov/c/github/Spico197/REx)
 [![Documentation Status](https://readthedocs.org/projects/rex/badge/?version=main)](https://rex.readthedocs.io/en/main/?badge=main)
 
 
@@ -14,6 +16,9 @@ This project has not finished yet, so be careful when using it.
 ## Installation
 ```bash
 pip install -e .
+
+# or you can download and install from pypi
+pip install pytorch-rex -i https://pypi.org/simple
 ```
 
 ## QuickStart

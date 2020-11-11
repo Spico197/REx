@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='rex',  
-    version='0.0.1',
+    name='pytorch-rex',  
+    version='0.0.0',
     author="Tong Zhu",
     author_email="tzhu1997@outlook.com",
     description="A toolkit for Relation Extraction and more...",
