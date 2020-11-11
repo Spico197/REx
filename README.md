@@ -1,5 +1,6 @@
 # REx
-[![Documentation Status](https://readthedocs.org/projects/rex/badge/?version=latest)](https://rex.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/rex/badge/?version=main)](https://rex.readthedocs.io/en/main/?badge=main)
+
 
 A toolkit for Relation Extraction and more...
 
