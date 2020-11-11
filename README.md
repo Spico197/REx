@@ -3,6 +3,11 @@ A toolkit for Relation Extraction and more...
 
 This project has not finished yet, so be careful when using it.
 
+## Dependencies
+- Python>=3.6
+  - torch>=1.2.0 : project is developed with torch==1.5.1, should be compatable with >=1.2.0 versions
+  - numpy>=1.19.0
+
 ## Installation
 ```bash
 pip install -e .
@@ -11,7 +16,7 @@ pip install -e .
 ## QuickStart
 ```bash
 mkdir project_dir && cd project_dir
-python -m rex startproject # planned so, but has not finished
+python -m rex startproject project_name # planned so, but has not finished
 ```
 
 ## Structures
@@ -58,3 +63,21 @@ python -m rex startproject # planned so, but has not finished
 - utils: others for building projects
   - [x] config
   - [x] logger
+
+## Dataset Compatibility Adaptation
+- [ ] IPRE preprocess
+- [ ] NYT10
+- [ ] NYT-H
+- [ ] SemEval2010-Task8
+- [ ] TACRED
+- [ ] ACE05
+
+## Support
+- [ ] Chinese sentence level relation extraction
+- [ ] Chinese bag level RE
+- [ ] English sentence level RE
+- [ ] English bag level RE
+
+
+## LICENCE
+MIT

@@ -36,3 +36,5 @@ if __name__ == "__main__":
     print(len(train_data), train_data[:2])
     dump_line_json(train_data, "formatted/sent/train.line.json")
 
+    bag_relation_train = load_csv("data/IPRE/raw/IPRE/data/train/bag_relation_train.txt",
+                                  title_row=False, title_keys=["id", "head", "tail", "sent_ids", "relations"])
