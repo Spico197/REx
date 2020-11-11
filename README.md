@@ -1,12 +1,12 @@
 # REx
-![REx](https://github.com/Spico197/REx/workflows/REx/badge.svg?branch=main)
-![Codecov](https://img.shields.io/codecov/c/github/Spico197/REx)
+[![REx](https://github.com/Spico197/REx/workflows/REx/badge.svg?branch=main)](https://github.com/Spico197/REx/actions)
+[![Codecov](https://img.shields.io/codecov/c/github/Spico197/REx)](https://codecov.io/gh/Spico197/REx)
 [![Documentation Status](https://readthedocs.org/projects/rex/badge/?version=main)](https://rex.readthedocs.io/en/main/?badge=main)
 
 
 A toolkit for Relation Extraction and more...
 
-This project has not finished yet, so be careful when using it.
+This project has not finished yet, so be careful when using it, or wait until the first release comes out.
 
 ## Dependencies
 - Python>=3.6
@@ -88,7 +88,14 @@ python -m rex startproject project_name # planned so, but has not finished
 
 ## Test
 ```bash
-python -m unittest -v
+pip install coverage
+coverage run -m unittest -v && coverage report
+
+# or just test without coverage report
+make test
+
+# or test with report
+make test_report
 ```
 
 ## Docs
@@ -96,6 +103,9 @@ python -m unittest -v
 cd docs
 sphinx-apidoc -o . ..
 make html
+
+# or just
+make docs
 ```
 
 ## LICENCE

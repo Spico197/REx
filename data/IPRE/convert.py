@@ -21,6 +21,17 @@ def convert_data(sentence_filepath,
         rels = list(set(map(int, ins["relations"].split())))
         d = id2sent[ins["id"]]
         d["relations"] = list(map(lambda x: id2rel[x], rels))
+        for word in ["head", "tail"]:
+            d[word] = d[word].replace(" ", "")
+            d["text"] = d["text"].replace(" ", "")
+            positions = rtp.find_all_positions(d["text"], d[word])
+            if len(positions) == 0:
+                print("warn! data skipped", d)
+                continue
+            d[word] = {
+                "word": d[word],
+                "positions": positions
+            }
         final_data.append(d)
 
     print(len(final_data), final_data[:2])

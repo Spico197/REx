@@ -42,3 +42,23 @@ def find_all_positions(
         return positions
     else:
         raise ValueError("types of the two input must be str or list")
+
+
+def construct_relative_positions(pos: int, max_length: int) -> List[int]:
+    """Construct relative positions to a specified pos
+    
+    Args:
+        pos: the pos that will be `0`
+        max_length: max sequence length
+    
+    Returns:
+        a list of relative positions
+    
+    Raises:
+        ValueError: if pos is less than 0 or greater equal than max_length
+    """
+    if pos < 0 or pos >= max_length:
+        raise ValueError(f"pos: {pos} is not in [0, {max_length})")
+    positions = list(range(0, max_length, 1))
+    positions = list(map(lambda x: abs(x - pos), positions))
+    return positions

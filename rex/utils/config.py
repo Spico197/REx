@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import yaml
+import json
 import argparse
 import random
 import logging
@@ -33,10 +34,16 @@ class ArgConfig(object):
         parser = argparse.ArgumentParser()
         parser.add_argument("-c", "--config", type=str,
                             help="YAML config filepath")
-        parser.add_argument("--local_rank")
-        self.args = parser.parse_args()
-        if self.args.config:
-            self.config = YamlConfig(self.args.config, **kwargs)
+        parser.add_argument("--local_rank", required=False,
+                            default=-1, type=int,
+                            help="remained for distributed"
+                                 " data parallel support")
+        args = parser.parse_args()
+        self.local_rank = args.local_rank
+        if args.config:
+            params = YamlConfig(args.config, **kwargs)
+            for key, val in params.__dict__.items():
+                setattr(self, key, val)
 
 
 class YamlConfig(object):
