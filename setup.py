@@ -22,7 +22,7 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=[
-        "torch>=1.5.1",
+        "torch>=1.2.0",
     ],
     # package_data={
     #     'rex' : [

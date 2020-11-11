@@ -78,6 +78,13 @@ python -m rex startproject project_name # planned so, but has not finished
 - [ ] English sentence level RE
 - [ ] English bag level RE
 
+## Test
+```bash
+python -m unittest -v
+```
+
+## Docs
+
 
 ## LICENCE
 MIT

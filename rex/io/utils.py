@@ -44,10 +44,10 @@ def load_pickle(filepath, **kwargs):
     return data
 
 
-def dump_csv(obj: Iterable[Any], filepath: str, sep: Optional[str] = '\t'):
+def dump_csv(obj: Iterable[Any], filepath: str, delimiter: Optional[str] = '\t'):
     with open(filepath, "wt", encoding="utf-8") as fout:
         for d in obj:
-            line_d = sep.join(d)
+            line_d = delimiter.join(d)
             fout.write("{}\n".format(line_d))
 
 

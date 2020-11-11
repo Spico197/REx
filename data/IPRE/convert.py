@@ -1,40 +1,43 @@
 import os
 import json
 
-from rex.io.utils import load_csv, dump_line_json, dump_json
+from rex.io import utils as ru
+from rex.io.transform import position as rtp
+
+
+def convert_data(sentence_filepath, 
+                 sent_relation_filepath,
+                 dataset_name):
+    sents = ru.load_csv(sentence_filepath,
+                     title_row=False,
+                     title_keys=["id", "head", "tail", "text"])
+    id2sent = {}
+    for ins in sents:
+        id2sent[ins["id"]] = ins
+    sent_labels = ru.load_csv(sent_relation_filepath,
+                           title_row=False, title_keys=["id", "relations"])
+    final_data = []
+    for ins in sent_labels:
+        rels = list(set(map(int, ins["relations"].split())))
+        d = id2sent[ins["id"]]
+        d["relations"] = list(map(lambda x: id2rel[x], rels))
+        final_data.append(d)
+
+    print(len(final_data), final_data[:2])
+    ru.dump_line_json(final_data, f"formatted/{dataset_name}.line.json")
 
 
 if __name__ == "__main__":
-    os.makedirs("formatted/bag", exist_ok=True)
-    os.makedirs("formatted/sent", exist_ok=True)
-
-    rel2ids = load_csv("raw/IPRE/data/relation2id.txt",
+    os.makedirs("formatted", exist_ok=True)
+    rel2ids = ru.load_csv("raw/IPRE/data/relation2id.txt",
                        title_row=False, title_keys=["relation", "id"])
     rel2id = {}
     for ins in rel2ids:
         rel2id[ins["relation"]] = int(ins["id"])
     id2rel = {id_: rel for rel, id_ in rel2id.items()}
-    dump_json(rel2id, "formatted/sent/rel2id.json", indent=2)
+    ru.dump_json(rel2id, "formatted/rel2id.json", indent=2)
 
-    sent_train_1 = load_csv("raw/IPRE/data/train/sent_train_1.txt",
-                            title_row=False, title_keys=["id", "head", "tail", "text"])
-    sent_train_2 = load_csv("raw/IPRE/data/train/sent_train_2.txt",
-                            title_row=False, title_keys=["id", "head", "tail", "text"])
-    sent_train = sent_train_1 + sent_train_2
-    id2sent = {}
-    for ins in sent_train:
-        id2sent[ins["id"]] = ins
-    sent_train_labels = load_csv("raw/IPRE/data/train/sent_relation_train.txt",
-                                 title_row=False, title_keys=["id", "relations"])
-    train_data = []
-    for ins in sent_train_labels:
-        rels = list(map(int, ins["relations"].split()))
-        d = id2sent[ins["id"]]
-        d["relations"] = list(map(lambda x: id2rel[x], rels))
-        train_data.append(d)
-
-    print(len(train_data), train_data[:2])
-    dump_line_json(train_data, "formatted/sent/train.line.json")
-
-    bag_relation_train = load_csv("data/IPRE/raw/IPRE/data/train/bag_relation_train.txt",
-                                  title_row=False, title_keys=["id", "head", "tail", "sent_ids", "relations"])
+    for dn in ["train", "dev", "test"]:
+        convert_data(f"raw/IPRE/data/{dn}/sent_{dn}.txt",
+                     f"raw/IPRE/data/{dn}/sent_relation_{dn}.txt",
+                     dn)

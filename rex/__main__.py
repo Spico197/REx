@@ -1,13 +1,13 @@
 import sys
 
-from .cmd import startproject
-from .cmd import clean
+from .cmd import new_project
+from .cmd import clean_project
 
 
 if __name__ == "__main__":
     arg = sys.argv[1]
     arg2action = {
-        "startproject": startproject,
-        "clean": clean
+        "new": new_project,
+        "clean": clean_project
     }
     arg2action[arg]()
