@@ -1,5 +1,5 @@
 # REx
-[![Build Status](https://travis-ci.org/Spico197/REx.svg?branch=main)](https://travis-ci.org/Spico197/REx)
+![REx](https://github.com/Spico197/REx/workflows/REx/badge.svg?branch=main)![REx](https://github.com/Spico197/REx/workflows/REx/badge.svg?branch=main)
 ![Codecov](https://img.shields.io/codecov/c/github/Spico197/REx)
 [![Documentation Status](https://readthedocs.org/projects/rex/badge/?version=main)](https://rex.readthedocs.io/en/main/?badge=main)
 

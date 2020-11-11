@@ -30,12 +30,9 @@ jobs:
         pip install .
     - name: Test
       run: coverage run -m unittest -v && coverage report
-    - uses: actions/checkout@master
+    - uses: actions/checkout@main
     - uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
-        file: ./coverage.xml # optional
-        flags: unittests # optional
-        name: codecov-umbrella # optional
-        fail_ci_if_error: false # optional (default = false)
-        verbose: true # optional (default = false)
+        fail_ci_if_error: false
+        verbose: true
