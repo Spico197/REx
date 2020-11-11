@@ -29,8 +29,9 @@ jobs:
         pip install coverage codecov
         pip install .
     - name: Test
-      run: coverage run -m unittest -v && coverage report
-    - uses: actions/checkout@main
+      run: coverage run -m unittest -v
+      run: coverage report
+    - uses: actions/checkout@v2
     - uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
