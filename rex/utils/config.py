@@ -1,32 +1,12 @@
 import os
-import re
-import sys
 import yaml
 import json
 import argparse
-import random
-import logging
-import datetime
 from typing import Optional
 
-import torch
-import numpy as np
+from loguru import logger
 
-
-def set_seed(seed: Optional[int] = 0):
-    """
-    set random seed
-
-    Args:
-        seed (int, optional): random seed. Defaults to 0.
-    """
-    os.environ['PYTHONHASHSEED'] = str(seed)
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+from rex.utils.initialization import set_seed_and_log_path
 
 
 class ArgConfig(object):
@@ -47,9 +27,8 @@ class ArgConfig(object):
 
 
 class YamlConfig(object):
-    def __init__(self, config_filepath: str, **kwargs):
+    def __init__(self, config_filepath: str, make_taskdir: Optional[bool] = True):
         self.config_abs_path = os.path.abspath(config_filepath)
-        self.start_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
         # do not use `with` expression here in order to find errors ealier
         fin = open(self.config_abs_path, 'rt', encoding='utf-8')
@@ -58,22 +37,27 @@ class YamlConfig(object):
 
         for key, val in __config.items():
             setattr(self, key, val)
-        
-        set_seed(self.random_seed)
 
-        last_dir = os.path.split(self.output_dir)[-1]
-        overwrite = False
-        if re.match(r'\d{8}_\d{6}', last_dir):
-            self.start_time = last_dir
-            overwrite = True
-        if not overwrite:
-            self.output_dir = os.path.join(self.output_dir, self.start_time)
-            if not os.path.exists(self.output_dir):
-                os.makedirs(self.output_dir)
+        if make_taskdir:
+            self.output_dir = os.path.join(self.output_dir, self.task_name)
+        __config.update({"output_dir": self.output_dir})
+        self._config = __config
 
-        with open(os.path.join(self.output_dir, "config.yml"),
-                  'wt', encoding='utf-8') as fout:
-            yaml.dump(self.__dict__, fout, indent=2)
+        overwritten_flag = False
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+        else:
+            overwritten_flag = True
+
+        set_seed_and_log_path(
+            self.random_seed,
+            os.path.join(self.output_dir, "log.log"))
+
+        if overwritten_flag:
+            logger.warning("Overwrite output directory.")
+
+        with open(os.path.join(self.output_dir, "config.yaml"), 'wt', encoding='utf-8') as fout:
+            yaml.dump(__config, fout)
 
     def __str__(self, indent=0):
         return json.dumps(self.__dict__, indent=indent)

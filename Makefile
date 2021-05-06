@@ -14,6 +14,7 @@ docs:
 
 test:
 	python -m unittest -v
+	flake8
 
 test_report:
 	coverage run -m unittest -v && coverage report

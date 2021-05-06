@@ -1,0 +1,26 @@
+# task
+task: ???
+name: trial name
+
+# data preprocessing
+transform: ???
+max_seq_len: ???
+
+# filepaths
+train_filepath: ???
+dev_filepath: ???
+test_filepath: ???
+emb_filepath: ???
+output_dir: ???
+
+# training
+random_seed: 1227
+num_epochs: 50
+num_early_stop: 5
+batch_size: 64
+learning_rate: !!float 1e-3
+
+# model
+num_cnn_kernel: 230
+dim_pos_emb: 10
+dropout: 0.5

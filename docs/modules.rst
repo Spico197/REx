@@ -1,9 +1,7 @@
-REx
+rex
 ===
 
 .. toctree::
    :maxdepth: 4
 
    rex
-   setup
-   test

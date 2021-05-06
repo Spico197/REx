@@ -1,1 +1,0 @@
-python -u run.py -c config.yml

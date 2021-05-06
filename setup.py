@@ -2,12 +2,12 @@ import os
 import setuptools
 
 readme_filepath = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "README.md")
+    os.path.dirname(os.path.abspath(__file__)), "README.md")
 with open(readme_filepath, "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='pytorch-rex',  
+    name='pytorch-rex',
     version='0.0.0',
     author="Tong Zhu",
     author_email="tzhu1997@outlook.com",

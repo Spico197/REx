@@ -1,0 +1,11 @@
+{
+    "id": "kja1223u1h3lbj1k2b3iusijfoidjaoi",
+    "tokens": ["Tong", "Xiangyu", "is", "the", "boss", "of", "Tongfu", "Hotel", "."],
+    "entities": [
+        ["PERSON", 0, 2],
+        ["COMPANY", 6, 8]
+    ],
+    "relations": [
+        ["boss_of", 0, 1]
+    ]
+}

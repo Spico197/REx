@@ -8,10 +8,15 @@ A toolkit for Relation Extraction and more...
 
 This project has not finished yet, so be careful when using it, or wait until the first release comes out.
 
+This project is suffering from the second-system effect.
+I would like to cut some features to make this going smoothly.
+
 ## Dependencies
 - Python>=3.6
   - torch>=1.2.0 : project is developed with torch==1.5.1, should be compatable with >=1.2.0 versions
   - numpy>=1.19.0
+  - hydra-core==1.0.6
+  - loguru==0.5.3
 
 ## Installation
 ```bash
@@ -22,21 +27,10 @@ pip install pytorch-rex -i https://pypi.org/simple
 ```
 
 ## QuickStart
-```bash
-mkdir project_dir && cd project_dir
-python -m rex startproject project_name # planned so, but has not finished
-```
 
-## Structures
-- io: data loading, transformation operations and data building
-  - [x] utils: data load/dump
-  - [x] instance: common wrapper to make dict structure data able to access their attributes by `obj.attribute`
-  - [ ] vocab: vocabulary building
-  - [ ] transform: data cleaning/transformation, word cutting, and some utils for constructing data
-- core: core tools for data preprocess
-  - [ ] dataset: abstract dataset wrapper
-  - [ ] loader: wrapper for data loaders
-  - [ ] trainer: main runner for model training process
+Checkout the `examples`.
+
+## Roadmap
 - metrics: evaluation measures, including many kinds of metrics
   - accuracy
   - (all|filtered)_(f1|precision|recall)
@@ -72,19 +66,24 @@ python -m rex startproject project_name # planned so, but has not finished
   - [x] config
   - [x] logger
 
-## Dataset Compatibility Adaptation
-- [ ] IPRE preprocess
+### Dataset
+- [x] IPRE preprocess
 - [ ] NYT10
 - [ ] NYT-H
 - [ ] SemEval2010-Task8
 - [ ] TACRED
 - [ ] ACE05
 
-## Support
-- [ ] Chinese sentence level relation extraction
+### Tasks
+- [x] Chinese sentence level relation extraction
 - [ ] Chinese bag level RE
 - [ ] English sentence level RE
 - [ ] English bag level RE
+
+### Modules & Models
+
+- [x] Piecewise CNN
+- [ ] 
 
 ## Test
 ```bash

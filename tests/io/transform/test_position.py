@@ -1,6 +1,7 @@
 import unittest
 
-from rex.io.transform import position
+from rex.utils import position
+
 
 class TestPosition(unittest.TestCase):
     def test_find_all_positions(self):
