@@ -133,3 +133,4 @@ dmypy.json
 data/IPRE/raw
 data/IPRE/formatted
 debug.py
+outputs/
