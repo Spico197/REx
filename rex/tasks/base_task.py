@@ -16,6 +16,11 @@ class TaskBase(object):
         self.model = None
         self.optimizer = None
 
+        self.history = {"dev": [], "test": []}
+        self.no_climbing_cnt = 0
+        self.best_metric = -100.0
+        self.best_epoch = -1
+
         if not os.path.exists(config.task_dir):
             os.makedirs(config.task_dir)
         else:
@@ -68,6 +73,11 @@ class TaskBase(object):
         else:
             logger.info("Not load optimizer")
 
+        self.history = store_dict['history']
+        self.no_climbing_cnt = store_dict['no_climbing_cnt']
+        self.best_metric = store_dict['best_metric']
+        self.best_epoch = store_dict['best_epoch']
+
     def save(self, path, epoch: Optional[int] = None):
         logger.info(f"Dumping checkpoint into: {path}")
         store_dict = {}
@@ -89,6 +99,11 @@ class TaskBase(object):
 
         if epoch:
             store_dict['epoch'] = epoch
+
+        store_dict['history'] = self.history
+        store_dict['no_climbing_cnt'] = self.no_climbing_cnt
+        store_dict['best_metric'] = self.best_metric
+        store_dict['best_epoch'] = self.best_epoch
 
         torch.save(store_dict, path)
 

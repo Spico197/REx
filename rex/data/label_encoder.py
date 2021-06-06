@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List, Union
+from typing import Dict, Iterable, Optional, List, Union
 
 
 class LabelEncoder(object):
@@ -34,7 +34,7 @@ class LabelEncoder(object):
             raise ValueError("Not all idx are in this encoder")
         return list(map(lambda x: self.id2label[x], ids))
 
-    def to_binary_labels(self, label_ids: List[int]):
+    def to_binary_labels(self, label_ids: Iterable[int]):
         labels = [0] * self.num_tags
         for label_id in label_ids:
             labels[label_id] = 1

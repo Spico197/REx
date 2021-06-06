@@ -1,4 +1,8 @@
 from collections import defaultdict
+from typing import Iterable, Optional
+
+import numpy as np
+from sklearn import metrics
 
 
 def accuracy(preds, golds):
@@ -55,6 +59,64 @@ def mcml_prf1(preds, golds, eps=1e-12):
     return measure_results
 
 
-def mc_prf1(preds, golds, num_classes, eps=1e-12):
-    # TODO: add multi-class prf1 support
-    raise NotImplementedError
+def mc_prf1(preds, golds, num_classes=-1, ignore_labels: Optional[Iterable] = [], eps=1e-12):
+    """
+    get multi-class classification metrics
+
+    Args:
+        num_classes: guess the current number of classes if < 0
+        ignore_labels: labels to ignore when calculating f1 scores,
+            especially helpful when calculating non-NA metrics
+    """
+    if len(preds) == 0 or len(golds) == 0:
+        raise ValueError("Preds or golds is empty.")
+    measure_results = defaultdict(lambda: {"p": 0.0, "r": 0.0, "f1": 0.0})
+
+    if num_classes > 0:
+        # specified number of classes
+        labels = list(range(num_classes))
+    else:
+        # guess the number of classes through current input
+        labels = None
+
+    MCM = metrics.multilabel_confusion_matrix(golds, preds,
+                                              sample_weight=None,
+                                              labels=labels, samplewise=False)
+
+    tp = []; tp_fp = []; tp_fn = []
+
+    for tmp_label in range(len(labels)):
+        if tmp_label not in ignore_labels:
+            tp.append(MCM[tmp_label, 1, 1])
+            tp_fp.append(MCM[tmp_label, 1, 1] + MCM[tmp_label, 0, 1])
+            tp_fn.append(MCM[tmp_label, 1, 1] + MCM[tmp_label, 1, 0])
+
+    tp = np.stack(tp)
+    tp_fp = np.stack(tp_fp)
+    tp_fn = np.stack(tp_fn)
+
+    # micro-averaged scores
+    tp_sum = tp.sum()
+    pred_sum = tp_fp.sum() + eps
+    true_sum = tp_fn.sum() + eps
+
+    precision = tp_sum / pred_sum
+    recall = tp_sum / true_sum
+    denom = precision + recall + eps
+    f1_score = 2 * precision * recall / denom
+
+    measure_results['micro']['p'] = precision
+    measure_results['micro']['r'] = recall
+    measure_results['micro']['f1'] = f1_score
+
+    # macro-averaged scores
+    precision = tp / (tp_fp + eps)
+    recall = tp / (tp_fn + eps)
+    denom = precision + recall + eps
+    f1_score = 2 * precision * recall / denom
+
+    measure_results['macro']['p'] = precision.mean()
+    measure_results['macro']['r'] = recall.mean()
+    measure_results['macro']['f1'] = f1_score.mean()
+
+    return measure_results

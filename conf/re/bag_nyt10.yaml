@@ -1,0 +1,37 @@
+# task
+task_name: re_bag_NYT10
+
+# data preprocessing
+max_seq_len: 100
+dim_token_emb: 300
+
+# filepaths
+dataset_name: NYT10
+train_filepath: /data4/tzhu/REx/data/${dataset_name}/formatted/train.linejson
+dev_filepath: /data4/tzhu/REx/data/${dataset_name}/formatted/test.linejson
+test_filepath: /data4/tzhu/REx/data/${dataset_name}/formatted/test.linejson
+emb_filepath: /data/tzhu/data/glove/glove.6B.300d.txt
+output_dir: /data4/tzhu/REx/examples/${dataset_name}/outputs
+task_dir: ${output_dir}/${task_name}
+
+# training
+skip_train: false
+device: 0
+local_rank: -1
+random_seed: 1227
+num_epochs: 30
+num_early_stop: 5
+train_batch_size: 64
+eval_batch_size: 64
+learning_rate: 1e-3
+save_best_ckpt: true
+debug_mode: false  # if debug mode, a small subset of the whole dataset will be activated
+
+# logging
+only_master_logging: true
+
+# model
+num_filters: 230
+kernel_size: 5
+dim_pos_emb: 10
+dropout: 0.5

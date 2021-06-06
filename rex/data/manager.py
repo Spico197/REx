@@ -9,6 +9,7 @@ class CachedManager(object):
         train_filepath,
         dev_filepath,
         test_filepath,
+        dataset_class,
         transform,
         load_fn,
         train_batch_size,
@@ -21,9 +22,9 @@ class CachedManager(object):
     ):
         self.collate_fn = collate_fn
 
-        self.train_set = CachedDataset(transform(load_fn(train_filepath), debug=debug_mode))
-        self.dev_set = CachedDataset(transform(load_fn(dev_filepath), debug=debug_mode))
-        self.test_set = CachedDataset(transform(load_fn(test_filepath), debug=debug_mode))
+        self.train_set = dataset_class(transform(load_fn(train_filepath), debug=debug_mode))
+        self.dev_set = dataset_class(transform(load_fn(dev_filepath), debug=debug_mode))
+        self.test_set = dataset_class(transform(load_fn(test_filepath), debug=debug_mode))
 
         self.train_loader = DataLoader(
             self.train_set,

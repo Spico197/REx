@@ -55,7 +55,8 @@ class SentPCNN(nn.Module):
         x = self.pcnn(x, mask)
         out = self.dense(x)
 
+        result = {"pred": torch.sigmoid(out)}
         if labels is not None:
-            return F.binary_cross_entropy_with_logits(out, labels.float())
-        else:
-            return torch.sigmoid(out)
+            result.update({"loss": F.binary_cross_entropy_with_logits(out, labels.float())})
+
+        return result

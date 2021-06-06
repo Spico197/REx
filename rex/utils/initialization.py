@@ -3,9 +3,10 @@ import random
 import sys
 from typing import Optional
 
-import numpy as np
 import torch
+import numpy as np
 from loguru import logger
+from omegaconf.omegaconf import OmegaConf
 
 
 def set_seed(seed: Optional[int] = 1227, set_cudnn: Optional[bool] = False):
@@ -32,3 +33,15 @@ def set_seed_and_log_path(
 
 def set_device(device):
     torch.cuda.set_device(device)
+
+
+def init_all(
+    task_dir: str,
+    seed: Optional[int] = 1227,
+    set_cudnn: Optional[bool] = False,
+    config: Optional[OmegaConf] = None,
+):
+    set_seed(seed, set_cudnn=set_cudnn)
+    logger.add(os.path.join(task_dir, "log.log"), backtrace=True, diagnose=True)
+    if config:
+        OmegaConf.save(config, os.path.join(task_dir, "task_params.yaml"), resolve=True)

@@ -6,7 +6,6 @@ max_seq_len: 100
 dim_token_emb: 300
 
 # filepaths
-fast_loading: true
 train_filepath: /data4/tzhu/REx/data/IPRE/formatted/train.linejson
 dev_filepath: /data4/tzhu/REx/data/IPRE/formatted/dev.linejson
 test_filepath: /data4/tzhu/REx/data/IPRE/formatted/test.linejson
@@ -38,13 +37,3 @@ num_filters: 230
 kernel_size: 5
 dim_pos_emb: 10
 dropout: 0.5
-
-# hydra
-hydra:
-  job_logging: null
-  hydra_logging: null
-  # output_subdir: null
-  run:
-    dir: ${output_dir}/${task_name}
-  sweep:
-    dir: ${output_dir}/${task_name}/multirun
