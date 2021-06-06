@@ -83,7 +83,7 @@ def mc_prf1(preds, golds, num_classes=-1, ignore_labels: Optional[Iterable] = []
                                               sample_weight=None,
                                               labels=labels, samplewise=False)
 
-    tp = []; tp_fp = []; tp_fn = []
+    tp, tp_fp, tp_fn = [], [], []
 
     for tmp_label in range(len(labels)):
         if tmp_label not in ignore_labels:
