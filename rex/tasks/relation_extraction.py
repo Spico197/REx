@@ -1,4 +1,3 @@
-from rex.data.dataset import CachedBagREDataset, CachedDataset
 import torch
 from torch.optim import Adam
 from loguru import logger
@@ -15,6 +14,7 @@ from rex.data.transforms import (
     CachedMCMLSentRETransform
 )
 from rex.data.manager import CachedManager
+from rex.data.dataset import CachedBagREDataset, CachedDataset
 from rex.tasks.base_task import TaskBase
 from rex.metrics.classification import accuracy, mc_prf1, mcml_prf1
 
@@ -57,7 +57,7 @@ class MCMLSentRelationClassificationTask(TaskBase):
             loader = tqdm(self.data_manager.train_loader, desc=f"Train(e{epoch_idx})")
             for batch in loader:
                 del batch['id']
-                batch = move_to_cuda_device(batch)
+                batch = move_to_cuda_device(batch, self.config.device)
                 result = self.model(**batch)
                 loss = result['loss']
                 loader.set_postfix({"loss": loss.item()})
@@ -103,7 +103,7 @@ class MCMLSentRelationClassificationTask(TaskBase):
         preds = []
         golds = []
         for batch in loader:
-            batch = move_to_cuda_device(batch)
+            batch = move_to_cuda_device(batch, self.config.device)
             golds.extend(batch['labels'].detach().cpu().tolist())
             del batch['id']
             del batch['labels']
@@ -127,7 +127,7 @@ class MCMLSentRelationClassificationTask(TaskBase):
             del tensor_batch["labels"]
         if "id" in tensor_batch:
             del tensor_batch["id"]
-        tensor_batch = move_to_cuda_device(tensor_batch)
+        tensor_batch = move_to_cuda_device(tensor_batch, self.config.device)
         result = self.model(**tensor_batch)
         outs = result['pred']
         outs = outs.ge(self.config.pred_threshold).long().detach().cpu().tolist()[0]
@@ -182,7 +182,7 @@ class MCMLBagRelationClassificationTask(TaskBase):
             loader = tqdm(self.data_manager.train_loader, desc=f"Train(e{epoch_idx})")
             for batch in loader:
                 del batch['id']
-                batch = move_to_cuda_device(batch)
+                batch = move_to_cuda_device(batch, self.config.device)
                 result = self.model(**batch)
                 loss = result['loss']
                 loader.set_postfix({"loss": loss.item()})
@@ -228,7 +228,7 @@ class MCMLBagRelationClassificationTask(TaskBase):
         preds = []
         golds = []
         for batch in loader:
-            batch = move_to_cuda_device(batch)
+            batch = move_to_cuda_device(batch, self.config.device)
             golds.extend(batch['labels'].detach().cpu().tolist())
             del batch['id']
             del batch['labels']
@@ -253,7 +253,7 @@ class MCMLBagRelationClassificationTask(TaskBase):
             del tensor_batch["labels"]
         if "id" in tensor_batch:
             del tensor_batch["id"]
-        tensor_batch = move_to_cuda_device(tensor_batch)
+        tensor_batch = move_to_cuda_device(tensor_batch, self.config.device)
         result = self.model(**tensor_batch)
         outs = result['pred']
         preds = []

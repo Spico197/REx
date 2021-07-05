@@ -16,7 +16,7 @@ class TaskBase(object):
         self.model = None
         self.optimizer = None
 
-        self.history = {"dev": [], "test": []}
+        self.history = {"train": [], "dev": [], "test": []}
         self.no_climbing_cnt = 0
         self.best_metric = -100.0
         self.best_epoch = -1

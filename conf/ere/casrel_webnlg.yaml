@@ -1,0 +1,40 @@
+# task
+task_name: ERE_CasRel_WebNLG
+
+# data preprocessing
+max_seq_len: 80
+dim_token_emb: 100
+
+# filepaths
+data_dir: /data4/tzhu/REx/data/WebNLG/formatted
+train_filepath: ${data_dir}/train.linejson
+dev_filepath: ${data_dir}/dev.linejson
+test_filepath: ${data_dir}/valid.linejson
+rel2id_filepath: ${data_dir}/rel2id.json
+vocab_filepath: ${data_dir}/vocab.txt
+emb_filepath: ${data_dir}/word.vec
+output_dir: /data4/tzhu/REx/examples/JointERE/outputs
+task_dir: ${output_dir}/${task_name}
+
+# training
+skip_train: false
+device: 3
+local_rank: -1
+random_seed: 1227
+num_epochs: 10
+num_early_stop: 5
+train_batch_size: 64
+eval_batch_size: 1  # for CasRel, the evaluating batch size must be 1
+learning_rate: 1e-3
+save_best_ckpt: true
+debug_mode: false  # if debug mode, a small subset of the whole dataset will be activated
+
+# eval
+pred_threshold: 0.5
+
+# logging
+only_master_logging: true
+
+# model
+dropout: 0.5
+num_lstm_layers: 2

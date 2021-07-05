@@ -1,8 +1,10 @@
 import copy
+import random
 from multiprocessing import Pool
 from collections import defaultdict
-from typing import Iterable, Optional, Any, List
+from typing import Dict, Iterable, Optional, Any, List
 
+import numpy as np
 from loguru import logger
 
 from rex.data.vocab import Vocab
@@ -219,3 +221,77 @@ class CachedMCBagRETransform(TransformBase):
             "tail_pos": construct_relative_positions(tail_pos[0], self.max_seq_len)
         }
         return d, [[0]]
+
+
+class StreamSubjObjSpanTransform(TransformBase):
+    """Data transform for jointly entity-relation extraction task."""
+    def __init__(self, max_seq_len: int, rel2id: Dict, vocab_filepath: str, pad='PAD', unk='UNK') -> None:
+        super().__init__(max_seq_len)
+        self.vocab = Vocab.from_pretrained(vocab_filepath, pad=pad, unk=unk)
+        self.label_encoder = LabelEncoder(rel2id)
+
+    def transform(self, data: Iterable) -> List[dict]:
+        token_ids, mask = self.vocab.encode(data['tokens'], self.max_seq_len, update=False)
+
+        subj_heads = np.zeros(self.max_seq_len, dtype=np.uint8)
+        subj_tails = np.zeros(self.max_seq_len, dtype=np.uint8)
+        one_subj_head = np.zeros(self.max_seq_len, dtype=np.uint8)
+        one_subj_tail = np.zeros(self.max_seq_len, dtype=np.uint8)
+        all_obj_head = np.zeros((self.label_encoder.num_tags, self.max_seq_len), dtype=np.uint8)
+        all_obj_tail = np.zeros((self.label_encoder.num_tags, self.max_seq_len), dtype=np.uint8)
+        one_obj_head = np.zeros((self.label_encoder.num_tags, self.max_seq_len), dtype=np.uint8)
+        one_obj_tail = np.zeros((self.label_encoder.num_tags, self.max_seq_len), dtype=np.uint8)
+
+        subj2objs = defaultdict(list)
+        triples = []
+        for relation_triple in data['relations']:
+            relation = self.label_encoder.encode([relation_triple[0]])[0]
+            head_ent = data['entities'][relation_triple[1]]
+            tail_ent = data['entities'][relation_triple[2]]
+            triples.append(((head_ent[1], head_ent[2]), relation, (tail_ent[1], tail_ent[2])))
+            if head_ent[2] <= self.max_seq_len:
+                subj_heads[head_ent[1]] = 1
+                subj_tails[head_ent[2] - 1] = 1
+                subj2objs[(head_ent[1], head_ent[2])].append((relation, tail_ent[1], tail_ent[2]))
+            if tail_ent[2] < self.max_seq_len:
+                all_obj_head[relation, tail_ent[1]] = 1
+                all_obj_tail[relation, tail_ent[2] - 1] = 1
+
+        one_subj = random.choice(list(subj2objs.keys()))
+        one_subj_head[one_subj[0]] = 1
+        one_subj_tail[one_subj[1] - 1] = 1
+        for obj in subj2objs[one_subj]:
+            one_obj_head[obj[0], obj[1]] = 1
+            one_obj_tail[obj[0], obj[2] - 1] = 1
+
+        formatted = {
+            "token_ids": token_ids,
+            "mask": mask,
+            "subj_heads": subj_heads,
+            "subj_tails": subj_tails,
+            "one_subj": one_subj,
+            "subj2objs": subj2objs,
+            "triples": triples,
+            "subj_head": one_subj_head,
+            "subj_tail": one_subj_tail,
+            "obj_head": one_obj_head.transpose(),
+            "obj_tail": one_obj_tail.transpose(),
+        }
+        formatted.update(data)
+        return formatted
+
+    def predict_transform(self, obj: dict):
+        """
+        Args:
+            obj:
+                {
+                    "text": "text"  # space tokenized string
+                }
+        """
+        obj['text'] = obj['text'].split()
+        token_ids, mask = self.vocab.encode(list(obj['text']), self.max_seq_len, update=False)
+        d = {
+            "token_ids": token_ids,
+            "mask": mask,
+        }
+        return d

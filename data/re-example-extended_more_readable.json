@@ -1,0 +1,17 @@
+{
+    "id": "DEV.0",
+    "tokens": [
+        "Tim", "Brooke-Taylor", "was", "the", "star", "of", "Bananaman", ",",
+        "an", "STV", "series", "first", "aired", "on", "10/03/1983", "and",
+        "created", "by", "Steve", "Bright", "."
+    ],
+    "entities": [
+        ["ENTITY", 6, 7, "Bananaman"],
+        ["ENTITY", 1, 2, "Brooke-Taylor"],
+        ["ENTITY", 19, 20, "Bright"]
+    ],
+    "relations": [
+        ["starring", 0, 1, ["Bananaman", "Brooke-Taylor"]],
+        ["creator", 0, 2, ["Bananaman", "Bright"]]
+    ]
+}

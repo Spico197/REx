@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Iterable, Optional
 
 from loguru import logger
 from torch.utils.data import Dataset
@@ -31,3 +31,18 @@ class CachedBagREDataset(Dataset):
 
     def __len__(self) -> int:
         return len(self.scopes)
+
+
+class StreamTransformDataset(Dataset):
+    def __init__(self, data: Iterable, transform, debug: Optional[bool] = False) -> None:
+        super().__init__()
+        if debug:
+            data = data[:128]
+        self.data = data
+        self.transform = transform
+
+    def __getitem__(self, index: int):
+        return self.transform(self.data[index])
+
+    def __len__(self) -> int:
+        return len(self.data)

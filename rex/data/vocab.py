@@ -1,6 +1,6 @@
 from typing import Iterable, Optional, List, Tuple
 
-from rex.utils.io import load_line_iterator, save_iterable
+from rex.utils.io import load_line_iterator, dump_iterable
 
 
 class Vocab(object):
@@ -38,7 +38,7 @@ class Vocab(object):
 
     def encode(self, tokens: Iterable, max_seq_len: int, update: Optional[bool] = False) -> Tuple[List[int]]:
         """convert tokens into ids by padding or cutting
-        
+
         Args:
             update: whether to add tokens into vocab
 
@@ -66,9 +66,8 @@ class Vocab(object):
         return len(self)
 
     @classmethod
-    def from_pretrained(cls, filepath):
-        v = cls()
-        v.clear_all()
+    def from_pretrained(cls, filepath, pad: Optional[str] = '[PAD]', unk: Optional[str] = "[UNK]"):
+        v = cls(pad, unk)
         for line in load_line_iterator(filepath):
             v.add(line.strip())
         return v
@@ -77,4 +76,4 @@ class Vocab(object):
         vocabs = []
         for token_id in range(self.size):
             vocabs.append(self.id2token[token_id])
-        save_iterable(vocabs, filepath)
+        dump_iterable(vocabs, filepath)

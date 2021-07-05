@@ -25,26 +25,37 @@ I would like to cut some features to make this going smoothly.
 
 [Accelerate](https://github.com/huggingface/accelerate) seems to be a very sweet wrapper for multi-GPU, TPU training, we highly recommend you to use such frameworks, instead of adding hard codes on your own.
 
-## 🌴Dependencies
-- Python>=3.6
-  - torch>=1.2.0 : project is developed with torch==1.5.1, should be compatable with >=1.2.0 versions
-  - numpy==1.19.0
-  - scikit-learn==0.21.3
-  - click==7.1.2
-  - omega==2.0.6
-  - loguru==0.5.3
-
 ## ⚙️Installation
+
+Make sure you have installed all the dependencies below.
+
+- Python>=3.6
+  - torch>=1.2.0 : project is developed with torch==1.7.1, should be compatable with >=1.2.0 versions
+  - numpy>=1.19.0
+  - scikit-learn>=0.21.3
+  - click>=7.1.2
+  - omegaconf>=2.0.6
+  - loguru==0.5.3
+  - tqdm==4.61.1
+
 ```bash
+$ git clone https://github.com/Spico197/REx.git
+$ cd REx
 $ pip install -e .
 
-# or you can download and install from pypi
+# or you can download and install from pypi, not recommend for now
 $ pip install pytorch-rex -i https://pypi.org/simple
 ```
 
 ## 🚀QuickStart
 
-Checkout the `examples`.
+Checkout the `examples` folder.
+
+| Name        | Model    | Dataset | Task                                                             |
+| :---------- | :------- | :------ | :--------------------------------------------------------------- |
+| SentRE-MCML | PCNN     | IPRE    | Sentence-level Multi-class multi-label relation classification   |
+| BagRE       | PCNN+ONE | NYT10   | Bag-level relation classification (Multi-Instance Learning, MIL) |
+| JointERE    | CasRel   | WebNLG  | Jointly entity relation extraction                               |
 
 ## ✈️Abilities
 
@@ -62,7 +73,22 @@ Checkout the `examples`.
 - PCNN + ONE
 - PCNN + ATT
 
-## 🧪Test
+## 🌴Development
+
+Make sure you have installed the following packages:
+
+- coverage
+- flake8
+- sphinx
+- sphinx_rtd_theme
+
+### Build
+
+```bash
+$ make all
+```
+
+### Test
 ```bash
 pip install coverage
 coverage run -m unittest -v && coverage report
@@ -74,7 +100,7 @@ make test
 make test_report
 ```
 
-## 📃Docs
+### Docs
 ```bash
 cd docs
 sphinx-apidoc -o . ..

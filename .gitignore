@@ -130,9 +130,7 @@ dmypy.json
 
 # self-defined
 .vscode/
-data/IPRE/raw
-data/IPRE/formatted
-data/NYT10/raw
-data/NYT10/formatted
+data/*/raw
+data/*/formatted
 debug.py
 outputs/

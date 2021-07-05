@@ -1,7 +1,7 @@
 import sys
 
-from .cmd import new_project
-from .cmd import clean_project
+from rex.cmd import new_project
+from rex.cmd import clean_project
 
 
 if __name__ == "__main__":

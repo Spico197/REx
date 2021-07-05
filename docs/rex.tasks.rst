@@ -12,6 +12,14 @@ rex.tasks.base\_task module
    :undoc-members:
    :show-inheritance:
 
+rex.tasks.entity\_relation\_extraction module
+---------------------------------------------
+
+.. automodule:: rex.tasks.entity_relation_extraction
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 rex.tasks.relation\_extraction module
 -------------------------------------
 

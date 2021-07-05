@@ -120,7 +120,7 @@ def load_line_json_iterator(filepath):
         yield json.loads(line)
 
 
-def save_iterable(obj: Iterable, filepath: str):
+def dump_iterable(obj: Iterable, filepath: str):
     with open(filepath, "wt", encoding="utf-8") as fout:
         for line in obj:
             fout.write(f"{line}\n")

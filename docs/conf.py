@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'REx'
-copyright = '2020, Tong Zhu'
+copyright = '2021, Tong Zhu'
 author = 'Tong Zhu'
 
 
@@ -31,7 +31,8 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx_rtd_theme",
-    "recommonmark",
+    "sphinx.ext.mathjax",
+    # "recommonmark",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
