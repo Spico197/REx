@@ -1,4 +1,4 @@
-from typing import Union, List, Any
+from typing import Type, Union, List, Any
 
 
 def find_all_positions(
@@ -28,12 +28,12 @@ def find_all_positions(
         >>> find_all_positions(long_list, short_list)
         [[0, 1]]
     """
-    if len(sub) > len(long):
-        raise ValueError("sub length is longer than the long")
     if isinstance(long, str) and isinstance(sub, str):
         long = list(long)
         sub = list(sub)
     if isinstance(long, list) and isinstance(sub, list):
+        if len(sub) > len(long):
+            raise ValueError("sub length is longer than the long")
         positions = []
         len_sub = len(sub)
         for idx in range(0, len(long) - len(sub) + 1):
@@ -41,7 +41,7 @@ def find_all_positions(
                 positions.append([idx, idx + len_sub])
         return positions
     else:
-        raise ValueError("types of the two input must be str or list")
+        raise TypeError("types of the two input must be str or list")
 
 
 def construct_relative_positions(pos: int, max_length: int) -> List[int]:
