@@ -1,15 +1,14 @@
 import torch
-from torch import tensor
 from torch.optim import Adam
 from loguru import logger
 from omegaconf import OmegaConf
 
-from rex.models.casrel import LSTMCasRel
+from rex.models.casrel import CasRel
 from rex.utils.io import load_line_json, load_json
 from rex.utils.progress_bar import tqdm
 from rex.utils.tensor_move import move_to_cuda_device
 from rex.data.collate_fn import subj_obj_span_collate_fn
-from rex.data.transforms import StreamSubjObjSpanTransform
+from rex.data.transforms.entity_re import StreamBERTSubjObjSpanTransform, StreamSubjObjSpanTransform
 from rex.data.manager import StreamTransformManager
 from rex.data.dataset import StreamTransformDataset
 from rex.tasks.base_task import TaskBase
@@ -21,10 +20,9 @@ class EntityRelationExtractionTask(TaskBase):
         super().__init__(config)
 
         rel2id = load_json(config.rel2id_filepath)
-        self.transform = StreamSubjObjSpanTransform(
+        self.transform = StreamBERTSubjObjSpanTransform(
             config.max_seq_len, rel2id,
-            config.vocab_filepath,
-            pad='PAD', unk='UNK')
+            config.bert_model_dir)
         self.data_manager = StreamTransformManager(
             config.train_filepath,
             config.dev_filepath,
@@ -37,14 +35,10 @@ class EntityRelationExtractionTask(TaskBase):
             subj_obj_span_collate_fn,
             debug_mode=config.debug_mode)
 
-        self.model = LSTMCasRel(
-            self.transform.vocab,
-            config.num_lstm_layers,
-            config.dim_token_emb,
+        self.model = CasRel(
+            config.bert_model_dir,
             self.transform.label_encoder.num_tags,
-            emb_filepath=config.emb_filepath,
-            pred_threshold=config.pred_threshold,
-            dropout=config.dropout
+            pred_threshold=config.pred_threshold
         )
         self.model.to(self.config.device)
         self.optimizer = Adam(self.model.parameters(), lr=config.learning_rate)
@@ -56,7 +50,7 @@ class EntityRelationExtractionTask(TaskBase):
             loader = tqdm(self.data_manager.train_loader, desc=f"Train(e{epoch_idx})")
             for batch in loader:
                 batch = move_to_cuda_device(batch, self.config.device)
-                used_keys = {'token_ids', 'mask', 'subj_heads', 'subj_tails', 'obj_head', 'obj_tail'}
+                used_keys = {'token_ids', 'mask', 'subj_heads', 'subj_tails', 'subj_head', 'subj_tail', 'obj_head', 'obj_tail'}
                 new_batch = {}
                 for key, val in batch.items():
                     if key in used_keys:
@@ -69,14 +63,12 @@ class EntityRelationExtractionTask(TaskBase):
                 self.optimizer.step()
             logger.info(loader)
 
-            train_measures = self.eval("train")
-            self.history['train'].append(train_measures)
             dev_measures = self.eval("dev")
             self.history['dev'].append(dev_measures)
             test_measures = self.eval("test")
             self.history['test'].append(test_measures)
 
-            measures = train_measures
+            measures = dev_measures
             is_best = False
             if measures['f1'] > self.best_metric:
                 is_best = True
@@ -132,15 +124,15 @@ class EntityRelationExtractionTask(TaskBase):
         tensor_batch = self.data_manager.collate_fn([batch])
         tensor_batch = move_to_cuda_device(tensor_batch, self.config.device)
         result = self.model(token_ids=tensor_batch['token_ids'], mask=tensor_batch['mask'])
-        pred_triples = result['pred']
+        pred_triples = result['pred'][0]
         preds = []
-        for triple in enumerate(pred_triples):
+        for triple in pred_triples:
             head_ent = batch['token_ids'][triple[0][0]: triple[0][1]]
             head_ent = self.transform.vocab.convert_ids_to_tokens(head_ent)
-            head_ent = ''.join(head_ent)
+            head_ent = ' '.join(head_ent)
             tail_ent = batch['token_ids'][triple[2][0]: triple[2][1]]
             tail_ent = self.transform.vocab.convert_ids_to_tokens(tail_ent)
-            tail_ent = ''.join(tail_ent)
+            tail_ent = ' '.join(tail_ent)
             relation = self.transform.label_encoder.id2label[triple[1]]
             preds.append((head_ent, relation, tail_ent))
 

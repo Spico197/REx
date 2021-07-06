@@ -1,15 +1,15 @@
 # task
-task_name: ERE_CasRel_WebNLG
+task_name: ERE_CasRel_CMED
 
 # data preprocessing
 max_seq_len: 300
 
 # filepaths
-data_dir: /data4/tzhu/REx/data/WebNLG/formatted
-bert_model_dir: /data4/tzhu/pretrained_model/bert-base-uncased
+data_dir: /data4/tzhu/REx/data/CMED/formatted
+bert_model_dir: /data4/tzhu/pretrained_model/bert-base-chinese
 train_filepath: ${data_dir}/train.linejson
 dev_filepath: ${data_dir}/dev.linejson
-test_filepath: ${data_dir}/valid.linejson
+test_filepath: ${data_dir}/test.linejson
 rel2id_filepath: ${data_dir}/rel2id.json
 output_dir: /data4/tzhu/REx/examples/JointERE/outputs
 task_dir: ${output_dir}/${task_name}

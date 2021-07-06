@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from rex.modules.mlp import MLP
 from rex.utils.span import find_closest_span_pairs, find_closest_span_pairs_with_index
 
 
@@ -79,18 +80,16 @@ class SubjObjSpan(nn.Module):
             return None, None, None
 
     def forward(self, hidden, subj_head, subj_tail):
+        # subj_head_out, subj_tail_out: (batch_size, seq_len, 1)
         subj_head_out = self.subj_head_ffnn(hidden)
         subj_tail_out = self.subj_tail_ffnn(hidden)
-        # subj_head_out = torch.sigmoid(subj_head_out)
-        # subj_tail_out = torch.sigmoid(subj_tail_out)
-
+        # subj_head, subj_tail: (batch_size, seq_len)
+        # obj_head_out, obj_tail_out: (batch_size, seq_len, num_classes)
         obj_head_out, obj_tail_out = self.get_objs_for_specific_subj(
             subj_head.unsqueeze(1),
             subj_tail.unsqueeze(1),
             hidden
         )
-        # obj_head_out = torch.sigmoid(obj_head_out)
-        # obj_tail_out = torch.sigmoid(obj_tail_out)
 
         return subj_head_out.squeeze(-1), subj_tail_out.squeeze(-1), obj_head_out, obj_tail_out
 
@@ -113,7 +112,8 @@ class SubjObjSpan(nn.Module):
         # subjs: [(1, 3), (3, 3), (17, 17)]
         # subj_head_mappings: (len(subjs), seq_len)
         subjs, subj_head_mappings, subj_tail_mappings = self.build_batch_mapping(
-            pred_subj_head.squeeze(0), pred_subj_tail.squeeze(0))
+            pred_subj_head.squeeze(0).squeeze(-1),
+            pred_subj_tail.squeeze(0).squeeze(-1))
 
         if subjs:
             # obj_head_out: (len(subjs), seq_len, num_classes)
@@ -122,13 +122,12 @@ class SubjObjSpan(nn.Module):
             )
             obj_head_out = torch.sigmoid(obj_head_out)
             obj_tail_out = torch.sigmoid(obj_tail_out)
-            obj_head_out = obj_head_out.ge(self.threshold).long().squeeze(0)
-            obj_tail_out = obj_tail_out.ge(self.threshold).long().squeeze(0)
+            obj_head_out = obj_head_out.ge(self.threshold).long()
+            obj_tail_out = obj_tail_out.ge(self.threshold).long()
             for subj_idx, subj in enumerate(subjs):
                 objs = find_closest_span_pairs_with_index(
                     obj_head_out[subj_idx].permute(1, 0),
                     obj_tail_out[subj_idx].permute(1, 0))
                 for relation_idx, obj_pair_start, obj_pair_end in objs:
                     triples.append(((subj[0], subj[1] + 1), relation_idx, (obj_pair_start, obj_pair_end + 1)))
-
-        return triples
+        return [triples]

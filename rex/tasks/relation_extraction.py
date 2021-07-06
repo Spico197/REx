@@ -9,10 +9,8 @@ from rex.utils.io import load_line_json
 from rex.utils.progress_bar import tqdm
 from rex.utils.tensor_move import move_to_cuda_device
 from rex.data.collate_fn import bag_re_collate_fn, re_collate_fn
-from rex.data.transforms import (
-    CachedMCBagRETransform,
-    CachedMCMLSentRETransform
-)
+from rex.data.transforms.sent_re import CachedMCMLSentRETransform
+from rex.data.transforms.bag_re import CachedMCBagRETransform
 from rex.data.manager import CachedManager
 from rex.data.dataset import CachedBagREDataset, CachedDataset
 from rex.tasks.base_task import TaskBase

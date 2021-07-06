@@ -35,8 +35,9 @@ Make sure you have installed all the dependencies below.
   - scikit-learn>=0.21.3
   - click>=7.1.2
   - omegaconf>=2.0.6
-  - loguru==0.5.3
-  - tqdm==4.61.1
+  - loguru>=0.5.3
+  - tqdm>=4.61.1
+  - transformers>=4.8.2
 
 ```bash
 $ git clone https://github.com/Spico197/REx.git

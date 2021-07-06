@@ -25,10 +25,10 @@ def main(config_filepath):
         except Exception as err:
             logger.exception(err)
 
-    task.load(f"{config.task_dir}/ckpt/{task.model.__class__.__name__}.best.pth")
-    preds = task.predict("William Anders was born October 17th 1933 and was a member of the Apollo 8 crew operated by NASA . The backup pilot was Buzz Aldrin . William Anders retired on September 1st 1969 .")
-    logger.info("Case: William Anders was born October 17th 1933 and was a member of the Apollo 8 crew operated by NASA . The backup pilot was Buzz Aldrin . William Anders retired on September 1st 1969 .")
-    logger.info(f"pred results: {preds}")
+    # task.load(f"{config.task_dir}/ckpt/{task.model.__class__.__name__}.best.pth")
+    # preds = task.predict("William Anders was born October 17th 1933 and was a member of the Apollo 8 crew operated by NASA . The backup pilot was Buzz Aldrin . William Anders retired on September 1st 1969 .")
+    # logger.info("Case: William Anders was born October 17th 1933 and was a member of the Apollo 8 crew operated by NASA . The backup pilot was Buzz Aldrin . William Anders retired on September 1st 1969 .")
+    # logger.info(f"pred results: {preds}")
 
 
 if __name__ == "__main__":
