@@ -111,5 +111,10 @@ make html
 make docs
 ```
 
+## Update
+
+- v0.0.1: change `LabelEncoder.to_binary_labels` into `convert_to_multi_hot` or `convert_to_one_hot`
+
+
 ## 🔑LICENCE
 MIT

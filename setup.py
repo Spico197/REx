@@ -1,14 +1,18 @@
 import os
 import setuptools
 
+from rex import __version__
+
+
 readme_filepath = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "README.md")
 with open(readme_filepath, "r") as fh:
     long_description = fh.read()
 
+
 setuptools.setup(
     name='pytorch-rex',
-    version='0.0.0',
+    version=__version__,
     author="Tong Zhu",
     author_email="tzhu1997@outlook.com",
     description="A toolkit for Relation Extraction and more...",

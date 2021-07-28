@@ -18,7 +18,7 @@ test:
 	flake8
 
 test_report:
-	coverage run -m unittest -v && coverage report
+	coverage run -m unittest -v && coverage report -m
 	flake8
 
 clean:

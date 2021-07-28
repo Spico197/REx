@@ -34,13 +34,13 @@ class LabelEncoder(object):
             raise ValueError("Not all idx are in this encoder")
         return list(map(lambda x: self.id2label[x], ids))
 
-    def to_binary_labels(self, label_ids: Iterable[int]):
+    def convert_to_multi_hot(self, label_ids: Iterable[int]):
         labels = [0] * self.num_tags
         for label_id in label_ids:
             labels[label_id] = 1
         return labels
 
-    def to_binary_label(self, label_id: int):
+    def convert_to_one_hot(self, label_id: int):
         labels = [0] * self.num_tags
         labels[label_id] = 1
         return labels

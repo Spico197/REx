@@ -134,3 +134,4 @@ data/*/raw
 data/*/formatted
 debug.py
 outputs/
+examples/CCIRCup2021-KnowledgeProbing/

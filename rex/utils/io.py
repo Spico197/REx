@@ -89,10 +89,10 @@ def load_csv(
     return data
 
 
-def load_embedding_file(filepath):
+def load_embedding_file(filepath, encoding='utf-8'):
     token2vec = {}
     dim_emb = 0
-    with open(filepath, "rt", encoding="utf-8") as fin:
+    with open(filepath, "rt", encoding=encoding) as fin:
         for line_no, line in enumerate(fin):
             line = line.split()
             if line_no == 0:

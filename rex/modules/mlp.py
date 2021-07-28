@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -7,13 +8,18 @@ from rex.modules.dropout import SharedDropout
 class MLP(nn.Module):
     """Implements Multi-layer Perception."""
 
-    def __init__(self, input_size, output_size, mid_size=None, num_mid_layer=1, dropout=0.1):
+    def __init__(
+        self, input_size, output_size,
+        mid_size=None, num_mid_layer=1,
+        act_fn=torch.relu, dropout=0.1
+    ):
         super(MLP, self).__init__()
 
         assert num_mid_layer >= 1
         if mid_size is None:
             mid_size = input_size
 
+        self.act_fn = act_fn
         self.input_fc = nn.Linear(input_size, mid_size)
         self.out_fc = nn.Linear(mid_size, output_size)
         if num_mid_layer > 1:
@@ -25,9 +31,9 @@ class MLP(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
-        x = self.dropout(F.relu(self.input_fc(x)))
+        x = self.dropout(self.act_fn(self.input_fc(x)))
         for mid_fc in self.mid_fcs:
-            x = self.dropout(F.relu(mid_fc(x)))
+            x = self.dropout(self.act_fn(mid_fc(x)))
         x = self.out_fc(x)
         return x
 

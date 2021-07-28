@@ -57,7 +57,7 @@ class CachedMCMLSentRETransform(TransformBase):
                 })
         final_data = list(filter(lambda x: x is not None, final_data))
         for d in final_data:
-            d['labels'] = self.label_encoder.to_binary_labels(d['labels'])
+            d['labels'] = self.label_encoder.convert_to_multi_hot(d['labels'])
         logger.info(transform_loader)
         logger.warning(f"#truncated_rels: {num_truncated_rels}")
         return final_data
