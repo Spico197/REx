@@ -6,9 +6,7 @@ import numpy as np
 
 
 def find_closest_span_pairs(
-    head: Iterable,
-    tail: Iterable,
-    backtrace: Optional[bool] = True
+    head: Iterable, tail: Iterable, backtrace: Optional[bool] = True
 ):
     """
     Find all span pairs.
@@ -55,9 +53,7 @@ def find_closest_span_pairs(
 
 
 def find_closest_span_pairs_with_index(
-    heads: Iterable,
-    tails: Iterable,
-    backtrace: Optional[bool] = True
+    heads: Iterable, tails: Iterable, backtrace: Optional[bool] = True
 ):
     """
     Find all possible pairs with indexes,

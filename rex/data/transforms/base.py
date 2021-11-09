@@ -17,10 +17,15 @@ class TransformBase(object):
         for string in strings:
             seq_len = min(len(string), self.max_seq_len)
             comp_len = max(0, (self.max_seq_len - seq_len))
-            ret_data.append({
-                "token_ids": self.vocab.convert_tokens_to_ids(list(string))[:seq_len] + comp_len * [self.vocab.pad_idx],
-                "mask": seq_len * [1] + comp_len * [0],
-            })
+            ret_data.append(
+                {
+                    "token_ids": self.vocab.convert_tokens_to_ids(list(string))[
+                        :seq_len
+                    ]
+                    + comp_len * [self.vocab.pad_idx],
+                    "mask": seq_len * [1] + comp_len * [0],
+                }
+            )
         return ret_data
 
     def __call__(self, *args: Any, **kwargs: Any):

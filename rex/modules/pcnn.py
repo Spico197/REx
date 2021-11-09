@@ -13,7 +13,7 @@ class PiecewiseCNN(nn.Module):
         num_filters,
         kernel_size,
         dropout: Optional[float] = 0.5,
-        activation_function: Optional[Callable] = torch.tanh
+        activation_function: Optional[Callable] = torch.tanh,
     ):
         super().__init__()
 
@@ -21,12 +21,15 @@ class PiecewiseCNN(nn.Module):
             in_channels,
             num_filters,
             kernel_size,
-            padding=math.floor((kernel_size - 1) / 2))
+            padding=math.floor((kernel_size - 1) / 2),
+        )
         self.dropout = nn.Dropout(dropout)
         self.act = activation_function
 
         # mask operation for pcnn
-        masks = torch.tensor([[0, 0, 0], [100, 0, 0], [0, 100, 0], [0, 0, 100]], dtype=torch.float)
+        masks = torch.tensor(
+            [[0, 0, 0], [100, 0, 0], [0, 100, 0], [0, 0, 100]], dtype=torch.float
+        )
         self.mask_embedding = nn.Embedding.from_pretrained(masks, freeze=True)
 
     def forward(self, input_rep, mask):

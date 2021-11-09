@@ -15,10 +15,10 @@ class StaticEmbedding(nn.Module):
         vocab: Vocab,
         dim_token_emb: int,
         filepath: Optional[str] = None,
-        file_encoding: Optional[str] = 'utf-8',
+        file_encoding: Optional[str] = "utf-8",
         create_random_emb_for_unk: Optional[bool] = False,
         dropout: Optional[float] = 0.3,
-        freeze: Optional[bool] = False
+        freeze: Optional[bool] = False,
     ) -> None:
         super().__init__()
 
@@ -42,12 +42,17 @@ class StaticEmbedding(nn.Module):
                     random_create += 1
             weights = torch.tensor(weights, dtype=torch.float)
             self.embedding = nn.Embedding.from_pretrained(
-                weights, freeze=freeze, padding_idx=vocab.pad_idx)
-            logger.info(("Embedding initialized from emb file, "
-                         f"vocab size: {vocab.size}, "
-                         f"emb file vocab size: {len(token2emb)}, "
-                         f"{random_create} tokens are not in the "
-                         "emb file and are randomly initialized."))
+                weights, freeze=freeze, padding_idx=vocab.pad_idx
+            )
+            logger.info(
+                (
+                    "Embedding initialized from emb file, "
+                    f"vocab size: {vocab.size}, "
+                    f"emb file vocab size: {len(token2emb)}, "
+                    f"{random_create} tokens are not in the "
+                    "emb file and are randomly initialized."
+                )
+            )
 
     def forward(self, token_ids):
         rep = self.embedding(token_ids)

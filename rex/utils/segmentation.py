@@ -5,9 +5,9 @@ from typing import Optional, List
 def sent_seg(
     text: str,
     special_seg_indicators: Optional[List] = None,
-    lang: Optional[str] = 'zh',
+    lang: Optional[str] = "zh",
     punctuations: Optional[set] = None,
-    quotation_seg_mode: Optional[bool] = True
+    quotation_seg_mode: Optional[bool] = True,
 ) -> List[str]:
     """Cut texts into sentences (in Chinese or English).
 
@@ -49,21 +49,27 @@ def sent_seg(
         for indicator in special_seg_indicators:
             text_return = re.sub(indicator[0], indicator[1], text_return)
 
-    if lang == 'zh':
-        punkt = {'。', '？', '！', '…'}
-    elif lang == 'en':
-        punkt = {'.', '?', '!'}
+    if lang == "zh":
+        punkt = {"。", "？", "！", "…"}
+    elif lang == "en":
+        punkt = {".", "?", "!"}
     if punctuations:
         punkt = punkt | punctuations
 
     if quotation_seg_mode:
-        text_return = re.sub('([%s]+[’”`\'"]*)' % (''.join(punkt)),
-                             '\\1\n', text_return)
+        text_return = re.sub(
+            "([%s]+[’”`'\"]*)" % ("".join(punkt)), "\\1\n", text_return
+        )
     else:
-        text_return = re.sub('([{}])'.format(''.join(punkt)),
-                             '\\1\n', text_return)
+        text_return = re.sub("([{}])".format("".join(punkt)), "\\1\n", text_return)
 
     # drop sentences with no length
-    return [s.strip() for s in
-            filter(lambda x: len(x.strip()) == 1 and x.strip() not in punkt
-                   or len(x.strip()) > 0, text_return.split('\n'))]
+    return [
+        s.strip()
+        for s in filter(
+            lambda x: len(x.strip()) == 1
+            and x.strip() not in punkt
+            or len(x.strip()) > 0,
+            text_return.split("\n"),
+        )
+    ]

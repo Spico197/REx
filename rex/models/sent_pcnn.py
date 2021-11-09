@@ -19,32 +19,24 @@ class SentPCNN(nn.Module):
         dim_pos,
         num_filters,
         kernel_size,
-        dropout: Optional[float] = 0.5
+        dropout: Optional[float] = 0.5,
     ):
         super().__init__()
 
         self.token_embedding = StaticEmbedding(
-            vocab,
-            dim_token_emb,
-            emb_filepath,
-            dropout=dropout)
+            vocab, dim_token_emb, emb_filepath, dropout=dropout
+        )
         self.pos1_embedding = nn.Embedding(
-            num_embeddings=pos_emb_capacity,
-            embedding_dim=dim_pos
+            num_embeddings=pos_emb_capacity, embedding_dim=dim_pos
         )
         self.pos2_embedding = nn.Embedding(
-            num_embeddings=pos_emb_capacity,
-            embedding_dim=dim_pos
+            num_embeddings=pos_emb_capacity, embedding_dim=dim_pos
         )
         self.pcnn = PiecewiseCNN(
-            dim_token_emb + 2 * dim_pos,
-            num_filters,
-            kernel_size,
-            dropout=dropout)
+            dim_token_emb + 2 * dim_pos, num_filters, kernel_size, dropout=dropout
+        )
         self.dense = nn.Linear(
-            in_features=num_filters * 3,
-            out_features=num_classes,
-            bias=True
+            in_features=num_filters * 3, out_features=num_classes, bias=True
         )
 
     def forward(self, token_ids, head_pos, tail_pos, mask, labels=None):
@@ -57,6 +49,8 @@ class SentPCNN(nn.Module):
 
         result = {"pred": torch.sigmoid(out)}
         if labels is not None:
-            result.update({"loss": F.binary_cross_entropy_with_logits(out, labels.float())})
+            result.update(
+                {"loss": F.binary_cross_entropy_with_logits(out, labels.float())}
+            )
 
         return result

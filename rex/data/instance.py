@@ -5,6 +5,6 @@ class Instance(object):
 
     def __str__(self):
         return str(self.__dict__)
-    
+
     def __repr__(self):
-        return 'Instance(' + str(self.__dict__) + ')'
+        return "Instance(" + str(self.__dict__) + ")"

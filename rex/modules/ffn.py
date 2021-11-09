@@ -1,17 +1,71 @@
+from typing import Optional, Iterable
+
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from rex.modules.dropout import SharedDropout
+
+
+class FFN(nn.Module):
+    """
+    Multi-layer feed-forward neural networks
+
+    Args:
+        input_dim: input dimension
+        output_dim: output dimension
+        mid_dims: middle dimensions, if None, FFN is equals to `nn.Linear` with dropout
+        dropout: dropout rate
+        act_fn: activation function (module class without instantiated)
+
+    Input:
+        hidden: hidden states
+    """
+
+    def __init__(
+        self,
+        input_dim: int,
+        output_dim: int,
+        mid_dims: Optional[Iterable[int]] = None,
+        dropout: Optional[float] = 0.5,
+        act_fn: Optional[nn.Module] = nn.ReLU,
+    ):
+        super().__init__()
+
+        if mid_dims is None:
+            self.ffn = nn.Sequential(
+                nn.Linear(input_dim, output_dim), nn.Dropout(dropout)
+            )
+        else:
+            mid_dims.insert(0, input_dim)
+            mid_dims.append(output_dim)
+            len_mid_dims = len(mid_dims)
+            modules = []
+            for i in range(len_mid_dims - 2):
+                modules.extend(
+                    [
+                        nn.Linear(mid_dims[i], mid_dims[i + 1]),
+                        nn.Dropout(dropout),
+                        act_fn(),
+                    ]
+                )
+            modules.append(nn.Linear(mid_dims[-2], mid_dims[-1]))
+            self.ffn = nn.Sequential(*modules)
+
+    def forward(self, hidden):
+        return self.ffn(hidden)
 
 
 class MLP(nn.Module):
     """Implements Multi-layer Perception."""
 
     def __init__(
-        self, input_size, output_size,
-        mid_size=None, num_mid_layer=1,
-        act_fn=torch.relu, dropout=0.1
+        self,
+        input_size,
+        output_size,
+        mid_size=None,
+        num_mid_layer=1,
+        act_fn=torch.relu,
+        dropout=0.1,
     ):
         super(MLP, self).__init__()
 
@@ -59,7 +113,9 @@ class SharedDropoutMLP(nn.Module):
         self.n_in = n_in
         self.n_out = n_out
         self.linear = nn.Linear(n_in, n_out)
-        self.activation = nn.LeakyReLU(negative_slope=0.1) if activation else nn.Identity()
+        self.activation = (
+            nn.LeakyReLU(negative_slope=0.1) if activation else nn.Identity()
+        )
         self.dropout = SharedDropout(p=dropout)
 
         self.reset_parameters()

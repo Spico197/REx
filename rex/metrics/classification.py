@@ -23,43 +23,49 @@ def mcml_prf1(preds, golds, eps=1e-12):
     supports = defaultdict(lambda: {"tp": 0.0, "fp": 0.0, "fn": 0.0})
     for pred, gold in zip(preds, golds):
         if len(pred) != len(gold):
-            raise ValueError(f"Pred: {pred} cannot be matched with gold: {gold} in length.")
+            raise ValueError(
+                f"Pred: {pred} cannot be matched with gold: {gold} in length."
+            )
         for type_idx, (p, g) in enumerate(zip(pred, gold)):
             if p == 1 and g == 1:
-                supports[type_idx]['tp'] += 1
+                supports[type_idx]["tp"] += 1
             elif p == 1 and g == 0:
-                supports[type_idx]['fp'] += 1
+                supports[type_idx]["fp"] += 1
             elif p == 0 and g == 1:
-                supports[type_idx]['fn'] += 1
+                supports[type_idx]["fn"] += 1
     g_tp = g_fp = g_fn = 0.0
     ps = []
     rs = []
     f1s = []
     for type_idx in supports:
-        measure_results[type_idx]['p'] = p \
-            = supports[type_idx]['tp'] / (supports[type_idx]['tp'] + supports[type_idx]['fp'] + eps)
-        measure_results[type_idx]['r'] = r \
-            = supports[type_idx]['tp'] / (supports[type_idx]['tp'] + supports[type_idx]['fn'] + eps)
-        measure_results[type_idx]['f1'] = f1 = 2 * p * r / (p + r + eps)
+        measure_results[type_idx]["p"] = p = supports[type_idx]["tp"] / (
+            supports[type_idx]["tp"] + supports[type_idx]["fp"] + eps
+        )
+        measure_results[type_idx]["r"] = r = supports[type_idx]["tp"] / (
+            supports[type_idx]["tp"] + supports[type_idx]["fn"] + eps
+        )
+        measure_results[type_idx]["f1"] = f1 = 2 * p * r / (p + r + eps)
         ps.append(p)
         rs.append(r)
         f1s.append(f1)
-        g_tp += supports[type_idx]['tp']
-        g_fp += supports[type_idx]['fp']
-        g_fn += supports[type_idx]['fn']
+        g_tp += supports[type_idx]["tp"]
+        g_fp += supports[type_idx]["fp"]
+        g_fn += supports[type_idx]["fn"]
 
-    g_p = measure_results['micro']['p'] = g_tp / (g_tp + g_fp + eps)
-    g_r = measure_results['micro']['r'] = g_tp / (g_tp + g_fn + eps)
-    measure_results['micro']['f1'] = 2 * g_p * g_r / (g_p + g_r + eps)
+    g_p = measure_results["micro"]["p"] = g_tp / (g_tp + g_fp + eps)
+    g_r = measure_results["micro"]["r"] = g_tp / (g_tp + g_fn + eps)
+    measure_results["micro"]["f1"] = 2 * g_p * g_r / (g_p + g_r + eps)
 
-    measure_results['macro']['p'] = sum(ps) / len(ps)
-    measure_results['macro']['r'] = sum(rs) / len(rs)
-    measure_results['macro']['f1'] = sum(f1s) / len(f1s)
+    measure_results["macro"]["p"] = sum(ps) / len(ps)
+    measure_results["macro"]["r"] = sum(rs) / len(rs)
+    measure_results["macro"]["f1"] = sum(f1s) / len(f1s)
 
     return measure_results
 
 
-def mc_prf1(preds, golds, num_classes=-1, ignore_labels: Optional[Iterable] = [], eps=1e-12):
+def mc_prf1(
+    preds, golds, num_classes=-1, ignore_labels: Optional[Iterable] = [], eps=1e-12
+):
     """
     get multi-class classification metrics
 
@@ -79,9 +85,9 @@ def mc_prf1(preds, golds, num_classes=-1, ignore_labels: Optional[Iterable] = []
         # guess the number of classes through current input
         labels = None
 
-    MCM = metrics.multilabel_confusion_matrix(golds, preds,
-                                              sample_weight=None,
-                                              labels=labels, samplewise=False)
+    MCM = metrics.multilabel_confusion_matrix(
+        golds, preds, sample_weight=None, labels=labels, samplewise=False
+    )
 
     tp, tp_fp, tp_fn = [], [], []
 
@@ -105,9 +111,9 @@ def mc_prf1(preds, golds, num_classes=-1, ignore_labels: Optional[Iterable] = []
     denom = precision + recall + eps
     f1_score = 2 * precision * recall / denom
 
-    measure_results['micro']['p'] = precision
-    measure_results['micro']['r'] = recall
-    measure_results['micro']['f1'] = f1_score
+    measure_results["micro"]["p"] = precision
+    measure_results["micro"]["r"] = recall
+    measure_results["micro"]["f1"] = f1_score
 
     # macro-averaged scores
     precision = tp / (tp_fp + eps)
@@ -115,8 +121,8 @@ def mc_prf1(preds, golds, num_classes=-1, ignore_labels: Optional[Iterable] = []
     denom = precision + recall + eps
     f1_score = 2 * precision * recall / denom
 
-    measure_results['macro']['p'] = precision.mean()
-    measure_results['macro']['r'] = recall.mean()
-    measure_results['macro']['f1'] = f1_score.mean()
+    measure_results["macro"]["p"] = precision.mean()
+    measure_results["macro"]["r"] = recall.mean()
+    measure_results["macro"]["f1"] = f1_score.mean()
 
     return measure_results

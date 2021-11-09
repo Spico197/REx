@@ -34,7 +34,9 @@ class CachedBagREDataset(Dataset):
 
 
 class StreamTransformDataset(Dataset):
-    def __init__(self, data: Iterable, transform, debug: Optional[bool] = False) -> None:
+    def __init__(
+        self, data: Iterable, transform, debug: Optional[bool] = False
+    ) -> None:
         super().__init__()
         if debug:
             data = data[:128]

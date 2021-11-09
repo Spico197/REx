@@ -21,15 +21,21 @@ class MultiKernelCNN(nn.Module):
             :math:`N` means the length of ``kernel_sizes``
             and :math:`F` is the number of CNN filters
     """
+
     def __init__(
-        self, in_channel: int, num_filters: int,
-        kernel_sizes: Iterable, dropout: Optional[float] = 0.5
+        self,
+        in_channel: int,
+        num_filters: int,
+        kernel_sizes: Iterable,
+        dropout: Optional[float] = 0.5,
     ):
         super().__init__()
-        self.convs = nn.ModuleList([
-            nn.Conv1d(
-                in_channel, num_filters, ks,
-                padding=math.floor((ks - 1) / 2)) for ks in kernel_sizes])
+        self.convs = nn.ModuleList(
+            [
+                nn.Conv1d(in_channel, num_filters, ks, padding=math.floor((ks - 1) / 2))
+                for ks in kernel_sizes
+            ]
+        )
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, hidden):

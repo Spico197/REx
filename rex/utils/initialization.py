@@ -10,7 +10,7 @@ from omegaconf.omegaconf import OmegaConf
 
 
 def set_seed(seed: Optional[int] = 1227, set_cudnn: Optional[bool] = False):
-    os.environ['PYTHONHASHSEED'] = str(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -24,7 +24,7 @@ def set_seed(seed: Optional[int] = 1227, set_cudnn: Optional[bool] = False):
 def set_seed_and_log_path(
     seed: Optional[int] = 1227,
     log_path: Optional[str] = None,
-    set_cudnn: Optional[bool] = False
+    set_cudnn: Optional[bool] = False,
 ):
     set_seed(seed, set_cudnn=set_cudnn)
     if log_path:

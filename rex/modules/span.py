@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from rex.modules.mlp import MLP
+from rex.modules.ffn import MLP
 from rex.utils.span import find_closest_span_pairs, find_closest_span_pairs_with_index
 
 
@@ -15,12 +15,8 @@ class SubjObjSpan(nn.Module):
         one_subj_head: object golden head with one subject (batch_size, hidden_size)
         one_subj_tail: object golden tail with one subject (batch_size, hidden_size)
     """
-    def __init__(
-        self,
-        hidden_size,
-        num_classes,
-        threshold: Optional[float] = 0.5
-    ):
+
+    def __init__(self, hidden_size, num_classes, threshold: Optional[float] = 0.5):
         super().__init__()
         self.threshold = threshold
         self.subj_head_ffnn = nn.Linear(hidden_size, 1)
@@ -69,8 +65,12 @@ class SubjObjSpan(nn.Module):
         subjs = find_closest_span_pairs(subj_head, subj_tail)
         seq_len = subj_head.shape[0]
         if len(subjs) > 0:
-            subjs_head_mapping = torch.zeros(len(subjs), seq_len, device=subj_head.device)
-            subjs_tail_mapping = torch.zeros(len(subjs), seq_len, device=subj_tail.device)
+            subjs_head_mapping = torch.zeros(
+                len(subjs), seq_len, device=subj_head.device
+            )
+            subjs_tail_mapping = torch.zeros(
+                len(subjs), seq_len, device=subj_tail.device
+            )
 
             for subj_idx, subj in enumerate(subjs):
                 subjs_head_mapping[subj_idx, subj[0]] = 1.0
@@ -86,19 +86,25 @@ class SubjObjSpan(nn.Module):
         # subj_head, subj_tail: (batch_size, seq_len)
         # obj_head_out, obj_tail_out: (batch_size, seq_len, num_classes)
         obj_head_out, obj_tail_out = self.get_objs_for_specific_subj(
-            subj_head.unsqueeze(1),
-            subj_tail.unsqueeze(1),
-            hidden
+            subj_head.unsqueeze(1), subj_tail.unsqueeze(1), hidden
         )
 
-        return subj_head_out.squeeze(-1), subj_tail_out.squeeze(-1), obj_head_out, obj_tail_out
+        return (
+            subj_head_out.squeeze(-1),
+            subj_tail_out.squeeze(-1),
+            obj_head_out,
+            obj_tail_out,
+        )
 
     def predict(self, hidden):
         # hidden: 1 x hidden_size
         if hidden.shape[0] != 1:
             raise RuntimeError(
-                ("eval batch size must be 1 x hidden_size, "
-                 f"while hidden is {hidden.shape}"))
+                (
+                    "eval batch size must be 1 x hidden_size, "
+                    f"while hidden is {hidden.shape}"
+                )
+            )
         # 1, hidden_size, 1
         subj_head_out = self.subj_head_ffnn(hidden)
         # 1, hidden_size, 1
@@ -112,8 +118,8 @@ class SubjObjSpan(nn.Module):
         # subjs: [(1, 3), (3, 3), (17, 17)]
         # subj_head_mappings: (len(subjs), seq_len)
         subjs, subj_head_mappings, subj_tail_mappings = self.build_batch_mapping(
-            pred_subj_head.squeeze(0).squeeze(-1),
-            pred_subj_tail.squeeze(0).squeeze(-1))
+            pred_subj_head.squeeze(0).squeeze(-1), pred_subj_tail.squeeze(0).squeeze(-1)
+        )
 
         if subjs:
             # obj_head_out: (len(subjs), seq_len, num_classes)
@@ -127,7 +133,14 @@ class SubjObjSpan(nn.Module):
             for subj_idx, subj in enumerate(subjs):
                 objs = find_closest_span_pairs_with_index(
                     obj_head_out[subj_idx].permute(1, 0),
-                    obj_tail_out[subj_idx].permute(1, 0))
+                    obj_tail_out[subj_idx].permute(1, 0),
+                )
                 for relation_idx, obj_pair_start, obj_pair_end in objs:
-                    triples.append(((subj[0], subj[1] + 1), relation_idx, (obj_pair_start, obj_pair_end + 1)))
+                    triples.append(
+                        (
+                            (subj[0], subj[1] + 1),
+                            relation_idx,
+                            (obj_pair_start, obj_pair_end + 1),
+                        )
+                    )
         return [triples]

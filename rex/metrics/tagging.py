@@ -14,7 +14,7 @@ def tagging_prf1(gold_ents, pred_ents, eps=1e-12):
         global_fp += len(pred_ents - intersection)
         global_fn += len(gold_ents - intersection)
 
-    p = measure_results['micro']["p"] = global_tp / (global_tp + global_fp + eps)
-    r = measure_results['micro']["r"] = global_tp / (global_tp + global_fn + eps)
-    measure_results['micro']["f1"] = 2 * p * r / (p + r + eps)
+    p = measure_results["micro"]["p"] = global_tp / (global_tp + global_fp + eps)
+    r = measure_results["micro"]["r"] = global_tp / (global_tp + global_fn + eps)
+    measure_results["micro"]["f1"] = 2 * p * r / (p + r + eps)
     return measure_results

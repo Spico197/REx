@@ -32,7 +32,8 @@ class MCMLSentRelationClassificationTask(TaskBase):
             config.train_batch_size,
             config.eval_batch_size,
             re_collate_fn,
-            debug_mode=config.debug_mode)
+            debug_mode=config.debug_mode,
+        )
 
         self.model = SentPCNN(
             self.transform.vocab,
@@ -43,7 +44,7 @@ class MCMLSentRelationClassificationTask(TaskBase):
             config.dim_pos_emb,
             config.num_filters,
             config.kernel_size,
-            dropout=config.dropout
+            dropout=config.dropout,
         )
         self.model.to(self.config.device)
         self.optimizer = Adam(self.model.parameters(), lr=config.learning_rate)
@@ -54,10 +55,10 @@ class MCMLSentRelationClassificationTask(TaskBase):
             self.model.train()
             loader = tqdm(self.data_manager.train_loader, desc=f"Train(e{epoch_idx})")
             for batch in loader:
-                del batch['id']
+                del batch["id"]
                 batch = move_to_cuda_device(batch, self.config.device)
                 result = self.model(**batch)
-                loss = result['loss']
+                loss = result["loss"]
                 loader.set_postfix({"loss": loss.item()})
                 self.optimizer.zero_grad()
                 loss.backward()
@@ -65,14 +66,14 @@ class MCMLSentRelationClassificationTask(TaskBase):
             logger.info(loader)
 
             measures = self.eval("dev")
-            self.history['dev'].append(measures)
+            self.history["dev"].append(measures)
             test_measures = self.eval("test")
-            self.history['test'].append(test_measures)
+            self.history["test"].append(test_measures)
 
             is_best = False
-            if measures['f1'] > self.best_metric:
+            if measures["f1"] > self.best_metric:
                 is_best = True
-                self.best_metric = measures['f1']
+                self.best_metric = measures["f1"]
                 self.best_epoch = epoch_idx
                 self.no_climbing_cnt = 0
             else:
@@ -81,13 +82,22 @@ class MCMLSentRelationClassificationTask(TaskBase):
             if is_best and self.config.save_best_ckpt:
                 self.save_ckpt("best", epoch_idx)
 
-            logger.info(f"Epoch: {epoch_idx}, is_best: {is_best}, Dev: {measures}, Test: {test_measures}")
+            logger.info(
+                f"Epoch: {epoch_idx}, is_best: {is_best}, Dev: {measures}, Test: {test_measures}"
+            )
 
-            if self.config.num_early_stop > 0 and self.no_climbing_cnt > self.config.num_early_stop:
+            if (
+                self.config.num_early_stop > 0
+                and self.no_climbing_cnt > self.config.num_early_stop
+            ):
                 break
 
-        logger.info((f"Trial finished. Best Epoch: {self.best_epoch}, Dev: {self.history['dev'][self.best_epoch]}, "
-                     f"Best Test: {self.history['test'][self.best_epoch]}"))
+        logger.info(
+            (
+                f"Trial finished. Best Epoch: {self.best_epoch}, Dev: {self.history['dev'][self.best_epoch]}, "
+                f"Best Test: {self.history['test'][self.best_epoch]}"
+            )
+        )
 
     @torch.no_grad()
     def eval(self, dataset_name):
@@ -102,12 +112,14 @@ class MCMLSentRelationClassificationTask(TaskBase):
         golds = []
         for batch in loader:
             batch = move_to_cuda_device(batch, self.config.device)
-            golds.extend(batch['labels'].detach().cpu().tolist())
-            del batch['id']
-            del batch['labels']
+            golds.extend(batch["labels"].detach().cpu().tolist())
+            del batch["id"]
+            del batch["labels"]
             result = self.model(**batch)
-            out = result['pred']
-            preds.extend(out.ge(self.config.pred_threshold).long().detach().cpu().tolist())
+            out = result["pred"]
+            preds.extend(
+                out.ge(self.config.pred_threshold).long().detach().cpu().tolist()
+            )
         logger.info(loader)
         measures = mcml_prf1(preds, golds)
         return measures["macro"]
@@ -115,11 +127,9 @@ class MCMLSentRelationClassificationTask(TaskBase):
     @torch.no_grad()
     def predict(self, text, head, tail):
         self.model.eval()
-        batch = self.transform.predict_transform({
-            "text": text,
-            "head": head,
-            "tail": tail
-        })
+        batch = self.transform.predict_transform(
+            {"text": text, "head": head, "tail": tail}
+        )
         tensor_batch = self.data_manager.collate_fn([batch])
         if "labels" in tensor_batch:
             del tensor_batch["labels"]
@@ -127,7 +137,7 @@ class MCMLSentRelationClassificationTask(TaskBase):
             del tensor_batch["id"]
         tensor_batch = move_to_cuda_device(tensor_batch, self.config.device)
         result = self.model(**tensor_batch)
-        outs = result['pred']
+        outs = result["pred"]
         outs = outs.ge(self.config.pred_threshold).long().detach().cpu().tolist()[0]
         preds = []
         for type_idx, pred in enumerate(outs):
@@ -152,7 +162,8 @@ class MCMLBagRelationClassificationTask(TaskBase):
             config.train_batch_size,
             config.eval_batch_size,
             bag_re_collate_fn,
-            debug_mode=config.debug_mode)
+            debug_mode=config.debug_mode,
+        )
 
         self.model = PCNNOne(
             self.transform.vocab,
@@ -163,7 +174,7 @@ class MCMLBagRelationClassificationTask(TaskBase):
             config.dim_pos_emb,
             config.num_filters,
             config.kernel_size,
-            dropout=config.dropout
+            dropout=config.dropout,
         )
         self.model.to(self.config.device)
         self.optimizer = Adam(self.model.parameters(), lr=config.learning_rate)
@@ -179,10 +190,10 @@ class MCMLBagRelationClassificationTask(TaskBase):
             self.model.train()
             loader = tqdm(self.data_manager.train_loader, desc=f"Train(e{epoch_idx})")
             for batch in loader:
-                del batch['id']
+                del batch["id"]
                 batch = move_to_cuda_device(batch, self.config.device)
                 result = self.model(**batch)
-                loss = result['loss']
+                loss = result["loss"]
                 loader.set_postfix({"loss": loss.item()})
                 self.optimizer.zero_grad()
                 loss.backward()
@@ -190,14 +201,14 @@ class MCMLBagRelationClassificationTask(TaskBase):
             logger.info(loader)
 
             measures = self.eval("dev")
-            self.history['dev'].append(measures)
+            self.history["dev"].append(measures)
             test_measures = self.eval("test")
-            self.history['test'].append(test_measures)
+            self.history["test"].append(test_measures)
 
             is_best = False
-            if measures['f1'] > self.best_metric:
+            if measures["f1"] > self.best_metric:
                 is_best = True
-                self.best_metric = measures['f1']
+                self.best_metric = measures["f1"]
                 self.best_epoch = epoch_idx
                 self.no_climbing_cnt = 0
             else:
@@ -206,13 +217,22 @@ class MCMLBagRelationClassificationTask(TaskBase):
             if is_best and self.config.save_best_ckpt:
                 self.save_ckpt("best", epoch_idx)
 
-            logger.info(f"Epoch: {epoch_idx}, is_best: {is_best}, Dev: {measures}, Test: {test_measures}")
+            logger.info(
+                f"Epoch: {epoch_idx}, is_best: {is_best}, Dev: {measures}, Test: {test_measures}"
+            )
 
-            if self.config.num_early_stop > 0 and self.no_climbing_cnt > self.config.num_early_stop:
+            if (
+                self.config.num_early_stop > 0
+                and self.no_climbing_cnt > self.config.num_early_stop
+            ):
                 break
 
-        logger.info((f"Trial finished. Best Epoch: {self.best_epoch}, Dev: {self.history['dev'][self.best_epoch]}, "
-                     f"Best Test: {self.history['test'][self.best_epoch]}"))
+        logger.info(
+            (
+                f"Trial finished. Best Epoch: {self.best_epoch}, Dev: {self.history['dev'][self.best_epoch]}, "
+                f"Best Test: {self.history['test'][self.best_epoch]}"
+            )
+        )
 
     @torch.no_grad()
     def eval(self, dataset_name):
@@ -227,25 +247,26 @@ class MCMLBagRelationClassificationTask(TaskBase):
         golds = []
         for batch in loader:
             batch = move_to_cuda_device(batch, self.config.device)
-            golds.extend(batch['labels'].detach().cpu().tolist())
-            del batch['id']
-            del batch['labels']
+            golds.extend(batch["labels"].detach().cpu().tolist())
+            del batch["id"]
+            del batch["labels"]
             result = self.model(**batch)
-            preds.extend(result['pred'].long().detach().cpu().tolist())
+            preds.extend(result["pred"].long().detach().cpu().tolist())
         logger.info(loader)
         measures = mc_prf1(
-            preds, golds, self.transform.label_encoder.num_tags,
-            ignore_labels=[self.transform.label_encoder.label2id['NA']])
-        return measures['macro']
+            preds,
+            golds,
+            self.transform.label_encoder.num_tags,
+            ignore_labels=[self.transform.label_encoder.label2id["NA"]],
+        )
+        return measures["macro"]
 
     @torch.no_grad()
     def predict(self, text, head, tail):
         self.model.eval()
-        batch = self.transform.predict_transform({
-            "text": text,
-            "head": head,
-            "tail": tail
-        })
+        batch = self.transform.predict_transform(
+            {"text": text, "head": head, "tail": tail}
+        )
         tensor_batch = self.data_manager.collate_fn([batch])
         if "labels" in tensor_batch:
             del tensor_batch["labels"]
@@ -253,7 +274,7 @@ class MCMLBagRelationClassificationTask(TaskBase):
             del tensor_batch["id"]
         tensor_batch = move_to_cuda_device(tensor_batch, self.config.device)
         result = self.model(**tensor_batch)
-        outs = result['pred']
+        outs = result["pred"]
         preds = []
         for pred in outs:
             preds.append(self.transform.label_encoder.id2label[pred])

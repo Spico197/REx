@@ -36,74 +36,83 @@ class TaskBase(object):
     def predict(self, *args, **kwargs):
         raise NotImplementedError
 
-    def load(self, path: str,
-             load_model: Optional[bool] = True,
-             load_optimizer: Optional[bool] = False):
+    def load(
+        self,
+        path: str,
+        load_model: Optional[bool] = True,
+        load_optimizer: Optional[bool] = False,
+    ):
         if os.path.exists(path):
-            logger.info('Resume checkpoint from {}'.format(path))
+            logger.info("Resume checkpoint from {}".format(path))
         else:
-            raise ValueError('Checkpoint does not exist, {}'.format(path))
+            raise ValueError("Checkpoint does not exist, {}".format(path))
 
         if torch.cuda.device_count() == 0:
-            store_dict = torch.load(path, map_location='cpu')
+            store_dict = torch.load(path, map_location="cpu")
         else:
             store_dict = torch.load(path, map_location=torch.device(self.config.device))
 
-        self.config = OmegaConf.load(os.path.join(self.config.task_dir, 'config.yaml'))
+        self.config = OmegaConf.load(os.path.join(self.config.task_dir, "config.yaml"))
 
         if load_model:
-            if self.model and 'model_state' in store_dict:
-                if isinstance(self.model, parallel.DataParallel) or \
-                        isinstance(self.model, parallel.DistributedDataParallel):
-                    self.model.module.load_state_dict(store_dict['model_state'])
+            if self.model and "model_state" in store_dict:
+                if isinstance(self.model, parallel.DataParallel) or isinstance(
+                    self.model, parallel.DistributedDataParallel
+                ):
+                    self.model.module.load_state_dict(store_dict["model_state"])
                 else:
-                    self.model.load_state_dict(store_dict['model_state'])
-                logger.info('Load model successfully')
+                    self.model.load_state_dict(store_dict["model_state"])
+                logger.info("Load model successfully")
             else:
-                raise ValueError(f"Model loading failed. self.model={self.model}, stored_dict_keys={store_dict.keys()}")
+                raise ValueError(
+                    f"Model loading failed. self.model={self.model}, stored_dict_keys={store_dict.keys()}"
+                )
         else:
             logger.info("Not load model")
 
         if load_optimizer:
-            if self.optimizer and 'optimizer_state' in store_dict:
-                self.optimizer.load_state_dict(store_dict['optimizer_state'])
-                logger.info('Load optimizer successfully')
+            if self.optimizer and "optimizer_state" in store_dict:
+                self.optimizer.load_state_dict(store_dict["optimizer_state"])
+                logger.info("Load optimizer successfully")
             else:
-                raise ValueError(f"Model loading failed. self.model={self.optimizer}, stored_dict_keys={store_dict.keys()}")
+                raise ValueError(
+                    f"Model loading failed. self.model={self.optimizer}, stored_dict_keys={store_dict.keys()}"
+                )
         else:
             logger.info("Not load optimizer")
 
-        self.history = store_dict['history']
-        self.no_climbing_cnt = store_dict['no_climbing_cnt']
-        self.best_metric = store_dict['best_metric']
-        self.best_epoch = store_dict['best_epoch']
+        self.history = store_dict["history"]
+        self.no_climbing_cnt = store_dict["no_climbing_cnt"]
+        self.best_metric = store_dict["best_metric"]
+        self.best_epoch = store_dict["best_epoch"]
 
     def save(self, path, epoch: Optional[int] = None):
         logger.info(f"Dumping checkpoint into: {path}")
         store_dict = {}
 
         if self.model:
-            if isinstance(self.model, parallel.DataParallel) or \
-                    isinstance(self.model, parallel.DistributedDataParallel):
+            if isinstance(self.model, parallel.DataParallel) or isinstance(
+                self.model, parallel.DistributedDataParallel
+            ):
                 model_state = self.model.module.state_dict()
             else:
                 model_state = self.model.state_dict()
-            store_dict['model_state'] = model_state
+            store_dict["model_state"] = model_state
         else:
-            logger.info('No model state is dumped', logging.WARNING)
+            logger.info("No model state is dumped", logging.WARNING)
 
         if self.optimizer:
-            store_dict['optimizer_state'] = self.optimizer.state_dict()
+            store_dict["optimizer_state"] = self.optimizer.state_dict()
         else:
-            logger.info('No optimizer state is dumped', logging.WARNING)
+            logger.info("No optimizer state is dumped", logging.WARNING)
 
         if epoch:
-            store_dict['epoch'] = epoch
+            store_dict["epoch"] = epoch
 
-        store_dict['history'] = self.history
-        store_dict['no_climbing_cnt'] = self.no_climbing_cnt
-        store_dict['best_metric'] = self.best_metric
-        store_dict['best_epoch'] = self.best_epoch
+        store_dict["history"] = self.history
+        store_dict["no_climbing_cnt"] = self.no_climbing_cnt
+        store_dict["best_metric"] = self.best_metric
+        store_dict["best_epoch"] = self.best_epoch
 
         torch.save(store_dict, path)
 
@@ -117,7 +126,7 @@ class TaskBase(object):
 
     def logging(self, msg: str, level: Optional[int] = logging.INFO):
         if self.in_distributed_mode():
-            msg = 'Rank {} {}'.format(distributed.get_rank(), msg)
+            msg = "Rank {} {}".format(distributed.get_rank(), msg)
         if self.config.only_master_logging:
             if self.is_master_node():
                 logger.log(level, msg)

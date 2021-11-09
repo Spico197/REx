@@ -1,5 +1,7 @@
 [flake8]
 ignore = 
+    # whitespace before ':'
+    E203,
     # max length constraint
     E501,
     # breakline before binary operators

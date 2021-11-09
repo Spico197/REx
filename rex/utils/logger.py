@@ -4,7 +4,12 @@ from typing import Optional
 
 
 class Logger(object):
-    def __init__(self, name: str, log_path: Optional[str] = None, level: Optional[int] = logging.INFO):
+    def __init__(
+        self,
+        name: str,
+        log_path: Optional[str] = None,
+        level: Optional[int] = logging.INFO,
+    ):
         self.name = name
         self.log_path = log_path
 
@@ -37,5 +42,4 @@ class Logger(object):
         if issubclass(exc_type, KeyboardInterrupt):
             sys.__excepthook__(exc_type, exc_value, exc_traceback)
             return
-        self.error("Uncaught exception",
-                   exc_info=(exc_type, exc_value, exc_traceback))
+        self.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))

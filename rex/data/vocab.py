@@ -4,7 +4,9 @@ from rex.utils.io import load_line_iterator, dump_iterable
 
 
 class Vocab(object):
-    def __init__(self, pad: Optional[str] = '[PAD]', unk: Optional[str] = "[UNK]") -> None:
+    def __init__(
+        self, pad: Optional[str] = "[PAD]", unk: Optional[str] = "[UNK]"
+    ) -> None:
         self.pad = pad
         self.unk = unk
         self.token2id = {pad: 0, unk: 1}
@@ -36,7 +38,9 @@ class Vocab(object):
             self.add(token)
         return self.convert_tokens_to_ids(tokens)
 
-    def encode(self, tokens: Iterable, max_seq_len: int, update: Optional[bool] = False) -> Tuple[List[int]]:
+    def encode(
+        self, tokens: Iterable, max_seq_len: int, update: Optional[bool] = False
+    ) -> Tuple[List[int]]:
         """convert tokens into ids by padding or cutting
 
         Args:
@@ -66,7 +70,9 @@ class Vocab(object):
         return len(self)
 
     @classmethod
-    def from_pretrained(cls, filepath, pad: Optional[str] = '[PAD]', unk: Optional[str] = "[UNK]"):
+    def from_pretrained(
+        cls, filepath, pad: Optional[str] = "[PAD]", unk: Optional[str] = "[UNK]"
+    ):
         v = cls(pad, unk)
         for line in load_line_iterator(filepath):
             v.add(line.strip())

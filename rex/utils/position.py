@@ -2,8 +2,7 @@ from typing import Type, Union, List, Any
 
 
 def find_all_positions(
-    long: Union[List[Any], str],
-    sub: Union[List[Any], str]
+    long: Union[List[Any], str], sub: Union[List[Any], str]
 ) -> List[List[int]]:
     """Find all sub list positions in the long list
 
@@ -37,7 +36,7 @@ def find_all_positions(
         positions = []
         len_sub = len(sub)
         for idx in range(0, len(long) - len(sub) + 1):
-            if sub == long[idx:idx + len_sub]:
+            if sub == long[idx : idx + len_sub]:
                 positions.append([idx, idx + len_sub])
         return positions
     else:

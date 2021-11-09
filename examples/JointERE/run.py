@@ -6,11 +6,15 @@ from rex.utils.initialization import init_all
 from rex.tasks.entity_relation_extraction import EntityRelationExtractionTask
 
 
-CONFIG_PATH_TYPE = click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True)
+CONFIG_PATH_TYPE = click.Path(
+    exists=True, file_okay=True, dir_okay=False, resolve_path=True
+)
 
 
 @click.command()
-@click.option("-c", "--config-filepath", type=CONFIG_PATH_TYPE, help='configuration filepath')
+@click.option(
+    "-c", "--config-filepath", type=CONFIG_PATH_TYPE, help="configuration filepath"
+)
 def main(config_filepath):
     config = OmegaConf.load(config_filepath)
     init_all(config.task_dir, config.random_seed, True, config)

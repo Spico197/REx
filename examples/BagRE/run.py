@@ -6,11 +6,15 @@ from rex.utils.initialization import init_all
 from rex.tasks.relation_extraction import MCMLBagRelationClassificationTask
 
 
-CONFIG_PATH_TYPE = click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True)
+CONFIG_PATH_TYPE = click.Path(
+    exists=True, file_okay=True, dir_okay=False, resolve_path=True
+)
 
 
 @click.command()
-@click.option("-c", "--config-filepath", type=CONFIG_PATH_TYPE, help='configuration filepath')
+@click.option(
+    "-c", "--config-filepath", type=CONFIG_PATH_TYPE, help="configuration filepath"
+)
 def main(config_filepath):
     config = OmegaConf.load(config_filepath)
     init_all(config.task_dir, config.random_seed, True, config)
@@ -25,7 +29,9 @@ def main(config_filepath):
         except Exception as err:
             logger.exception(err)
 
-    task.load("/data4/tzhu/REx/examples/NYT10/outputs/re_bag_NYT10/ckpt/PCNNOne.best.pth")
+    task.load(
+        "/data4/tzhu/REx/examples/NYT10/outputs/re_bag_NYT10/ckpt/PCNNOne.best.pth"
+    )
     preds = task.predict("John was born in China .", "John", "China")
     logger.info("Case: John was born in China. , head: John, tail: China")
     logger.info(f"pred results: {preds}")

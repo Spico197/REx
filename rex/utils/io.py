@@ -4,13 +4,13 @@ from typing import Iterable, Any, Optional, List
 
 
 def dump_json(obj, filepath, **kwargs):
-    with open(filepath, 'wt', encoding='utf-8') as fout:
+    with open(filepath, "wt", encoding="utf-8") as fout:
         json.dump(obj, fout, ensure_ascii=False, **kwargs)
 
 
 def load_json(filepath, **kwargs):
     data = list()
-    with open(filepath, 'rt', encoding='utf-8') as fin:
+    with open(filepath, "rt", encoding="utf-8") as fin:
         data = json.load(fin, **kwargs)
     return data
 
@@ -32,18 +32,18 @@ def load_line_json(filepath, **kwargs):
 
 
 def dump_pickle(obj, filepath, **kwargs):
-    with open(filepath, 'wb') as fout:
+    with open(filepath, "wb") as fout:
         pickle.dump(obj, fout, **kwargs)
 
 
 def load_pickle(filepath, **kwargs):
     data = []
-    with open(filepath, 'rb') as fin:
+    with open(filepath, "rb") as fin:
         data = pickle.load(fin, **kwargs)
     return data
 
 
-def dump_csv(obj: Iterable[Any], filepath: str, delimiter: Optional[str] = '\t'):
+def dump_csv(obj: Iterable[Any], filepath: str, delimiter: Optional[str] = "\t"):
     with open(filepath, "wt", encoding="utf-8") as fout:
         for d in obj:
             line_d = delimiter.join(d)
@@ -54,7 +54,7 @@ def load_csv(
     filepath: str,
     title_row: bool,
     title_keys: Optional[List[str]] = None,
-    sep: Optional[str] = '\t'
+    sep: Optional[str] = "\t",
 ) -> List:
     """load csv file
 
@@ -79,7 +79,8 @@ def load_csv(
                     raise RuntimeError(
                         f"len of title keys: {title_keys}"
                         f" does not match the line data in line {idx + 1}"
-                        f" in file: {filepath}")
+                        f" in file: {filepath}"
+                    )
                 ins = {}
                 for col, key in zip(line_data, title_keys):
                     ins[key] = col
@@ -89,7 +90,7 @@ def load_csv(
     return data
 
 
-def load_embedding_file(filepath, encoding='utf-8'):
+def load_embedding_file(filepath, encoding="utf-8"):
     token2vec = {}
     dim_emb = 0
     with open(filepath, "rt", encoding=encoding) as fin:
@@ -110,7 +111,7 @@ def load_embedding_file(filepath, encoding='utf-8'):
 
 
 def load_line_iterator(filepath):
-    with open(filepath, "rt", encoding='utf-8') as fin:
+    with open(filepath, "rt", encoding="utf-8") as fin:
         for line in fin:
             yield line
 
