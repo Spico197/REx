@@ -64,7 +64,12 @@ def mcml_prf1(preds, golds, eps=1e-12):
 
 
 def mc_prf1(
-    preds, golds, num_classes=-1, ignore_labels: Optional[Iterable] = None, label_idx2name: Optional[Mapping[int, str]] = None, eps=1e-12
+    preds,
+    golds,
+    num_classes=-1,
+    ignore_labels: Optional[Iterable] = None,
+    label_idx2name: Optional[Mapping[int, str]] = None,
+    eps=1e-12,
 ):
     """
     get multi-class classification metrics
@@ -134,8 +139,6 @@ def mc_prf1(
             idx_name = label_idx2name.get(idx)
         else:
             idx_name = idx
-        measure_results[idx_name] = {
-            "p": p, "r": r, "f1": f1
-        }
+        measure_results[idx_name] = {"p": p, "r": r, "f1": f1}
 
     return dict(measure_results)
