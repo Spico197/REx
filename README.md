@@ -74,45 +74,10 @@ Checkout the `examples` folder.
 - PCNN + ONE
 - PCNN + ATT
 
-## 🌴Development
-
-Make sure you have installed the following packages:
-
-- coverage
-- flake8
-- sphinx
-- sphinx_rtd_theme
-
-### Build
-
-```bash
-$ make all
-```
-
-### Test
-```bash
-pip install coverage
-coverage run -m unittest -v && coverage report
-
-# or just test without coverage report
-make test
-
-# or test with report
-make test_report
-```
-
-### Docs
-```bash
-cd docs
-sphinx-apidoc -o . ..
-make html
-
-# or just
-make docs
-```
 
 ## ✉️Update
 
+- v0.0.4: return detailed classification information in `mc_prf1`, support nested dict tensor movement
 - v0.0.3: fix packaging bug in `setup.py` 
 - v0.0.2: add black formatter and pytest testing
 - v0.0.1: change `LabelEncoder.to_binary_labels` into `convert_to_multi_hot` or `convert_to_one_hot`

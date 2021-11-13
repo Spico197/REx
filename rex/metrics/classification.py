@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Iterable, Optional
+from typing import Iterable, Mapping, Optional
 
 import numpy as np
 from sklearn import metrics
@@ -64,7 +64,7 @@ def mcml_prf1(preds, golds, eps=1e-12):
 
 
 def mc_prf1(
-    preds, golds, num_classes=-1, ignore_labels: Optional[Iterable] = [], eps=1e-12
+    preds, golds, num_classes=-1, ignore_labels: Optional[Iterable] = None, label_idx2name: Optional[Mapping[int, str]] = None, eps=1e-12
 ):
     """
     get multi-class classification metrics
@@ -91,7 +91,9 @@ def mc_prf1(
 
     tp, tp_fp, tp_fn = [], [], []
 
-    for tmp_label in range(len(labels)):
+    if ignore_labels is None:
+        ignore_labels = []
+    for tmp_label in range(MCM.shape[0]):
         if tmp_label not in ignore_labels:
             tp.append(MCM[tmp_label, 1, 1])
             tp_fp.append(MCM[tmp_label, 1, 1] + MCM[tmp_label, 0, 1])
@@ -125,4 +127,15 @@ def mc_prf1(
     measure_results["macro"]["r"] = recall.mean()
     measure_results["macro"]["f1"] = f1_score.mean()
 
-    return measure_results
+    if label_idx2name is None:
+        label_idx2name = {}
+    for idx, p, r, f1 in zip(range(MCM.shape[0]), precision, recall, f1_score):
+        if idx in label_idx2name:
+            idx_name = label_idx2name.get(idx)
+        else:
+            idx_name = idx
+        measure_results[idx_name] = {
+            "p": p, "r": r, "f1": f1
+        }
+
+    return dict(measure_results)
