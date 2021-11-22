@@ -36,6 +36,7 @@ class FFN(nn.Module):
                 nn.Linear(input_dim, output_dim), nn.Dropout(dropout)
             )
         else:
+            mid_dims = list(mid_dims)
             mid_dims.insert(0, input_dim)
             mid_dims.append(output_dim)
             len_mid_dims = len(mid_dims)
