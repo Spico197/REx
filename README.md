@@ -77,6 +77,8 @@ Checkout the `examples` folder.
 
 ## ✉️Update
 
+- v0.0.6: integrate omega conf loading into the inner task, add `load_*_data` option to data managers
+- v0.0.5: update ffn
 - v0.0.4: return detailed classification information in `mc_prf1`, support nested dict tensor movement
 - v0.0.3: fix packaging bug in `setup.py` 
 - v0.0.2: add black formatter and pytest testing

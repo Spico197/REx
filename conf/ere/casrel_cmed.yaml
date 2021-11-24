@@ -13,6 +13,9 @@ test_filepath: ${data_dir}/test.linejson
 rel2id_filepath: ${data_dir}/rel2id.json
 output_dir: /data4/tzhu/REx/examples/JointERE/outputs
 task_dir: ${output_dir}/${task_name}
+load_train_data: True
+load_dev_data: True
+load_test_data: True
 
 # training
 skip_train: false

@@ -5,6 +5,9 @@ name: trial name
 # data preprocessing
 transform: ???
 max_seq_len: ???
+load_train_data: ???
+load_dev_data: ???
+load_test_data: ???
 
 # filepaths
 train_filepath: ???

@@ -1,17 +1,33 @@
 import os
-import json
 import logging
+from pathlib import Path
 from typing import Optional
-from omegaconf import OmegaConf
 
 import torch
 from torch import distributed
 from torch.nn import parallel
 from loguru import logger
+from omegaconf import OmegaConf
+
+from rex.utils.initialization import init_all
+
+
+CONFIG_PARAMS_FILENAME = "task_params.yaml"
+CHECKPOINT_DIRNAME = "ckpt"
+CHECKPOINT_FILENAME_TEMPLATE = "{}.{}.pth"
+BEST_IDENTIFIER = "best"
+BEST_CHECKPOINT_FILENAME_TEMPLATE = "{}.best.pth"
+LOG_FILENAME = "log.log"
 
 
 class TaskBase(object):
-    def __init__(self, config: OmegaConf) -> None:
+    def __init__(
+        self,
+        config: OmegaConf,
+        initialize: Optional[bool] = True,
+        makedirs: Optional[bool] = True,
+        dump_configfile: Optional[bool] = True,
+    ) -> None:
         self.config = config
         self.model = None
         self.optimizer = None
@@ -21,11 +37,26 @@ class TaskBase(object):
         self.best_metric = -100.0
         self.best_epoch = -1
 
-        if not os.path.exists(config.task_dir):
-            os.makedirs(config.task_dir)
-        else:
-            logger.warning(f"Overwrite task dir: {config.task_dir}")
-        OmegaConf.save(config, os.path.join(config.task_dir, "config.yaml"))
+        if initialize:
+            init_all(
+                config.task_dir, seed=config.random_seed, set_cudnn=True, config=None
+            )
+
+        config_string = OmegaConf.to_yaml(config, resolve=True)
+        logger.info(config_string)
+
+        if makedirs:
+            if not os.path.exists(config.task_dir):
+                os.makedirs(config.task_dir)
+            else:
+                logger.warning(f"Overwrite task dir: {config.task_dir}")
+
+        if dump_configfile:
+            OmegaConf.save(
+                config,
+                os.path.join(config.task_dir, CONFIG_PARAMS_FILENAME),
+                resolve=True,
+            )
 
     def train(self, *args, **kwargs):
         raise NotImplementedError
@@ -81,10 +112,22 @@ class TaskBase(object):
         else:
             logger.info("Not load optimizer")
 
-        self.history = store_dict["history"]
-        self.no_climbing_cnt = store_dict["no_climbing_cnt"]
-        self.best_metric = store_dict["best_metric"]
-        self.best_epoch = store_dict["best_epoch"]
+        self.history = store_dict.pop("history")
+        self.no_climbing_cnt = store_dict.pop("no_climbing_cnt")
+        self.best_metric = store_dict.pop("best_metric")
+        self.best_epoch = store_dict.pop("best_epoch")
+
+    def load_best_ckpt(self, load_optimizer: Optional[bool] = False):
+        _task_dir = Path(self.config.task_dir)
+        model_name = self.model.__class__.__name__
+        ckpt_filepath = str(
+            _task_dir.joinpath(
+                CHECKPOINT_DIRNAME,
+                BEST_CHECKPOINT_FILENAME_TEMPLATE.format(model_name),
+            )
+        )
+        logger.info(f"Loading model from: {ckpt_filepath}")
+        self.load(ckpt_filepath, load_model=True, load_optimizer=load_optimizer)
 
     def save(self, path, epoch: Optional[int] = None):
         logger.info(f"Dumping checkpoint into: {path}")
@@ -116,12 +159,16 @@ class TaskBase(object):
 
         torch.save(store_dict, path)
 
-    def save_ckpt(self, identifier, epoch: Optional[int] = None):
-        ckpt_dir = os.path.join(self.config.task_dir, "ckpt")
+    def save_ckpt(
+        self, identifier: Optional[str] = BEST_IDENTIFIER, epoch: Optional[int] = None
+    ):
+        ckpt_dir = os.path.join(self.config.task_dir, CHECKPOINT_DIRNAME)
         if not os.path.exists(ckpt_dir):
             os.makedirs(ckpt_dir)
 
-        ckpt_name = f"{self.model.__class__.__name__}.{identifier}.pth"
+        ckpt_name = CHECKPOINT_FILENAME_TEMPLATE.format(
+            self.model.__class__.__name__, identifier
+        )
         self.save(os.path.join(ckpt_dir, ckpt_name), epoch)
 
     def logging(self, msg: str, level: Optional[int] = logging.INFO):
@@ -144,3 +191,49 @@ class TaskBase(object):
 
     def in_distributed_mode(self):
         return self.config.local_rank >= 0
+
+    @classmethod
+    def from_configfile(
+        cls,
+        config_filepath: str,
+        load_train_data: Optional[bool] = True,
+        load_dev_data: Optional[bool] = True,
+        load_test_data: Optional[bool] = True,
+        **kwargs,
+    ):
+        logger.info(f"Initializing from configuration file: {config_filepath}")
+        config = OmegaConf.load(config_filepath)
+
+        # in case of any redundant memory taken when inference
+        config["load_train_data"] = load_train_data
+        config["load_dev_data"] = load_dev_data
+        config["load_test_data"] = load_test_data
+
+        kwargs["initialize"] = kwargs.pop("initialize", True)
+        kwargs["makedirs"] = kwargs.pop("makedirs", False)
+        kwargs["dump_configfile"] = kwargs.pop("dump_configfile", False)
+        return cls(config, **kwargs)
+
+    @classmethod
+    def from_taskdir(
+        cls,
+        task_dir: str,
+        load_best_model: Optional[bool] = True,
+        load_best_optimizer: Optional[bool] = False,
+        load_train_data: Optional[bool] = True,
+        load_dev_data: Optional[bool] = True,
+        load_test_data: Optional[bool] = True,
+        **kwargs,
+    ):
+        _task_dir = Path(task_dir)
+        config_filepath = str(_task_dir.joinpath(CONFIG_PARAMS_FILENAME).absolute())
+        ins = cls.from_configfile(
+            config_filepath,
+            load_train_data=load_train_data,
+            load_dev_data=load_dev_data,
+            load_test_data=load_test_data,
+            **kwargs,
+        )
+        if load_best_model:
+            ins.load_best_ckpt(load_optimizer=load_best_optimizer)
+        return ins

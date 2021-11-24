@@ -19,8 +19,8 @@ from rex.metrics.triple import measure_triple
 
 
 class EntityRelationExtractionTask(TaskBase):
-    def __init__(self, config: OmegaConf) -> None:
-        super().__init__(config)
+    def __init__(self, config: OmegaConf, **kwargs) -> None:
+        super().__init__(config, **kwargs)
 
         rel2id = load_json(config.rel2id_filepath)
         self.transform = StreamBERTSubjObjSpanTransform(
@@ -37,6 +37,9 @@ class EntityRelationExtractionTask(TaskBase):
             config.eval_batch_size,
             subj_obj_span_collate_fn,
             debug_mode=config.debug_mode,
+            load_train_data=config.load_train_data,
+            load_dev_data=config.load_dev_data,
+            load_test_data=config.load_test_data,
         )
 
         self.model = CasRel(
@@ -92,7 +95,7 @@ class EntityRelationExtractionTask(TaskBase):
                 self.no_climbing_cnt += 1
 
             if is_best and self.config.save_best_ckpt:
-                self.save_ckpt("best", epoch_idx)
+                self.save_ckpt(epoch=epoch_idx)
 
             logger.info(
                 f"Epoch: {epoch_idx}, is_best: {is_best}, Dev: {measures}, Test: {test_measures}"
