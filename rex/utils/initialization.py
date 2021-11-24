@@ -7,7 +7,7 @@ import numpy as np
 from loguru import logger
 from omegaconf.omegaconf import OmegaConf
 
-from rex.tasks.base_task import LOG_FILENAME, CONFIG_PARAMS_FILENAME
+from rex.tasks import LOG_FILENAME, CONFIG_PARAMS_FILENAME
 
 
 def set_seed(seed: Optional[int] = 1227, set_cudnn: Optional[bool] = False):

@@ -10,14 +10,13 @@ from loguru import logger
 from omegaconf import OmegaConf
 
 from rex.utils.initialization import init_all
-
-
-CONFIG_PARAMS_FILENAME = "task_params.yaml"
-CHECKPOINT_DIRNAME = "ckpt"
-CHECKPOINT_FILENAME_TEMPLATE = "{}.{}.pth"
-BEST_IDENTIFIER = "best"
-BEST_CHECKPOINT_FILENAME_TEMPLATE = "{}.best.pth"
-LOG_FILENAME = "log.log"
+from rex.tasks import (
+    CONFIG_PARAMS_FILENAME,
+    CHECKPOINT_FILENAME_TEMPLATE,
+    CHECKPOINT_DIRNAME,
+    BEST_CHECKPOINT_FILENAME_TEMPLATE,
+    BEST_IDENTIFIER,
+)
 
 
 class TaskBase(object):
