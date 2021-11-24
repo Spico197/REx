@@ -82,7 +82,7 @@ class TaskBase(object):
         else:
             store_dict = torch.load(path, map_location=torch.device(self.config.device))
 
-        self.config = OmegaConf.load(os.path.join(self.config.task_dir, "config.yaml"))
+        self.config = OmegaConf.load(os.path.join(self.config.task_dir, CONFIG_PARAMS_FILENAME))
 
         if load_model:
             if self.model and "model_state" in store_dict:
@@ -209,8 +209,8 @@ class TaskBase(object):
         config["load_test_data"] = load_test_data
 
         kwargs["initialize"] = kwargs.pop("initialize", True)
-        kwargs["makedirs"] = kwargs.pop("makedirs", False)
-        kwargs["dump_configfile"] = kwargs.pop("dump_configfile", False)
+        kwargs["makedirs"] = kwargs.pop("makedirs", True)
+        kwargs["dump_configfile"] = kwargs.pop("dump_configfile", True)
         return cls(config, **kwargs)
 
     @classmethod

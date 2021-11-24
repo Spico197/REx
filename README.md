@@ -77,6 +77,7 @@ Checkout the `examples` folder.
 
 ## ✉️Update
 
+- v0.0.8: fix config loading, change default of `makedirs` and `dump_configfile` to be `True`
 - v0.0.7: fix recursive import bug
 - v0.0.6: integrate omega conf loading into the inner task, add `load_*_data` option to data managers
 - v0.0.5: update ffn
