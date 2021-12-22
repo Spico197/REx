@@ -1,8 +1,7 @@
 from collections import defaultdict
 from typing import Iterable, Optional, List
 
-from loguru import logger
-
+from rex.utils.logging import logger
 from rex.data.label_encoder import LabelEncoder
 from rex.utils.position import construct_relative_positions, find_all_positions
 from rex.utils.mask import construct_piecewise_mask
@@ -97,14 +96,10 @@ class CachedMCBagRETransform(TransformBase):
         return final_data, bag_scope
 
     def predict_transform(self, obj: dict):
-        """
+        """Transform for prediction
+
         Args:
-            obj:
-                {
-                    "text": "text",
-                    "head": "head word",
-                    "tail": "tail word"
-                }
+            obj: dict object with ``text`` (str), ``head`` (str) and ``tail`` (str) fields
         """
         if obj["head"] not in obj["text"] or obj["tail"] not in obj["text"]:
             raise ValueError(f"{obj['head']} or {obj['tail']} is not in {obj['text']}")

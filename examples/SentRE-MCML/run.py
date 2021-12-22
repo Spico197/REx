@@ -1,20 +1,11 @@
-import click
-from loguru import logger
-
+from rex.utils.logging import logger
+from rex.utils.config import get_config_from_cmd
 from rex.tasks.relation_extraction import MCMLSentRelationClassificationTask
 
 
-CONFIG_PATH_TYPE = click.Path(
-    exists=True, file_okay=True, dir_okay=False, resolve_path=True
-)
-
-
-@click.command()
-@click.option(
-    "-c", "--config-filepath", type=CONFIG_PATH_TYPE, help="configuration filepath"
-)
-def main(config_filepath):
-    task = MCMLSentRelationClassificationTask.from_configfile(config_filepath)
+def main():
+    config = get_config_from_cmd()
+    task = MCMLSentRelationClassificationTask.from_config(config)
     logger.info(f"task: {type(task)}")
 
     if not task.config.skip_train:

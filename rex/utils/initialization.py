@@ -4,9 +4,9 @@ from typing import Optional
 
 import torch
 import numpy as np
-from loguru import logger
 from omegaconf.omegaconf import OmegaConf
 
+from rex.utils.logging import logger
 from rex.tasks import LOG_FILENAME, CONFIG_PARAMS_FILENAME
 
 

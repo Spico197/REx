@@ -3,8 +3,8 @@ from typing import Optional
 import torch
 import torch.nn as nn
 import numpy as np
-from loguru import logger
 
+from rex.utils.logging import logger
 from rex.data.vocab import Vocab
 from rex.utils.io import load_embedding_file
 

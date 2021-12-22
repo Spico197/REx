@@ -28,10 +28,10 @@ rex.utils.io module
    :undoc-members:
    :show-inheritance:
 
-rex.utils.logger module
------------------------
+rex.utils.logging module
+------------------------
 
-.. automodule:: rex.utils.logger
+.. automodule:: rex.utils.logging
    :members:
    :undoc-members:
    :show-inheritance:
@@ -72,6 +72,14 @@ rex.utils.segmentation module
 -----------------------------
 
 .. automodule:: rex.utils.segmentation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+rex.utils.span module
+---------------------
+
+.. automodule:: rex.utils.span
    :members:
    :undoc-members:
    :show-inheritance:

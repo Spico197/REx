@@ -1,8 +1,8 @@
 import torch
 from torch.optim import Adam
-from loguru import logger
 from omegaconf import OmegaConf
 
+from rex.utils.logging import logger
 from rex.models.sent_pcnn import SentPCNN
 from rex.models.bag_pcnn import PCNNOne
 from rex.utils.io import load_line_json

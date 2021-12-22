@@ -2,6 +2,8 @@ import sys
 import logging
 from typing import Optional
 
+from loguru import logger
+
 
 class Logger(object):
     def __init__(

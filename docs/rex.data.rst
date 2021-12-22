@@ -1,6 +1,14 @@
 rex.data package
 ================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   rex.data.transforms
+
 Submodules
 ----------
 
@@ -40,14 +48,6 @@ rex.data.manager module
 -----------------------
 
 .. automodule:: rex.data.manager
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-rex.data.transforms module
---------------------------
-
-.. automodule:: rex.data.transforms
    :members:
    :undoc-members:
    :show-inheritance:

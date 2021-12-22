@@ -42,3 +42,7 @@ clean:
 	rm -f .coverage
 	rm -f coverage.xml
 	find . | grep -E '(__pycache__|\.pyc|\.pyo$$)' | xargs rm -rf
+
+.PHONY: serve_docs
+serve_docs:
+	python -m http.server --directory docs/_build/html

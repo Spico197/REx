@@ -1,8 +1,8 @@
 import torch
 from torch.optim import Adam
-from loguru import logger
 from omegaconf import OmegaConf
 
+from rex.utils.logging import logger
 from rex.models.casrel import CasRel
 from rex.utils.io import load_line_json, load_json
 from rex.utils.progress_bar import tqdm

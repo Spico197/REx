@@ -33,7 +33,6 @@ Make sure you have installed all the dependencies below.
   - torch>=1.2.0 : project is developed with torch==1.7.1, should be compatable with >=1.2.0 versions
   - numpy>=1.19.0
   - scikit-learn>=0.21.3
-  - click>=7.1.2
   - omegaconf>=2.0.6
   - loguru>=0.5.3
   - tqdm>=4.61.1
@@ -77,6 +76,7 @@ Checkout the `examples` folder.
 
 ## ✉️Update
 
+- v0.0.9: use `argparse` instead of `click`, move loguru logger into `rex.utils.logging`, add hierarchical config setting
 - v0.0.8: fix config loading, change default of `makedirs` and `dump_configfile` to be `True`
 - v0.0.7: fix recursive import bug
 - v0.0.6: integrate omega conf loading into the inner task, add `load_*_data` option to data managers

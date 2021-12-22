@@ -28,7 +28,6 @@ setuptools.setup(
     install_requires=[
         "numpy>=1.19.0",
         "scikit-learn>=0.21.3",
-        "click>=7.1.2",
         "omegaconf>=2.0.6",
         "loguru==0.5.3",
         "tqdm==4.61.1",

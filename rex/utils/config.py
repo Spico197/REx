@@ -2,11 +2,108 @@ import os
 import yaml
 import json
 import argparse
-from typing import Optional
+import pathlib
+from datetime import datetime
+from typing import Optional, List
 
-from loguru import logger
+from omegaconf import OmegaConf
 
+from rex.utils.logging import logger
 from rex.utils.initialization import set_seed_and_log_path
+
+
+def get_cmd_arg_parser() -> argparse.ArgumentParser:
+    """Get ArgumentParser"""
+    arg_parser = argparse.ArgumentParser(
+        description="""Get config (~OmegaConf) from terminal commands"""
+    )
+    arg_parser.add_argument(
+        "-b",
+        "--base-config-filepath",
+        type=pathlib.Path,
+        help="base configuration filepath, could be a template, lowest priority",
+    )
+    arg_parser.add_argument(
+        "-c",
+        "--custom-config-filepath",
+        type=pathlib.Path,
+        help="configuration filepath, customised configs, middle priority",
+    )
+    arg_parser.add_argument(
+        "-a",
+        "--additional-args",
+        type=str,
+        nargs="*",
+        help="additional args in dot-list format, highest priority",
+    )
+    return arg_parser
+
+
+def get_config_from_cmd(cmd_args: Optional[List[str]] = None) -> OmegaConf:
+    """
+    Get command arguments from `base_config_filepath`, `custom_config_filepath` and `additional_args`.
+
+    To make configurations flexible, configs are split into three levels:
+        - `base_config_filepath`: path to basic configuration file in yaml format, lowest priority
+        - `custom_config_filepath`: path to customised config file in yaml format, middle priority.
+            If this file is loaded, it will override configs in the `base_config_filepath`.
+        - `additional_args`: additional args in dot-list format, highest priority.
+            If these args are set, it will override configs in the previous files.
+
+    Args:
+        cmd_args: if you don't want to use the command line, provide `cmd_args` like `sys.argv[1:]`
+
+    Examples:
+
+        $ python run.py -b conf/config.yaml
+        $ python run.py -c conf/re/sent_ipre.yaml
+        $ python run.py -a lr.encoder=1e-4 dropout=0.6
+        $ python run.py -b conf/config.yaml -c conf/re/sent_ipre.yaml
+        $ python run.py -b conf/config.yaml -a lr.encoder=1e-4 dropout=0.6
+        $ python run.py -c conf/re/sent_ipre.yaml -a lr.encoder=1e-4 dropout=0.6
+        $ python run.py -b conf/config.yaml -c conf/re/sent_ipre.yaml -a lr.encoder=1e-4 dropout=0.6
+    """
+    arg_parser = get_cmd_arg_parser()
+    args = arg_parser.parse_args(args=cmd_args)
+
+    for path in ["base_config_filepath", "custom_config_filepath"]:
+        # arg: pathlib.Path
+        arg = getattr(args, path)
+        if arg is not None:
+            assert arg.exists() is True and arg.is_file() is True
+            setattr(args, path, str(arg.absolute()))
+
+    config = convert_args_to_config(args)
+
+    return config
+
+
+def convert_args_to_config(args: argparse.Namespace) -> OmegaConf:
+    """Convert args into config"""
+    config = OmegaConf.create(
+        {"_config_info": {"create_time": datetime.now().strftime("%F %X")}}
+    )
+    OmegaConf.set_readonly(config, False)
+
+    base_config_filepath = args.base_config_filepath
+    if base_config_filepath is not None:
+        base_config = OmegaConf.load(base_config_filepath)
+        config.merge_with(base_config)
+        config._config_info.base_filepath = base_config_filepath
+
+    custom_config_filepath = args.custom_config_filepath
+    if custom_config_filepath is not None:
+        custom_config = OmegaConf.load(custom_config_filepath)
+        config.merge_with(custom_config)
+        config._config_info.custom_config_filepath = custom_config_filepath
+
+    additional_args = args.additional_args
+    if additional_args is not None:
+        add_args = OmegaConf.from_dotlist(additional_args)
+        config.merge_with(add_args)
+        config._config_info.additional_args = additional_args
+
+    return config
 
 
 class ArgConfig(object):

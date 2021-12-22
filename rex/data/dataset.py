@@ -1,6 +1,5 @@
 from typing import Iterable, Optional
 
-from loguru import logger
 from torch.utils.data import Dataset
 
 

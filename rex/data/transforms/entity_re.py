@@ -86,13 +86,11 @@ class StreamSubjObjSpanTransform(TransformBase):
         formatted.update(data)
         return formatted
 
-    def predict_transform(self, obj: dict):
-        """
+    def predict_transform(self, obj: dict) -> dict:
+        """Transform for prediction
+
         Args:
-            obj:
-                {
-                    "text": "text"  # space tokenized string
-                }
+            obj: dict object with ``text`` field
         """
         obj["text"] = obj["text"].split()
         token_ids, mask = self.vocab.encode(
@@ -239,12 +237,10 @@ class StreamBERTSubjObjSpanTransform(TransformBase):
         return formatted
 
     def predict_transform(self, obj: dict):
-        """
+        """Transformation for prediction
+
         Args:
-            obj:
-                {
-                    "text": "text"  # space tokenized string
-                }
+            obj: dict object with space tokenized ``text`` string in the field
         """
         token_list = self.tokenize(obj["text"].split())
         token_ids, mask = self.encode(token_list, max_seq_len=self.max_seq_len)

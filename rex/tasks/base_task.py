@@ -6,9 +6,9 @@ from typing import Optional
 import torch
 from torch import distributed
 from torch.nn import parallel
-from loguru import logger
 from omegaconf import OmegaConf
 
+from rex.utils.logging import logger
 from rex.utils.initialization import init_all
 from rex.tasks import (
     CONFIG_PARAMS_FILENAME,
@@ -82,7 +82,9 @@ class TaskBase(object):
         else:
             store_dict = torch.load(path, map_location=torch.device(self.config.device))
 
-        self.config = OmegaConf.load(os.path.join(self.config.task_dir, CONFIG_PARAMS_FILENAME))
+        self.config = OmegaConf.load(
+            os.path.join(self.config.task_dir, CONFIG_PARAMS_FILENAME)
+        )
 
         if load_model:
             if self.model and "model_state" in store_dict:
@@ -202,6 +204,25 @@ class TaskBase(object):
     ):
         logger.info(f"Initializing from configuration file: {config_filepath}")
         config = OmegaConf.load(config_filepath)
+
+        return cls.from_config(
+            config,
+            load_train_data=load_train_data,
+            load_dev_data=load_dev_data,
+            load_test_data=load_test_data,
+            **kwargs,
+        )
+
+    @classmethod
+    def from_config(
+        cls,
+        config: OmegaConf,
+        load_train_data: Optional[bool] = True,
+        load_dev_data: Optional[bool] = True,
+        load_test_data: Optional[bool] = True,
+        **kwargs,
+    ):
+        logger.info(f"Initializing from configuration: {OmegaConf.to_yaml(config)}")
 
         # in case of any redundant memory taken when inference
         config["load_train_data"] = load_train_data
