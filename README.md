@@ -79,6 +79,7 @@ Checkout the `examples` folder.
 
 ## ✉️Update
 
+- v0.0.11: fix templates data resources
 - v0.0.10: update `utils.config` module, `StaticEmbedding` decoupling, remove eps in metrics, add templates generation entrypoints, add more tests (coverage stat for the whole repo, lots of codes are not test case covered)
 - v0.0.9: use `argparse` instead of `click`, move loguru logger into `rex.utils.logging`, add hierarchical config setting
 - v0.0.8: fix config loading, change default of `makedirs` and `dump_configfile` to be `True`

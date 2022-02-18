@@ -32,9 +32,6 @@ setuptools.setup(
         "loguru==0.5.3",
         "tqdm==4.61.1",
     ],
-    package_data={
-        "rex": ["templates/"],
-    },
     include_package_data=True,
     entry_points={"console_scripts": ["rex = rex.cmd:main"]},
 )
