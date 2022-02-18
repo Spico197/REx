@@ -19,7 +19,6 @@ class PCNNOne(nn.Module):
     def __init__(
         self,
         vocab,
-        emb_filepath,
         num_classes,
         dim_token_emb,
         pos_emb_capacity,
@@ -31,7 +30,7 @@ class PCNNOne(nn.Module):
         super().__init__()
 
         self.token_embedding = StaticEmbedding(
-            vocab, dim_token_emb, emb_filepath, dropout=dropout
+            vocab.size, dim_token_emb, dropout=dropout
         )
         self.pos1_embedding = nn.Embedding(
             num_embeddings=pos_emb_capacity, embedding_dim=dim_pos
@@ -98,7 +97,6 @@ class PCNNAtt(nn.Module):
     def __init__(
         self,
         vocab,
-        emb_filepath,
         num_classes,
         dim_token_emb,
         pos_emb_capacity,
@@ -110,7 +108,7 @@ class PCNNAtt(nn.Module):
         super().__init__()
 
         self.token_embedding = StaticEmbedding(
-            vocab, dim_token_emb, emb_filepath, dropout=dropout
+            vocab.size, dim_token_emb, dropout=dropout
         )
         self.pos1_embedding = nn.Embedding(
             num_embeddings=pos_emb_capacity, embedding_dim=dim_pos

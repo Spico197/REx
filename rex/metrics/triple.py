@@ -3,7 +3,7 @@ from collections import defaultdict
 from rex.metrics import calc_p_r_f1_from_tp_fp_fn
 
 
-def measure_triple(preds, golds, eps=1e-12):
+def measure_triple(preds, golds):
     result = {
         "triple": {"p": 0.0, "r": 0.0, "f1": 0.0},
         "subject": {"p": 0.0, "r": 0.0, "f1": 0.0},
@@ -37,7 +37,7 @@ def measure_triple(preds, golds, eps=1e-12):
         middle_stat["object"]["fn"] += len(gold_objs - pred_objs)
 
     for measure in result:
-        result[measure] = calc_p_r_f1_from_tp_fp_fn(**middle_stat[measure], eps=eps)
+        result[measure] = calc_p_r_f1_from_tp_fp_fn(**middle_stat[measure])
         result[measure].update(middle_stat[measure])
 
     return result

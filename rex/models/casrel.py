@@ -18,7 +18,6 @@ class LSTMCasRel(nn.Module):
         dim_token_emb,
         num_classes,
         pred_threshold: Optional[float] = 0.5,
-        emb_filepath: Optional[str] = None,
         dropout: Optional[float] = 0.5,
     ):
         super().__init__()
@@ -26,7 +25,7 @@ class LSTMCasRel(nn.Module):
             raise ValueError("Dimension of ``dim_token_emb`` must be odd")
 
         self.token_embedding = StaticEmbedding(
-            vocab, dim_token_emb, filepath=emb_filepath, dropout=dropout
+            vocab.size, dim_token_emb, dropout=dropout
         )
         self.encoder = nn.LSTM(
             dim_token_emb,

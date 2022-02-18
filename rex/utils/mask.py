@@ -1,6 +1,9 @@
 def construct_piecewise_mask(
     head_pos: int, tail_pos: int, seq_len: int, max_seq_len: int
 ):
+    assert 0 <= head_pos < seq_len
+    assert 0 <= tail_pos < seq_len
+
     mask = [0] * max_seq_len
     for i in range(0, max_seq_len):
         if 0 <= i < min(head_pos, tail_pos):

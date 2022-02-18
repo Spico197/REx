@@ -9,7 +9,7 @@
     <img alt="Build" src="https://github.com/Spico197/REx/workflows/REx/badge.svg?branch=main">
   </a>
   <a href="https://codecov.io/gh/Spico197/REx">
-    <img alt="CodeCoverage" src="https://img.shields.io/codecov/c/github/Spico197/REx">
+    <img src="https://codecov.io/gh/Spico197/REx/branch/main/graph/badge.svg"/>
   </a>
   <a href="https://rex.readthedocs.io/en/main/?badge=main">
     <img alt="Docs" src="https://readthedocs.org/projects/rex/badge/?version=main">
@@ -57,6 +57,9 @@ Checkout the `examples` folder.
 | BagRE       | PCNN+ONE | NYT10   | Bag-level relation classification (Multi-Instance Learning, MIL) |
 | JointERE    | CasRel   | WebNLG  | Jointly entity relation extraction                               |
 
+- To create new task for classification, try: `rex new classification <task_name>`
+- To create new task for tagging, try: `rex new tagging <task_name>`
+
 ## ✈️Abilities
 
 ### Dataset
@@ -76,6 +79,7 @@ Checkout the `examples` folder.
 
 ## ✉️Update
 
+- v0.0.10: update `utils.config` module, `StaticEmbedding` decoupling, remove eps in metrics, add templates generation entrypoints, add more tests (coverage stat for the whole repo, lots of codes are not test case covered)
 - v0.0.9: use `argparse` instead of `click`, move loguru logger into `rex.utils.logging`, add hierarchical config setting
 - v0.0.8: fix config loading, change default of `makedirs` and `dump_configfile` to be `True`
 - v0.0.7: fix recursive import bug

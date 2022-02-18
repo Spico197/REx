@@ -1,4 +1,4 @@
-all: format clean test_report build docs
+all: format clean test build docs
 	echo 'finished'
 
 .PHONY: build
@@ -24,12 +24,7 @@ format:
 
 .PHONY: test
 test:
-	pytest -vv .
-	flake8
-
-.PHONY: test_report
-test_report:
-	coverage run -m pytest -vv .
+	coverage run --source rex -m pytest -vv .
 	coverage report -m
 	flake8
 

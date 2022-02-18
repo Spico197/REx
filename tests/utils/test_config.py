@@ -1,6 +1,7 @@
+import pytest
 from omegaconf import OmegaConf
 
-from rex.utils.config import get_config_from_cmd
+from rex.utils.config import ConfigArgument, ConfigParser
 
 
 def test_cmd_args(tmp_path):
@@ -22,7 +23,7 @@ def test_cmd_args(tmp_path):
     OmegaConf.save(custom_config, custom_path)
 
     args = [f"--base-config-filepath={base_path}", f"-c={custom_path}", *add_args]
-    config = get_config_from_cmd(args)
+    config = ConfigParser.parse_cmd(cmd_args=args)
 
     assert config.train == {
         "model": "A",
@@ -32,3 +33,14 @@ def test_cmd_args(tmp_path):
         "warmup_step": 200,
     }
     assert config.data == {"train_path": "path/to/data_train.jsonl"}
+
+
+def test_config_argument():
+    config = ConfigParser.parse_cmd(
+        ConfigArgument("-d", "--task-dir", type=str, help="task dir"),
+        cmd_args=["-d", "/path/to/123"],
+    )
+    assert config.task_dir == "/path/to/123"
+
+    with pytest.raises(AssertionError):
+        config = ConfigParser(("-d", "--task-dir"))

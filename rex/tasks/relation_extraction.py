@@ -40,7 +40,6 @@ class MCMLSentRelationClassificationTask(TaskBase):
 
         self.model = SentPCNN(
             self.transform.vocab,
-            config.emb_filepath,
             self.transform.label_encoder.num_tags,
             config.dim_token_emb,
             config.max_seq_len,
@@ -173,7 +172,6 @@ class MCMLBagRelationClassificationTask(TaskBase):
 
         self.model = PCNNOne(
             self.transform.vocab,
-            config.emb_filepath,
             self.transform.label_encoder.num_tags,
             config.dim_token_emb,
             config.max_seq_len,

@@ -1,8 +1,10 @@
 from collections import defaultdict
 from functools import reduce
 
+from rex.metrics import calc_p_r_f1_from_tp_fp_fn
 
-def tagging_prf1(gold_ents, pred_ents, eps=1e-12):
+
+def tagging_prf1(gold_ents, pred_ents):
     # TODO: add macro and type-specified support
     measure_results = defaultdict(lambda: {"p": 0.0, "r": 0.0, "f1": 0.0})
     global_tp = global_fp = global_fn = 0
@@ -14,7 +16,7 @@ def tagging_prf1(gold_ents, pred_ents, eps=1e-12):
         global_fp += len(pred_ents - intersection)
         global_fn += len(gold_ents - intersection)
 
-    p = measure_results["micro"]["p"] = global_tp / (global_tp + global_fp + eps)
-    r = measure_results["micro"]["r"] = global_tp / (global_tp + global_fn + eps)
-    measure_results["micro"]["f1"] = 2 * p * r / (p + r + eps)
+    measure_results["micro"] = calc_p_r_f1_from_tp_fp_fn(
+        global_tp, global_fp, global_fn
+    )
     return measure_results

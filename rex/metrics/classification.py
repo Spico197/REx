@@ -4,6 +4,8 @@ from typing import Iterable, Mapping, Optional
 import numpy as np
 from sklearn import metrics
 
+from rex.metrics import calc_p_r_f1_from_tp_fp_fn
+
 
 def accuracy(preds, golds):
     if len(preds) == 0 or len(golds) == 0:
@@ -16,7 +18,7 @@ def accuracy(preds, golds):
     return correct / total
 
 
-def mcml_prf1(preds, golds, eps=1e-12):
+def mcml_prf1(preds, golds):
     if len(preds) == 0 or len(golds) == 0:
         raise ValueError("Preds or golds is empty.")
     measure_results = defaultdict(lambda: {"p": 0.0, "r": 0.0, "f1": 0.0})
@@ -38,24 +40,17 @@ def mcml_prf1(preds, golds, eps=1e-12):
     rs = []
     f1s = []
     for type_idx in supports:
-        measure_results[type_idx]["p"] = p = supports[type_idx]["tp"] / (
-            supports[type_idx]["tp"] + supports[type_idx]["fp"] + eps
+        measure_results[type_idx] = calc_p_r_f1_from_tp_fp_fn(
+            supports[type_idx]["tp"], supports[type_idx]["fp"], supports[type_idx]["fn"]
         )
-        measure_results[type_idx]["r"] = r = supports[type_idx]["tp"] / (
-            supports[type_idx]["tp"] + supports[type_idx]["fn"] + eps
-        )
-        measure_results[type_idx]["f1"] = f1 = 2 * p * r / (p + r + eps)
-        ps.append(p)
-        rs.append(r)
-        f1s.append(f1)
+        ps.append(measure_results[type_idx]["p"])
+        rs.append(measure_results[type_idx]["r"])
+        f1s.append(measure_results[type_idx]["f1"])
         g_tp += supports[type_idx]["tp"]
         g_fp += supports[type_idx]["fp"]
         g_fn += supports[type_idx]["fn"]
 
-    g_p = measure_results["micro"]["p"] = g_tp / (g_tp + g_fp + eps)
-    g_r = measure_results["micro"]["r"] = g_tp / (g_tp + g_fn + eps)
-    measure_results["micro"]["f1"] = 2 * g_p * g_r / (g_p + g_r + eps)
-
+    measure_results["micro"] = calc_p_r_f1_from_tp_fp_fn(g_tp, g_fp, g_fn)
     measure_results["macro"]["p"] = sum(ps) / len(ps)
     measure_results["macro"]["r"] = sum(rs) / len(rs)
     measure_results["macro"]["f1"] = sum(f1s) / len(f1s)
@@ -69,7 +64,6 @@ def mc_prf1(
     num_classes=-1,
     ignore_labels: Optional[Iterable] = None,
     label_idx2name: Optional[Mapping[int, str]] = None,
-    eps=1e-12,
 ):
     """
     get multi-class classification metrics
@@ -110,31 +104,24 @@ def mc_prf1(
 
     # micro-averaged scores
     tp_sum = tp.sum()
-    pred_sum = tp_fp.sum() + eps
-    true_sum = tp_fn.sum() + eps
-
-    precision = tp_sum / pred_sum
-    recall = tp_sum / true_sum
-    denom = precision + recall + eps
-    f1_score = 2 * precision * recall / denom
-
-    measure_results["micro"]["p"] = precision
-    measure_results["micro"]["r"] = recall
-    measure_results["micro"]["f1"] = f1_score
+    pred_sum = tp_fp.sum()
+    true_sum = tp_fn.sum()
+    measure_results["micro"] = calc_p_r_f1_from_tp_fp_fn(
+        tp_sum, pred_sum - tp_sum, true_sum - tp_sum
+    )
 
     # macro-averaged scores
-    precision = tp / (tp_fp + eps)
-    recall = tp / (tp_fn + eps)
-    denom = precision + recall + eps
-    f1_score = 2 * precision * recall / denom
+    results = calc_p_r_f1_from_tp_fp_fn(tp, tp_fp - tp, tp_fn - tp)
 
-    measure_results["macro"]["p"] = precision.mean()
-    measure_results["macro"]["r"] = recall.mean()
-    measure_results["macro"]["f1"] = f1_score.mean()
+    measure_results["macro"]["p"] = results["p"].mean()
+    measure_results["macro"]["r"] = results["r"].mean()
+    measure_results["macro"]["f1"] = results["f1"].mean()
 
     if label_idx2name is None:
         label_idx2name = {}
-    for idx, p, r, f1 in zip(range(MCM.shape[0]), precision, recall, f1_score):
+    for idx, p, r, f1 in zip(
+        range(MCM.shape[0]), results["p"], results["r"], results["f1"]
+    ):
         if idx in label_idx2name:
             idx_name = label_idx2name.get(idx)
         else:

@@ -91,6 +91,7 @@ def load_csv(
 
 
 def load_embedding_file(filepath, encoding="utf-8"):
+    tokens = []
     token2vec = {}
     dim_emb = 0
     with open(filepath, "rt", encoding=encoding) as fin:
@@ -101,13 +102,15 @@ def load_embedding_file(filepath, encoding="utf-8"):
                     dim_emb = int(line[1])
                 else:
                     dim_emb = len(line) - 1
+                    tokens.append(line[0])
                     token2vec[line[0]] = list(map(float, line[1:]))
                 continue
             # dimension checking
             if len(line) - 1 != dim_emb:
                 continue
+            tokens.append(line[0])
             token2vec[line[0]] = list(map(float, line[1:]))
-    return token2vec
+    return tokens, token2vec
 
 
 def load_line_iterator(filepath):

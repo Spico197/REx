@@ -27,7 +27,7 @@ class FFN(nn.Module):
         output_dim: int,
         mid_dims: Optional[Iterable[int]] = None,
         dropout: Optional[float] = 0.5,
-        act_fn: Optional[nn.Module] = nn.ReLU,
+        act_fn: Optional[nn.Module] = nn.ReLU(),
     ):
         super().__init__()
 
@@ -46,7 +46,7 @@ class FFN(nn.Module):
                     [
                         nn.Linear(mid_dims[i], mid_dims[i + 1]),
                         nn.Dropout(dropout),
-                        act_fn(),
+                        act_fn,
                     ]
                 )
             modules.append(nn.Linear(mid_dims[-2], mid_dims[-1]))

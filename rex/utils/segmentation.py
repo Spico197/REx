@@ -22,10 +22,10 @@ def sent_seg(
             texts will not be splited by ``;``, so you can specify them by your own.
         quotation_seg_mode: if True, the quotations will be regarded as a
             part of the former sentence.
-            e.g. ``我说：“翠花，上酸菜。”，她说：“欸，好嘞。”``
+            e.g. ``我说：“翠花，上酸菜。”她说：“欸，好嘞。”``
             the text will be splited into
-            ``['我说：“翠花，上酸菜。”，', '她说：“欸，好嘞。”']``, other than
-            ``['我说：“翠花，上酸菜。', '”，她说：“欸，好嘞。”']``
+            ``['我说：“翠花，上酸菜。”', '她说：“欸，好嘞。”']``, other than
+            ``['我说：“翠花，上酸菜。', '”她说：“欸，好嘞。”']``
 
     Returns:
         a list of strings, which are splited sentences.

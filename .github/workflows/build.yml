@@ -30,7 +30,7 @@ jobs:
         pip install .
     - name: Test
       run: |
-        coverage run -m pytest -vv .
+        coverage run --source rex -m pytest -vv .
         coverage report -m
         flake8
     - uses: codecov/codecov-action@v1

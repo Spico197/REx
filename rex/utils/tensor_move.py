@@ -1,11 +1,14 @@
-from typing import Optional
+from typing import Optional, Union
+
 import torch
 
 
-def move_to_cuda_device(obj: dict, device: Optional[torch.device] = None):
-    for key in obj:
-        if isinstance(obj[key], torch.Tensor):
-            obj[key] = obj[key].cuda(device)
-        elif isinstance(obj[key], dict):
-            move_to_cuda_device(obj[key], device)
+def move_to_cuda_device(
+    obj: Union[torch.Tensor, dict], device: Optional[torch.device] = None
+):
+    if isinstance(obj, torch.Tensor):
+        obj = obj.cuda(device)
+    elif isinstance(obj, dict):
+        for key in obj:
+            obj[key] = move_to_cuda_device(obj[key], device)
     return obj
