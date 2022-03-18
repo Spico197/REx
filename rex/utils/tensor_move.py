@@ -12,3 +12,14 @@ def move_to_cuda_device(
         for key in obj:
             obj[key] = move_to_cuda_device(obj[key], device)
     return obj
+
+
+def move_to_device(
+    obj: Union[torch.Tensor, dict], device: Optional[torch.device] = None
+):
+    if isinstance(obj, torch.Tensor):
+        obj = obj.to(device)
+    elif isinstance(obj, dict):
+        for key in obj:
+            obj[key] = move_to_device(obj[key], device)
+    return obj

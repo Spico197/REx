@@ -1,25 +1,68 @@
-from typing import Iterable, Optional, List, Tuple
+from typing import Callable, Iterable, Optional, List, Tuple
+
+import numpy as np
 
 from rex.utils.io import load_line_iterator, dump_iterable
 
 
+def _convert_list_str_to_list(string: str, item_type: Callable):
+    ret = []
+    if string.startswith("["):
+        string = string[1:]
+    if string.endswith("]"):
+        string = string[:-1]
+
+    for item in string.split(","):
+        ret.append(item_type(item.strip()))
+
+    return ret
+
+
 class Vocab(object):
     def __init__(
-        self, pad: Optional[str] = "[PAD]", unk: Optional[str] = "[UNK]"
+        self,
+        pad: Optional[str] = "[PAD]",
+        unk: Optional[str] = "[UNK]",
+        include_pad: Optional[bool] = True,
+        include_unk: Optional[bool] = True,
+        embedding_dim: Optional[int] = 300,
+        init_pad_unk_emb: Optional[bool] = False
     ) -> None:
         self.pad = pad
         self.unk = unk
-        self.token2id = {pad: 0, unk: 1}
-        self.pad_idx = self.token2id[pad]
-        self.unk_idx = self.token2id[unk]
+        self.pad_idx = None
+        self.unk_idx = None
 
-        self.id2token = {self.pad_idx: pad, self.unk_idx: unk}
+        self.token2id = {}
+        self.id2token = {}
+        self.weights = []
 
-    def add(self, token: str):
+        if include_pad:
+            token_idx = len(self.token2id)
+            self.token2id[pad] = token_idx
+            self.id2token[token_idx] = pad
+            self.pad_idx = self.token2id[pad]
+            if init_pad_unk_emb:
+                self.weights.append(np.random.randn(embedding_dim).tolist())
+
+        if include_unk:
+            token_idx = len(self.token2id)
+            self.token2id[unk] = token_idx
+            self.id2token[token_idx] = unk
+            self.unk_idx = self.token2id[unk]
+            if init_pad_unk_emb:
+                self.weights.append(np.random.randn(embedding_dim).tolist())
+
+    def add(self, token: str, weights: Optional[List[float]] = None):
         if token not in self.token2id:
             token_id = len(self.token2id)
             self.token2id[token] = token_id
             self.id2token[token_id] = token
+
+            if weights is not None:
+                if token_id != len(self.weights):
+                    raise ValueError("Vocab does not match weights, check `init_pad_unk_emb` option")
+                self.weights.append(weights)
 
     def update(self, tokens: List[str]):
         for token in tokens:
@@ -71,15 +114,25 @@ class Vocab(object):
 
     @classmethod
     def from_pretrained(
-        cls, filepath, pad: Optional[str] = "[PAD]", unk: Optional[str] = "[UNK]"
+        cls,
+        filepath,
+        include_weights: Optional[bool] = False,
+        **kwargs
     ):
-        v = cls(pad, unk)
+        v = cls(**kwargs)
         for line in load_line_iterator(filepath):
-            v.add(line.strip())
+            line = line.strip()
+            if include_weights:
+                token, weight_string = line.split("\t")
+                weights = _convert_list_str_to_list(weight_string, float)
+                v.add(token, weights)
         return v
 
-    def save_pretrained(self, filepath):
+    def save_pretrained(self, filepath, dump_weights: Optional[bool] = False):
         vocabs = []
         for token_id in range(self.size):
-            vocabs.append(self.id2token[token_id])
+            if dump_weights:
+                vocabs.append(f"{self.id2token[token_id]}\t{self.weights[token_id]}")
+            else:
+                vocabs.append(self.id2token[token_id])
         dump_iterable(vocabs, filepath)

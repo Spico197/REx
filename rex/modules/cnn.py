@@ -49,6 +49,6 @@ class MultiKernelCNN(nn.Module):
         # (batch_size, len(kernel_sizes), num_filters)
         hidden = hidden.permute(1, 0, 2)
         # (batch_size, len(kernel_sizes) * num_filters)
-        hidden = hidden.view(batch_size, -1)
+        hidden = hidden.reshape(batch_size, -1)
         hidden = self.dropout(hidden)
         return hidden
