@@ -2,7 +2,7 @@ from typing import Callable, Iterable, Optional, List, Tuple
 
 import numpy as np
 
-from rex.utils.io import load_line_iterator, dump_iterable
+from rex.utils.io import dump_iterable, load_embedding_file
 
 
 def _convert_list_str_to_list(string: str, item_type: Callable):
@@ -26,7 +26,7 @@ class Vocab(object):
         include_pad: Optional[bool] = True,
         include_unk: Optional[bool] = True,
         embedding_dim: Optional[int] = 300,
-        init_pad_unk_emb: Optional[bool] = False
+        init_pad_unk_emb: Optional[bool] = False,
     ) -> None:
         self.pad = pad
         self.unk = unk
@@ -119,19 +119,20 @@ class Vocab(object):
         cls, filepath, include_weights: Optional[bool] = False, **kwargs
     ):
         v = cls(**kwargs)
-        for line in load_line_iterator(filepath):
-            line = line.strip()
+        tokens, token2vec = load_embedding_file(filepath)
+        for token in tokens:
+            vec = None
             if include_weights:
-                token, weight_string = line.split("\t")
-                weights = _convert_list_str_to_list(weight_string, float)
-                v.add(token, weights)
+                vec = token2vec[token]
+            v.add(token, weights=vec)
         return v
 
     def save_pretrained(self, filepath, dump_weights: Optional[bool] = False):
         vocabs = []
         for token_id in range(self.size):
             if dump_weights:
-                vocabs.append(f"{self.id2token[token_id]}\t{self.weights[token_id]}")
+                weight_str = " ".join(map(str, self.weights[token_id]))
+                vocabs.append(f"{self.id2token[token_id]} {weight_str}")
             else:
                 vocabs.append(self.id2token[token_id])
         dump_iterable(vocabs, filepath)

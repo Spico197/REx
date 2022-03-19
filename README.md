@@ -79,6 +79,7 @@ Checkout the `examples` folder.
 
 ## ✉️Update
 
+- v0.0.14: update vocab embedding loading to be compatible with other embedding files
 - v0.0.13: update vocab, label_encoder, fix bugs in cnn reshaping and crf importing
 - v0.0.12: fix crf module import issue
 - v0.0.11: fix templates data resources

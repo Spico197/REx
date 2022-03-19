@@ -2,6 +2,8 @@ import json
 import pickle
 from typing import Iterable, Any, Optional, List
 
+from rex.utils.logging import logger
+
 
 def dump_json(obj, filepath, **kwargs):
     with open(filepath, "wt", encoding="utf-8") as fout:
@@ -90,15 +92,17 @@ def load_csv(
     return data
 
 
-def load_embedding_file(filepath, encoding="utf-8"):
+def load_embedding_file(filepath, encoding="utf-8", open_func=open, verbose=False):
     tokens = []
     token2vec = {}
+    num_tokens = -1
     dim_emb = 0
-    with open(filepath, "rt", encoding=encoding) as fin:
+    with open_func(filepath, "rt", encoding=encoding) as fin:
         for line_no, line in enumerate(fin):
             line = line.split()
             if line_no == 0:
                 if len(line) == 2 and all(x.isdigit() for x in line):
+                    num_tokens = int(line[0])
                     dim_emb = int(line[1])
                 else:
                     dim_emb = len(line) - 1
@@ -110,6 +114,15 @@ def load_embedding_file(filepath, encoding="utf-8"):
                 continue
             tokens.append(line[0])
             token2vec[line[0]] = list(map(float, line[1:]))
+
+    if num_tokens > 0 and num_tokens != len(tokens):
+        logger.warning(
+            f"emb file info num of tokens: {num_tokens}, while {len(tokens)} tokens are found"
+        )
+
+    if verbose:
+        logger.info(f"Loading #Tokens: {len(tokens)}, Emb dim: {dim_emb}")
+
     return tokens, token2vec
 
 
