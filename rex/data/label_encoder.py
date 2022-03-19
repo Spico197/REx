@@ -1,5 +1,7 @@
 from typing import Dict, Iterable, Optional, List, Union
 
+from rex.utils.io import load_json, dump_json
+
 
 class LabelEncoder(object):
     def __init__(self, initial_dict: Optional[Dict] = {}) -> None:
@@ -16,9 +18,13 @@ class LabelEncoder(object):
         for label in labels:
             self.add(label)
 
-    def encode(self, labels: List[Union[str, int]]):
+    def encode(self, labels: List[Union[str, int]], update: Optional[bool] = False):
+        if update:
+            self.update(labels)
+
         if not all(label in self.label2id for label in labels):
             raise ValueError("Not all label are in this encoder")
+
         return list(map(lambda x: self.label2id[x], labels))
 
     def update_encode(self, labels):
@@ -51,3 +57,11 @@ class LabelEncoder(object):
     @property
     def num_tags(self):
         return len(self)
+
+    @classmethod
+    def from_pretrained(cls, filepath: str):
+        label2id = load_json(filepath)
+        return cls(initial_dict=label2id)
+
+    def save_pretrained(self, filepath: str):
+        dump_json(self.label2id, filepath)

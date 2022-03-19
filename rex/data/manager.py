@@ -24,6 +24,13 @@ class CachedManager(object):
         load_test_data: Optional[bool] = True,
     ):
         self.collate_fn = collate_fn
+        self.train_set = None
+        self.train_loader = None
+        self.train_eval_loader = None
+        self.dev_set = None
+        self.dev_loader = None
+        self.test_set = None
+        self.test_loader = None
 
         if load_train_data:
             self.train_set = dataset_class(

@@ -26,7 +26,7 @@ class Vocab(object):
         include_pad: Optional[bool] = True,
         include_unk: Optional[bool] = True,
         embedding_dim: Optional[int] = 300,
-        init_pad_unk_emb: Optional[bool] = False
+        init_pad_unk_emb: Optional[bool] = False,
     ) -> None:
         self.pad = pad
         self.unk = unk
@@ -61,7 +61,9 @@ class Vocab(object):
 
             if weights is not None:
                 if token_id != len(self.weights):
-                    raise ValueError("Vocab does not match weights, check `init_pad_unk_emb` option")
+                    raise ValueError(
+                        "Vocab does not match weights, check `init_pad_unk_emb` option"
+                    )
                 self.weights.append(weights)
 
     def update(self, tokens: List[str]):
@@ -114,10 +116,7 @@ class Vocab(object):
 
     @classmethod
     def from_pretrained(
-        cls,
-        filepath,
-        include_weights: Optional[bool] = False,
-        **kwargs
+        cls, filepath, include_weights: Optional[bool] = False, **kwargs
     ):
         v = cls(**kwargs)
         for line in load_line_iterator(filepath):
