@@ -26,7 +26,7 @@ class Vocab(object):
         include_pad: Optional[bool] = True,
         include_unk: Optional[bool] = True,
         embedding_dim: Optional[int] = 300,
-        init_pad_unk_emb: Optional[bool] = False,
+        init_pad_unk_emb: Optional[bool] = False
     ) -> None:
         self.pad = pad
         self.unk = unk
