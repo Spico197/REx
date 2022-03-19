@@ -79,6 +79,7 @@ Checkout the `examples` folder.
 
 ## ✉️Update
 
+- v0.0.13: update vocab, label_encoder, fix bugs in cnn reshaping and crf importing
 - v0.0.12: fix crf module import issue
 - v0.0.11: fix templates data resources
 - v0.0.10: update `utils.config` module, `StaticEmbedding` decoupling, remove eps in metrics, add templates generation entrypoints, add more tests (coverage stat for the whole repo, lots of codes are not test case covered)
