@@ -4,7 +4,11 @@ from typing import Callable, Optional
 from rex.utils.logging import logger
 
 
-def safe_try(func_placeholder: Optional[Callable] = None, start_msg: Optional[str] = None, end_msg: Optional[str] = None):
+def safe_try(
+    func_placeholder: Optional[Callable] = None,
+    start_msg: Optional[str] = None,
+    end_msg: Optional[str] = None,
+):
     def func_wrapper(func):
         @functools.wraps(func)
         def try_func(*args, **kwargs):
@@ -26,6 +30,7 @@ def safe_try(func_placeholder: Optional[Callable] = None, start_msg: Optional[st
                     logger.debug(f"Func {func} finished without err.")
                 if end_msg is not None:
                     logger.info(str(end_msg))
+
         return try_func
 
     if func_placeholder is None:
