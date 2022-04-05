@@ -43,8 +43,11 @@ def init_all(
     config: Optional[OmegaConf] = None,
 ):
     set_seed(seed, set_cudnn=set_cudnn)
-    logger.add(os.path.join(task_dir, LOG_FILENAME), backtrace=True, diagnose=True)
+    logger_handler_id = logger.add(
+        os.path.join(task_dir, LOG_FILENAME), backtrace=True, diagnose=True
+    )
     if config is not None:
         OmegaConf.save(
             config, os.path.join(task_dir, CONFIG_PARAMS_FILENAME), resolve=True
         )
+    return logger_handler_id

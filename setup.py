@@ -32,6 +32,7 @@ setuptools.setup(
         "loguru==0.5.3",
         "tqdm==4.61.1",
     ],
+    extras_require={"dev": ["pytest", "coverage", "black", "flake8"]},
     include_package_data=True,
     entry_points={"console_scripts": ["rex = rex.cmd:main"]},
 )
