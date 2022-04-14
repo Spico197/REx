@@ -171,6 +171,31 @@ class Manager(object):
         loader = self.load_loader(dataset_name)
         return dataset, loader
 
+    def __getattr__(self, name: str):
+        """Get dataset or loader in a lazy way
+
+        Args:
+            name (~str): dataset_name + "_set" or "_loader":
+                [
+                    train_set, train_loader,
+                    train_eval_set, train_eval_loader,
+                    dev_set, dev_loader,
+                    test_set, test_loader
+                ]
+
+        Returns:
+            dataset or dataloader
+
+        Raises:
+            AttributeError if dataset or data loader does not exist
+        """
+        if name.endswith("_set"):
+            return self.load_dataset(name[:-4])
+        elif name.endswith("_loader"):
+            return self.load_loader(name[:-7])
+        else:
+            raise AttributeError(f"Attribute {name} does not exist")
+
 
 class CachedManager(Manager):
     def __init__(

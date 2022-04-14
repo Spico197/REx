@@ -3,7 +3,9 @@ from collections import defaultdict
 
 
 class PrettyPrintDefaultDict(defaultdict):
-    def __str__(self, indent=2, decimal=3, return_percentage=True, add_percentage_symbol=True):
+    def __str__(
+        self, indent=2, decimal=3, return_percentage=True, add_percentage_symbol=True
+    ):
         pretty_dict = self._pretty_format(
             self,
             decimal=decimal,

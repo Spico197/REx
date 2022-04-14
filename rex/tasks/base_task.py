@@ -69,6 +69,7 @@ class TaskBase(object):
     def load(
         self,
         path: str,
+        load_config: Optional[bool] = False,
         load_model: Optional[bool] = True,
         load_optimizer: Optional[bool] = False,
     ):
@@ -78,13 +79,16 @@ class TaskBase(object):
             raise ValueError("Checkpoint does not exist, {}".format(path))
 
         if torch.cuda.device_count() == 0:
+            logger.debug("Load store_dict into cpu")
             store_dict = torch.load(path, map_location="cpu")
         else:
+            logger.debug(f"Load store_dict into {self.config.device}")
             store_dict = torch.load(path, map_location=torch.device(self.config.device))
 
-        self.config = OmegaConf.load(
-            os.path.join(self.config.task_dir, CONFIG_PARAMS_FILENAME)
-        )
+        if load_config:
+            self.config = OmegaConf.load(
+                os.path.join(self.config.task_dir, CONFIG_PARAMS_FILENAME)
+            )
 
         if load_model:
             if self.model and "model_state" in store_dict:
@@ -118,7 +122,11 @@ class TaskBase(object):
         self.best_metric = store_dict.pop("best_metric")
         self.best_epoch = store_dict.pop("best_epoch")
 
-    def load_best_ckpt(self, load_optimizer: Optional[bool] = False):
+    def load_best_ckpt(
+        self,
+        load_optimizer: Optional[bool] = False,
+        load_config: Optional[bool] = False,
+    ):
         _task_dir = Path(self.config.task_dir)
         model_name = self.model.__class__.__name__
         ckpt_filepath = str(
@@ -128,7 +136,12 @@ class TaskBase(object):
             )
         )
         logger.info(f"Loading model from: {ckpt_filepath}")
-        self.load(ckpt_filepath, load_model=True, load_optimizer=load_optimizer)
+        self.load(
+            ckpt_filepath,
+            load_model=True,
+            load_optimizer=load_optimizer,
+            load_config=load_config,
+        )
 
     def save(self, path, epoch: Optional[int] = None):
         logger.info(f"Dumping checkpoint into: {path}")
@@ -194,40 +207,18 @@ class TaskBase(object):
         return self.config.local_rank >= 0
 
     @classmethod
-    def from_configfile(
-        cls,
-        config_filepath: str,
-        load_train_data: Optional[bool] = True,
-        load_dev_data: Optional[bool] = True,
-        load_test_data: Optional[bool] = True,
-        **kwargs,
-    ):
-        logger.info(f"Initializing from configuration file: {config_filepath}")
-        config = OmegaConf.load(config_filepath)
-
-        return cls.from_config(
-            config,
-            load_train_data=load_train_data,
-            load_dev_data=load_dev_data,
-            load_test_data=load_test_data,
-            **kwargs,
-        )
-
-    @classmethod
     def from_config(
         cls,
         config: OmegaConf,
-        load_train_data: Optional[bool] = True,
-        load_dev_data: Optional[bool] = True,
-        load_test_data: Optional[bool] = True,
+        update_config: Optional[dict] = None,
         **kwargs,
     ):
         logger.info(f"Initializing from configuration: {OmegaConf.to_yaml(config)}")
 
-        # in case of any redundant memory taken when inference
-        config["load_train_data"] = load_train_data
-        config["load_dev_data"] = load_dev_data
-        config["load_test_data"] = load_test_data
+        # update
+        if update_config is not None:
+            for key, val in update_config.items():
+                setattr(config, key, val)
 
         kwargs["initialize"] = kwargs.pop("initialize", True)
         kwargs["makedirs"] = kwargs.pop("makedirs", True)
@@ -235,25 +226,30 @@ class TaskBase(object):
         return cls(config, **kwargs)
 
     @classmethod
+    def from_configfile(
+        cls,
+        config_filepath: str,
+        **kwargs,
+    ):
+        logger.info(f"Initializing from configuration file: {config_filepath}")
+        config = OmegaConf.load(config_filepath)
+
+        return cls.from_config(config, **kwargs)
+
+    @classmethod
     def from_taskdir(
         cls,
         task_dir: str,
         load_best_model: Optional[bool] = True,
         load_best_optimizer: Optional[bool] = False,
-        load_train_data: Optional[bool] = True,
-        load_dev_data: Optional[bool] = True,
-        load_test_data: Optional[bool] = True,
+        load_config: Optional[bool] = False,
         **kwargs,
     ):
         _task_dir = Path(task_dir)
         config_filepath = str(_task_dir.joinpath(CONFIG_PARAMS_FILENAME).absolute())
-        ins = cls.from_configfile(
-            config_filepath,
-            load_train_data=load_train_data,
-            load_dev_data=load_dev_data,
-            load_test_data=load_test_data,
-            **kwargs,
-        )
+        ins = cls.from_configfile(config_filepath, **kwargs)
         if load_best_model:
-            ins.load_best_ckpt(load_optimizer=load_best_optimizer)
+            ins.load_best_ckpt(
+                load_optimizer=load_best_optimizer, load_config=load_config
+            )
         return ins
