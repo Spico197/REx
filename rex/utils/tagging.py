@@ -1,10 +1,7 @@
-from collections import defaultdict
-from typing import List, DefaultDict, Tuple
+from typing import List, Tuple
 
 
-def get_entities_from_tag_seq(
-    chars: List[str], tags: List[str]
-) -> DefaultDict[str, List[Tuple]]:
+def get_entities_from_tag_seq(chars: List[str], tags: List[str]) -> List[Tuple]:
     r"""
     get entities from a seqence of chars and tags, BIO and BMES schemas are both supported
     Args:
@@ -12,18 +9,14 @@ def get_entities_from_tag_seq(
         tags: list of tags (in string format), like `B`, `I-Subj`, `B_PER`.
             if there is no postfix type string, entities will not be categorized
     Returns:
-        dict of list of tuples:
-            {
-                "default": [(entity name, entity type, start position, end position + 1), ...],
-                "PER": [(entity name, entity type, start position, end position + 1)],
-                ...
-            }
+        list of tuples:
+            [(entity name, entity type, start position, end position + 1), ...]
     """
     if len(tags) > len(chars):
         tags = tags[: len(chars)]
     elif len(chars) > len(tags):
         chars = chars[: len(tags)]
-    entities = defaultdict(list)
+    entity_list = []
     last_type = ""
     ent = ""
     ent_start = -1
@@ -36,7 +29,7 @@ def get_entities_from_tag_seq(
 
         if tag.startswith("B"):
             if len(ent) > 0:
-                entities[last_type].append((ent, last_type, ent_start, idx))
+                entity_list.append((ent, last_type, ent_start, idx))
 
             ent = char
             last_type = curr_type
@@ -48,7 +41,7 @@ def get_entities_from_tag_seq(
             else:
                 # illegal case, early stop here
                 if len(ent) > 0:
-                    entities[last_type].append((ent, last_type, ent_start, idx))
+                    entity_list.append((ent, last_type, ent_start, idx))
                 ent = ""
                 last_type = ""
                 ent_start = -1
@@ -58,7 +51,7 @@ def get_entities_from_tag_seq(
                 ent += char
 
             if len(ent) > 0:
-                entities[last_type].append((ent, last_type, ent_start, idx + 1))
+                entity_list.append((ent, last_type, ent_start, idx + 1))
 
             ent = ""
             last_type = ""
@@ -67,23 +60,23 @@ def get_entities_from_tag_seq(
         elif tag.startswith("S"):
             if len(ent) > 0:
                 # last entity is not stopped
-                entities[last_type].append((ent, last_type, ent_start, idx))
+                entity_list.append((ent, last_type, ent_start, idx))
 
-            entities[curr_type].append((char, curr_type, idx, idx + 1))
+            entity_list.append((char, curr_type, idx, idx + 1))
 
         else:
             # O
             if len(ent) > 0:
-                entities[last_type].append((ent, last_type, ent_start, idx))
+                entity_list.append((ent, last_type, ent_start, idx))
 
             ent = ""
             last_type = ""
             ent_start = -1
 
     if len(ent) > 0:
-        entities[last_type].append((ent, last_type, ent_start, ent_start + len(ent)))
+        entity_list.append((ent, last_type, ent_start, ent_start + len(ent)))
 
-    return entities
+    return entity_list
 
 
 def get_num_illegal_tags_from_tag_seq(tags: List[str]) -> int:

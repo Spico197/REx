@@ -92,10 +92,11 @@ Checkout the `examples` folder.
   - add `Task` for easy training on single node with single GPU card
   - update example `config.yaml` to adapt with `Task`
   - add `ModelBase` for showing API
-  - add `GeneralCollateFn` for universal collate function
+  - add `GeneralCollateFn` for universal collate function, support guessing field types
   - update `history` var in base task
   - add `PrettyPrintDict`
   - add `flatten_all` utility in `rex.utils.iteration`
+  - update tagging and classification metrics
 - v0.0.15: add safe_try to kill ugly statements in example main call
 - v0.0.14: update vocab embedding loading to be compatible with other embedding files
 - v0.0.13: update vocab, label_encoder, fix bugs in cnn reshaping and crf importing

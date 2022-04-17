@@ -55,7 +55,7 @@ class TaskBase(object):
             "curr_epoch": 0,
             "curr_batch": 0,
             "total_steps": 0,
-            "current_train_loss": 0.0
+            "current_train_loss": 0.0,
         }
 
         if initialize:

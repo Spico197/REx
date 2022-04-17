@@ -20,13 +20,11 @@ class GeneralCollateFn(object):
             any problems.
     """
 
-    DEFAULT_TYPE_MAP = {
-        int: torch.long,
-        float: torch.float,
-        str: None
-    }
+    DEFAULT_TYPE_MAP = {int: torch.long, float: torch.float, str: None}
 
-    def __init__(self, key2type: Optional[dict] = {}, guessing: Optional[bool] = False) -> None:
+    def __init__(
+        self, key2type: Optional[dict] = {}, guessing: Optional[bool] = False
+    ) -> None:
         self.key2type = key2type
         self.guessing = guessing
 
@@ -62,7 +60,9 @@ class GeneralCollateFn(object):
             if len(all_keys) == 0:
                 all_keys.update(d.keys())
             else:
-                assert set(d.keys()) == all_keys, "Data instances does not have the same keys!"
+                assert (
+                    set(d.keys()) == all_keys
+                ), "Data instances does not have the same keys!"
 
     def update_data(data: List[dict]) -> List[dict]:
         """For those who transform data while collating, override this function"""
@@ -70,7 +70,7 @@ class GeneralCollateFn(object):
 
     def __call__(self, data: List[Dict[Any]]) -> Dict[str, Any]:
         self._validate_data(data)
-        if self.guessing:
+        if len(self.key2type) == 0 and self.guessing:
             self.guess_types(data[0], update=True)
 
         data = self.update_data(data)

@@ -4,7 +4,7 @@ from typing import Iterable, Mapping, Optional
 import numpy as np
 from sklearn import metrics
 
-from rex.metrics import calc_p_r_f1_from_tp_fp_fn
+from rex.metrics import DEFAULT_PRF1_RESULT_DICT, calc_p_r_f1_from_tp_fp_fn
 
 
 def accuracy(preds, golds):
@@ -75,7 +75,12 @@ def mc_prf1(
     """
     if len(preds) == 0 or len(golds) == 0:
         raise ValueError("Preds or golds is empty.")
-    measure_results = defaultdict(lambda: {"p": 0.0, "r": 0.0, "f1": 0.0})
+
+    measure_results = {
+        "micro": DEFAULT_PRF1_RESULT_DICT.copy(),
+        "macro": DEFAULT_PRF1_RESULT_DICT.copy(),
+        "types": defaultdict(lambda: DEFAULT_PRF1_RESULT_DICT.copy()),
+    }
 
     if num_classes > 0:
         # specified number of classes
@@ -84,48 +89,61 @@ def mc_prf1(
         # guess the number of classes through current input
         labels = None
 
-    MCM = metrics.multilabel_confusion_matrix(
+    mcm = metrics.multilabel_confusion_matrix(
         golds, preds, sample_weight=None, labels=labels, samplewise=False
     )
 
-    tp, tp_fp, tp_fn = [], [], []
-
+    tp_list, fp_list, fn_list = [], [], []
     if ignore_labels is None:
         ignore_labels = []
-    for tmp_label in range(MCM.shape[0]):
+    for tmp_label in range(mcm.shape[0]):
         if tmp_label not in ignore_labels:
-            tp.append(MCM[tmp_label, 1, 1])
-            tp_fp.append(MCM[tmp_label, 1, 1] + MCM[tmp_label, 0, 1])
-            tp_fn.append(MCM[tmp_label, 1, 1] + MCM[tmp_label, 1, 0])
+            tp_list.append(mcm[tmp_label, 1, 1])
+            fp_list.append(mcm[tmp_label, 0, 1])
+            fn_list.append(mcm[tmp_label, 1, 0])
 
-    tp = np.stack(tp)
-    tp_fp = np.stack(tp_fp)
-    tp_fn = np.stack(tp_fn)
+    tp_list = np.stack(tp_list)
+    fp_list = np.stack(fp_list)
+    fn_list = np.stack(fn_list)
 
     # micro-averaged scores
-    tp_sum = tp.sum()
-    pred_sum = tp_fp.sum()
-    true_sum = tp_fn.sum()
     measure_results["micro"] = calc_p_r_f1_from_tp_fp_fn(
-        tp_sum, pred_sum - tp_sum, true_sum - tp_sum
+        tp_list.sum(), fp_list.sum(), fn_list.sum()
     )
 
     # macro-averaged scores
-    results = calc_p_r_f1_from_tp_fp_fn(tp, tp_fp - tp, tp_fn - tp)
+    results = calc_p_r_f1_from_tp_fp_fn(tp_list, fp_list, fn_list)
 
     measure_results["macro"]["p"] = results["p"].mean()
     measure_results["macro"]["r"] = results["r"].mean()
     measure_results["macro"]["f1"] = results["f1"].mean()
+    measure_results["macro"]["tp"] = tp_list.mean()
+    measure_results["macro"]["fp"] = fp_list.mean()
+    measure_results["macro"]["fn"] = fn_list.mean()
 
     if label_idx2name is None:
         label_idx2name = {}
-    for idx, p, r, f1 in zip(
-        range(MCM.shape[0]), results["p"], results["r"], results["f1"]
+    for idx, p, r, f1, tp, fp, fn in zip(
+        range(mcm.shape[0]),
+        results["p"],
+        results["r"],
+        results["f1"],
+        tp_list,
+        fp_list,
+        fn_list,
     ):
         if idx in label_idx2name:
             idx_name = label_idx2name.get(idx)
         else:
             idx_name = idx
-        measure_results[idx_name] = {"p": p, "r": r, "f1": f1}
+        measure_results["types"][idx_name] = {
+            "p": p,
+            "r": r,
+            "f1": f1,
+            "tp": tp,
+            "fp": fp,
+            "fn": fn,
+        }
 
-    return dict(measure_results)
+    measure_results["types"] = dict(measure_results["types"])
+    return measure_results

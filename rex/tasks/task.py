@@ -177,9 +177,7 @@ class Task(TaskBase):
             "metric",
             "loss",
         ], f"select_best_by_key is {self.config.select_best_by_key}, while candidates are: `metric` and `loss`"
-        assert (
-            self.config.select_best_by_key == "train"
-        ) or (
+        assert (self.config.select_best_by_key == "train") or (
             self.config.select_best_by_key != "train"
             and self.config.select_best_by_key in self.config.eval_on_data
         ), f"{self.config.select_best_by_key} is not included in eval_on_data: {self.config.eval_on_data}"
@@ -211,7 +209,9 @@ class Task(TaskBase):
             this_eval_result[f"{eval_on}.{dataset_name}.metrics"] = eval_measures
             this_eval_result[f"{eval_on}.{dataset_name}.loss"] = eval_loss
 
-        self.history[eval_on][dataset_name]["loss"][history_index] = self.history["current_train_loss"]
+        self.history[eval_on][dataset_name]["loss"][history_index] = self.history[
+            "current_train_loss"
+        ]
         this_eval_result["train_loss"] = self.history["current_train_loss"]
 
         # update the best
@@ -313,7 +313,10 @@ class Task(TaskBase):
                 )
             )
             return False
-        if self.config.num_steps > 0 and self.history["total_steps"] >= self.config.num_steps:
+        if (
+            self.config.num_steps > 0
+            and self.history["total_steps"] >= self.config.num_steps
+        ):
             logger.info(
                 f"Reached the max num of steps: {self.history['total_steps']} / {self.config.num_steps}"
             )
