@@ -1,6 +1,10 @@
 from collections import defaultdict
 
-from rex.metrics import DEFAULT_PRF1_RESULT_DICT, safe_division, calc_p_r_f1_from_tp_fp_fn
+from rex.metrics import (
+    DEFAULT_PRF1_RESULT_DICT,
+    safe_division,
+    calc_p_r_f1_from_tp_fp_fn,
+)
 
 
 def get_measures_from_sets(gold_set: set, pred_set: set) -> dict:
@@ -56,7 +60,8 @@ def tagging_prf1(gold_ents, pred_ents):
     # for each type
     for ent_type in ents["types"]:
         measure_results["types"][ent_type] = get_measures_from_sets(
-            ents["types"][ent_type]["gold"], ents["types"][ent_type]["pred"],
+            ents["types"][ent_type]["gold"],
+            ents["types"][ent_type]["pred"],
         )
 
     # macro
@@ -65,6 +70,8 @@ def tagging_prf1(gold_ents, pred_ents):
         for key in measure_results["types"][ent_type]:
             macro_results[key].append(measure_results["types"][ent_type][key])
     for key in measure_results["types"][ent_type]:
-        measure_results["macro"][key] = safe_division(sum(macro_results[key]), len(macro_results[key]))
+        measure_results["macro"][key] = safe_division(
+            sum(macro_results[key]), len(macro_results[key])
+        )
 
     return measure_results

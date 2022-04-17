@@ -1,4 +1,4 @@
-from rex.utils.dict import PrettyPrintDefaultDict
+from rex.utils.dict import PrettyPrintDefaultDict, _pretty_format
 
 
 def test_pretty_dict():
@@ -35,4 +35,4 @@ def test_pretty_dict():
     )
     assert dict(pdict) == pdict.to_dict()
 
-    assert pdict._pretty_format(2) == 2
+    assert _pretty_format(2) == 2
