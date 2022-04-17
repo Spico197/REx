@@ -89,6 +89,13 @@ Checkout the `examples` folder.
   - add `[dev]` installation option
   - update task loading, remove `load_(train|dev|test)_data`, add `update_dict`
   - `load_config` is `False` in default to prevent config overriding after `load_best_ckpt`
+  - add `Task` for easy training on single node with single GPU card
+  - update example `config.yaml` to adapt with `Task`
+  - add `ModelBase` for showing API
+  - add `GeneralCollateFn` for universal collate function
+  - update `history` var in base task
+  - add `PrettyPrintDict`
+  - add `flatten_all` utility in `rex.utils.iteration`
 - v0.0.15: add safe_try to kill ugly statements in example main call
 - v0.0.14: update vocab embedding loading to be compatible with other embedding files
 - v0.0.13: update vocab, label_encoder, fix bugs in cnn reshaping and crf importing

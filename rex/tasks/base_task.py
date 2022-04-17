@@ -28,13 +28,35 @@ class TaskBase(object):
         dump_configfile: Optional[bool] = True,
     ) -> None:
         self.config = config
+        self.device = torch.device(config.device)
+
         self.model = None
         self.optimizer = None
 
-        self.history = {"train": [], "dev": [], "test": []}
-        self.no_climbing_cnt = 0
-        self.best_metric = -100.0
-        self.best_epoch = -1
+        self.history = {
+            "epoch": {
+                "train": {"loss": {}, "metrics": {}},
+                "train_eval": {"loss": {}, "metrics": {}},
+                "dev": {"loss": {}, "metrics": {}},
+                "test": {"loss": {}, "metrics": {}},
+            },
+            "step": {
+                "train": {"loss": {}, "metrics": {}},
+                "train_eval": {"loss": {}, "metrics": {}},
+                "dev": {"loss": {}, "metrics": {}},
+                "test": {"loss": {}, "metrics": {}},
+            },
+            "no_climbing_epoch_cnt": 0,
+            "no_climbing_step_cnt": 0,
+            "best_metric": -100.0,
+            "best_loss": float("inf"),
+            "best_epoch": -1,
+            "best_step": -1,
+            "curr_epoch": 0,
+            "curr_batch": 0,
+            "total_steps": 0,
+            "current_train_loss": 0.0
+        }
 
         if initialize:
             init_all(
@@ -66,12 +88,31 @@ class TaskBase(object):
     def predict(self, *args, **kwargs):
         raise NotImplementedError
 
+    def reset_history(self, reset_all: Optional[bool] = False):
+        self.history["no_climbing_epoch_cnt"] = 0
+        self.history["no_climbing_step_cnt"] = 0
+        self.history["best_metric"] = -100.0
+        self.history["best_loss"] = float("inf")
+        self.history["best_epoch"] = -1
+        self.history["best_step"] = -1
+        self.history["curr_epoch"] = 0
+        self.history["curr_batch"] = 0
+        self.history["total_steps"] = 0
+        self.history["current_train_loss"] = 0.0
+
+        if reset_all:
+            for type_key in ["epoch", "step"]:
+                for data_type in ["train", "train_eval", "dev", "test"]:
+                    for measure_type in ["loss", "metrics"]:
+                        self.history[type_key][data_type][measure_type].clear()
+
     def load(
         self,
         path: str,
         load_config: Optional[bool] = False,
         load_model: Optional[bool] = True,
         load_optimizer: Optional[bool] = False,
+        load_history: Optional[bool] = True,
     ):
         if os.path.exists(path):
             logger.info("Resume checkpoint from {}".format(path))
@@ -83,7 +124,7 @@ class TaskBase(object):
             store_dict = torch.load(path, map_location="cpu")
         else:
             logger.debug(f"Load store_dict into {self.config.device}")
-            store_dict = torch.load(path, map_location=torch.device(self.config.device))
+            store_dict = torch.load(path, map_location=self.device)
 
         if load_config:
             self.config = OmegaConf.load(
@@ -117,15 +158,19 @@ class TaskBase(object):
         else:
             logger.info("Not load optimizer")
 
-        self.history = store_dict.pop("history")
-        self.no_climbing_cnt = store_dict.pop("no_climbing_cnt")
-        self.best_metric = store_dict.pop("best_metric")
-        self.best_epoch = store_dict.pop("best_epoch")
+        if load_history:
+            history = store_dict.pop("history")
+            self.reset_history(reset_all=True)
+            if history is not None:
+                self.history = history
+            else:
+                logger.warning("Loaded history is None, reset history to empty.")
 
     def load_best_ckpt(
         self,
         load_optimizer: Optional[bool] = False,
         load_config: Optional[bool] = False,
+        load_history: Optional[bool] = True,
     ):
         _task_dir = Path(self.config.task_dir)
         model_name = self.model.__class__.__name__
@@ -141,9 +186,10 @@ class TaskBase(object):
             load_model=True,
             load_optimizer=load_optimizer,
             load_config=load_config,
+            load_history=load_history,
         )
 
-    def save(self, path, epoch: Optional[int] = None):
+    def save(self, path):
         logger.info(f"Dumping checkpoint into: {path}")
         store_dict = {}
 
@@ -163,19 +209,11 @@ class TaskBase(object):
         else:
             logger.info("No optimizer state is dumped", logging.WARNING)
 
-        if epoch:
-            store_dict["epoch"] = epoch
-
         store_dict["history"] = self.history
-        store_dict["no_climbing_cnt"] = self.no_climbing_cnt
-        store_dict["best_metric"] = self.best_metric
-        store_dict["best_epoch"] = self.best_epoch
 
         torch.save(store_dict, path)
 
-    def save_ckpt(
-        self, identifier: Optional[str] = BEST_IDENTIFIER, epoch: Optional[int] = None
-    ):
+    def save_ckpt(self, identifier: Optional[str] = BEST_IDENTIFIER):
         ckpt_dir = os.path.join(self.config.task_dir, CHECKPOINT_DIRNAME)
         if not os.path.exists(ckpt_dir):
             os.makedirs(ckpt_dir)
@@ -183,7 +221,7 @@ class TaskBase(object):
         ckpt_name = CHECKPOINT_FILENAME_TEMPLATE.format(
             self.model.__class__.__name__, identifier
         )
-        self.save(os.path.join(ckpt_dir, ckpt_name), epoch)
+        self.save(os.path.join(ckpt_dir, ckpt_name))
 
     def logging(self, msg: str, level: Optional[int] = logging.INFO):
         if self.in_distributed_mode():

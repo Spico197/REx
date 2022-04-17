@@ -1,29 +1,45 @@
+## configs in this file cannot be removed to enable `Task`
+## create new config file for each type of task
+## override part of the configurations below as you wish in your task
+
 # task
-task: ???
-name: trial name
+name: task_name
 
 # data preprocessing
-transform: ???
-max_seq_len: ???
-load_train_data: ???
-load_dev_data: ???
-load_test_data: ???
 
 # filepaths
-train_filepath: ???
-dev_filepath: ???
-test_filepath: ???
-emb_filepath: ???
-output_dir: ???
+output_dir: outputs
+task_dir: ${output_dir}/${name}
+data_dir: data
+train_filepath: ${data_dir}/train.jsonl
+dev_filepath: ${data_dir}/dev.jsonl
+test_filepath: ${data_dir}/test.jsonl
 
-# training
+# training control
+device: cuda:0
 random_seed: 1227
 num_epochs: 50
-num_early_stop: 5
+num_steps: -1
+epoch_patience: 5
+step_patience: 5000
 batch_size: 64
 learning_rate: !!float 1e-3
+max_grad_norm: -1
+skip_train: false
+debug_mode: false
+grad_accum_steps: 1
+resumed_training: false
+step_eval_interval: -1
+epoch_eval_interval: 1
+eval_on_data: [dev]
+select_best_on_data: dev
+select_best_by_key: metric
+best_metric_field: f1
+save_every_ckpt: false
+save_best_ckpt: true
+final_eval_on_test: true
 
 # model
-num_cnn_kernel: 230
-dim_pos_emb: 10
-dropout: 0.5
+
+# misc
+only_master_logging: true
