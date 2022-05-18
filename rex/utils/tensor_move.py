@@ -23,3 +23,7 @@ def move_to_device(
         for key in obj:
             obj[key] = move_to_device(obj[key], device)
     return obj
+
+
+def detach_cpu_list(tensor: torch.Tensor):
+    return tensor.detach().cpu().tolist()

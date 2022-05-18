@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Callable, Optional, Union
 
 from torch.utils.data import DataLoader, Dataset
@@ -5,9 +6,11 @@ from torch.utils.data.sampler import RandomSampler, SequentialSampler
 from torch.utils.data.distributed import DistributedSampler
 
 from rex.utils.logging import logger
+from rex.utils.io import load_pickle, dump_pickle
+from rex.utils.deprecation import deprecation_warning
 
 
-class Manager(object):
+class DataManager(object):
     DATASET_NAMES = {
         "train": ["train", "training"],
         "dev": ["dev", "development", "val", "validation", "validating", "validate"],
@@ -41,6 +44,7 @@ class Manager(object):
         load_dev_data: Optional[bool] = False,
         load_test_data: Optional[bool] = False,
         load_train_eval_data: Optional[bool] = False,
+        dump_cache_dir: Optional[str] = None,
     ):
         self._dataset_name_to_filepath = {
             "train": train_filepath,
@@ -73,6 +77,15 @@ class Manager(object):
         self.num_workers = num_workers
         self.debug_mode = debug_mode
         self.distributed_mode = distributed_mode
+        self.dump_cache_dir = dump_cache_dir
+        if self.dump_cache_dir is not None:
+            self.dump_cache_dir = Path(self.dump_cache_dir)
+            if not self.dump_cache_dir.exists():
+                self.dump_cache_dir.mkdir()
+            else:
+                logger.warning(
+                    f"Cached dir exists: {str(self.dump_cache_dir.absolute())}"
+                )
 
         if load_train_data:
             self.load("train")
@@ -86,7 +99,7 @@ class Manager(object):
     @staticmethod
     def _get_normalized_dataset_name(dataset_name: str) -> str:
         dataset_name = dataset_name.lower().strip()
-        result_name = Manager._NAME_TO_NORMALIZED.get(dataset_name)
+        result_name = DataManager._NAME_TO_NORMALIZED.get(dataset_name)
         if result_name is None:
             raise ValueError(f"Dataset: {dataset_name} cannot be normalized!")
         return result_name
@@ -115,20 +128,36 @@ class Manager(object):
         dataset = self._get_dataset_from_name(dataset_name)
         if dataset is None:
             filepath = self._get_filepath_from_name(dataset_name)
-            if self.use_stream_transform:
-                dataset = self.dataset_class(
-                    self.load_fn(filepath), self.transform, debug=self.debug_mode
+            if self.dump_cache_dir:
+                cache_filepath = self.dump_cache_dir.joinpath(f"{dataset_name}.cache")
+            else:
+                cache_filepath = None
+
+            if cache_filepath is not None and cache_filepath.exists():
+                dataset = load_pickle(cache_filepath)
+                logger.info(
+                    f"Load cached {dataset_name} dataset from {str(cache_filepath)}"
                 )
             else:
-                dataset = self.data_class(
-                    self.transform(self.load_fn(filepath), debug=self.debug_mode)
-                )
+                if self.use_stream_transform:
+                    dataset = self.dataset_class(
+                        self.load_fn(filepath), self.transform, debug=self.debug_mode
+                    )
+                else:
+                    dataset = self.dataset_class(
+                        self.transform(self.load_fn(filepath), debug=self.debug_mode)
+                    )
+                if self.dump_cache_dir and not cache_filepath.exists():
+                    logger.info(
+                        f"Dump cached {dataset_name} dataset tp {str(cache_filepath)}"
+                    )
+                    dump_pickle(dataset, cache_filepath)
             self._update_dataset(dataset_name, dataset)
         return dataset
 
     @staticmethod
     def guess_eval_from_name(dataset_name: str):
-        _dataset_name = Manager._get_normalized_dataset_name(dataset_name)
+        _dataset_name = DataManager._get_normalized_dataset_name(dataset_name)
         return _dataset_name == "train"
 
     def load_loader(
@@ -197,7 +226,7 @@ class Manager(object):
             raise AttributeError(f"Attribute {name} does not exist")
 
 
-class CachedManager(Manager):
+class CachedManager(DataManager):
     def __init__(
         self,
         train_filepath: str,
@@ -241,12 +270,10 @@ class CachedManager(Manager):
             load_train_eval_data=load_train_eval_data,
         )
 
-        logger.warning(
-            "CachedManager is deprecated and will be removed from the stablized version, please change to `Manager` instead."
-        )
+        deprecation_warning(self.__class__.__name__, DataManager.__name__)
 
 
-class StreamTransformManager(Manager):
+class StreamTransformManager(DataManager):
     def __init__(
         self,
         train_filepath: str,
@@ -290,6 +317,4 @@ class StreamTransformManager(Manager):
             load_train_eval_data=load_train_eval_data,
         )
 
-        logger.warning(
-            "StreamTransformManager is deprecated and will be removed from the stablized version, please change to `Manager` instead."
-        )
+        deprecation_warning(self.__class__.__name__, DataManager.__name__)

@@ -1,8 +1,8 @@
-from rex.utils.progress_bar import tqdm
+from rex.utils.progress_bar import rbar
 
 
 def test_pbar():
-    pbar = tqdm(range(10))
+    pbar = rbar(10)
     for _ in pbar:
         pass
     pbar_str = str(pbar)

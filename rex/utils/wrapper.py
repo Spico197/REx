@@ -1,4 +1,6 @@
 import functools
+import datetime
+from datetime import timedelta
 from typing import Callable, Optional
 
 from rex.utils.logging import logger
@@ -16,6 +18,7 @@ def safe_try(
                 logger.info(str(start_msg))
 
             err_happened = False
+            start_dt = datetime.datetime.now()
 
             try:
                 return func(*args, **kwargs)
@@ -26,10 +29,12 @@ def safe_try(
                 err_happened = True
                 logger.exception(err)
             finally:
+                time_delta = datetime.datetime.now() - start_dt
                 if not err_happened:
-                    logger.debug(f"Func {func} finished without err.")
+                    logger.debug(f"Func `{func.__name__}` finished without err.")
                 if end_msg is not None:
                     logger.info(str(end_msg))
+                logger.info(f"Func: `{func.__name__}` call time: {str(time_delta)}")
 
         return try_func
 

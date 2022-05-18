@@ -4,6 +4,12 @@ from typing import Optional
 
 from loguru import logger
 
+from rex.utils.progress_bar import pbar
+
+
+logger.remove()
+logger.add(lambda msg: pbar.write(msg, end=""))
+
 
 class Logger(object):
     def __init__(

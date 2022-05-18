@@ -5,11 +5,11 @@ import torch
 import torch.optim as optim
 from rex.utils.config import ConfigParser
 from rex.utils.logging import logger
-from rex.utils.io import dump_json, load_line_json
+from rex.utils.io import dump_json, load_jsonlines
 from rex.data.dataset import CachedDataset
-from rex.data.manager import CachedManager
+from rex.data.data_manager import CachedManager
 from rex.utils.tensor_move import move_to_cuda_device
-from rex.utils.progress_bar import tqdm
+from rex.utils.progress_bar import pbar
 from rex.tasks.base_task import TaskBase
 from rex.utils.initialization import init_all
 from rex.utils.tagging import get_entities_from_tag_seq
@@ -33,7 +33,7 @@ class NERTask(TaskBase):
             config.test_filepath,
             CachedDataset,
             self.transform,
-            load_line_json,
+            load_jsonlines,
             config.train_batch_size,
             config.eval_batch_size,
             tagging_collate_fn,
@@ -62,7 +62,7 @@ class NERTask(TaskBase):
             "dev": self.data_manager.dev_loader,
             "test": self.data_manager.test_loader,
         }
-        loader = tqdm(
+        loader = pbar(
             name2loader[dataset_name], desc=f"{dataset_name} Eval", ncols=80, ascii=True
         )
         seqs = []
@@ -147,7 +147,7 @@ class NERTask(TaskBase):
         for epoch_idx in range(self.config.num_epochs):
             logger.info(f"Epoch: {epoch_idx}/{self.config.num_epochs}")
             self.model.train()
-            loader = tqdm(self.data_manager.train_loader, desc=f"Train(e{epoch_idx})")
+            loader = pbar(self.data_manager.train_loader, desc=f"Train(e{epoch_idx})")
             for batch in loader:
                 batch = move_to_cuda_device(batch, self.config.device)
                 result = self.model(**batch)

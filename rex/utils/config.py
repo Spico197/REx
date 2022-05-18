@@ -1,6 +1,7 @@
 import argparse
 import pathlib
 from datetime import datetime
+from dataclasses import dataclass, field, asdict
 from typing import Iterable, Optional, List
 
 from omegaconf import OmegaConf
@@ -48,6 +49,13 @@ class ConfigParser(argparse.ArgumentParser):
 
     def init_priority_args(self):
         self.add_argument(
+            "-d",
+            "--use-default-base-config",
+            default=False,
+            action="store_true",
+            help="whether to use internal base config",
+        )
+        self.add_argument(
             "-b",
             "--base-config-filepath",
             type=pathlib.Path,
@@ -87,6 +95,7 @@ class ConfigParser(argparse.ArgumentParser):
             **kwargs: for initialise the config parser object
 
         Examples:
+            $ python run.py -d
             $ python run.py -b conf/config.yaml
             $ python run.py -c conf/re/sent_ipre.yaml
             $ python run.py -a lr.encoder=1e-4 dropout=0.6
@@ -117,6 +126,12 @@ class ConfigParser(argparse.ArgumentParser):
         )
         OmegaConf.set_readonly(config, False)
 
+        if "use_default_base_config" in args:
+            config._config_info.use_default_base_config = args.use_default_base_config
+            if args.use_default_base_config:
+                default_config = DefaultBaseConfig()
+                config.merge_with(asdict(default_config))
+
         if self._inited:
             base_config_filepath = args.base_config_filepath
             if base_config_filepath is not None:
@@ -143,3 +158,115 @@ class ConfigParser(argparse.ArgumentParser):
         config.merge_with(kwargs)
 
         return config
+
+
+@dataclass
+class DefaultBaseConfig:
+    # task
+    task_name: str = field(
+        default="temp_task",
+        metadata={"help": "name of task, used for creating task directory"},
+    )
+    # filepaths
+    output_dir: str = field(
+        default="outputs", metadata={"help": "base output directory"}
+    )
+    task_dir: str = field(
+        default="outputs/temp_task",
+        metadata={"help": "task directory"},
+    )
+    data_dir: str = field(default="data", metadata={"help": "data directory"})
+    train_filepath: str = field(
+        default="train.jsonl", metadata={"help": "filepath to train set"}
+    )
+    dev_filepath: str = field(
+        default="dev.jsonl", metadata={"help": "filepath to dev set"}
+    )
+    test_filepath: str = field(
+        default="test.jsonl", metadata={"help": "filepath to test set"}
+    )
+    # training control
+    device: str = field(default="cpu", metadata={"help": "device string"})
+    random_seed: int = field(default=1227, metadata={"help": "random seed"})
+    num_epochs: int = field(
+        default=50, metadata={"help": "max number of training epochs"}
+    )
+    num_steps: int = field(
+        default=-1,
+        metadata={
+            "help": "max number of training steps. `-1` if not training in steps"
+        },
+    )
+    epoch_patience: int = field(
+        default=5,
+        metadata={"help": "stop training if the metric does not grow in [x] epochs"},
+    )
+    step_patience: int = field(
+        default=5000,
+        metadata={"help": "stop training if the metric does not grow in [x] steps"},
+    )
+    batch_size: int = field(default=64, metadata={"help": "training batch size"})
+    learning_rate: float = field(
+        default=1e-3, metadata={"help": "training learning rate"}
+    )
+    max_grad_norm: int = field(
+        default=-1, metadata={"help": "max gradient norm. `-1`: no clipping"}
+    )
+    skip_train: bool = field(
+        default=False, metadata={"help": "whether to skip training process"}
+    )
+    debug_mode: bool = field(
+        default=False,
+        metadata={
+            "help": "whether to enter debug mode (use less data for debug and test)"
+        },
+    )
+    grad_accum_steps: int = field(
+        default=1, metadata={"help": "gradient accumulation steps"}
+    )
+    resumed_training: bool = field(
+        default=False, metadata={"help": "whether to resume training from latest epoch"}
+    )
+    step_eval_interval: int = field(
+        default=-1, metadata={"help": "evaluation interval steps. `-1` if not use"}
+    )
+    epoch_eval_interval: int = field(
+        default=1, metadata={"help": "evaluation interval epochs. `-1` if not use"}
+    )
+    eval_on_data: list = field(
+        default_factory=lambda: ["dev"],
+        metadata={"help": "evaluation on which data set(s)"},
+    )
+    select_best_on_data: str = field(
+        default="dev", metadata={"help": "use which data to select best model"}
+    )
+    select_best_by_key: str = field(
+        default="metric",
+        metadata={"help": "the best model selection strategy, `metric` or `loss`"},
+    )
+    best_metric_field: str = field(
+        default="micro.f1",
+        metadata={
+            "help": "metric value index to a dict (use `.` for solving nested dict)"
+        },
+    )
+    save_every_ckpt: bool = field(
+        default=False,
+        metadata={"help": "whether to save every checkpoint on evaluation interval"},
+    )
+    save_best_ckpt: bool = field(
+        default=True, metadata={"help": "whether to save the best checkpoint"}
+    )
+    final_eval_on_test: bool = field(
+        default=True, metadata={"help": "whether to evaluate on final test set"}
+    )
+    # misc
+    only_master_logging: bool = field(
+        default=True, metadata={"help": "whether to logging in only master node"}
+    )
+
+
+if __name__ == "__main__":
+    config = DefaultBaseConfig()
+    print(config)
+    print(asdict(config))

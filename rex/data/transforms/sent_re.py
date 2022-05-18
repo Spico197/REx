@@ -1,12 +1,13 @@
 from collections import defaultdict
 from typing import Iterable, Optional, List
 
-from rex.utils.logging import logger
+from rex.data.vocab import Vocab
 from rex.data.label_encoder import LabelEncoder
+from rex.data.transforms.base import TransformBase
+from rex.utils.logging import logger
 from rex.utils.position import construct_relative_positions, find_all_positions
 from rex.utils.mask import construct_piecewise_mask
-from rex.utils.progress_bar import tqdm
-from rex.data.transforms.base import TransformBase
+from rex.utils.progress_bar import pbar
 
 
 class CachedMCMLSentRETransform(TransformBase):
@@ -14,9 +15,17 @@ class CachedMCMLSentRETransform(TransformBase):
     Data transform for cached multi-class multi-label sentence-level relation extraction task.
     """
 
-    def __init__(self, max_seq_len) -> None:
-        super().__init__(max_seq_len)
-        self.label_encoder = LabelEncoder()
+    def __init__(self, max_seq_len, rel2id_filepath, emb_filepath) -> None:
+        super().__init__()
+        self.max_seq_len = max_seq_len
+        self.vocab = Vocab.from_pretrained(
+            emb_filepath,
+            include_weights=True,
+            init_pad_unk_emb=False,
+            include_pad=False,
+            include_unk=False,
+        )
+        self.label_encoder = LabelEncoder.from_pretrained(rel2id_filepath)
 
     def transform(
         self,
@@ -28,7 +37,7 @@ class CachedMCMLSentRETransform(TransformBase):
         final_data = []
         if debug:
             data = data[:5]
-        transform_loader = tqdm(data, desc=desc)
+        transform_loader = pbar(data, desc=desc)
 
         for d in transform_loader:
             ent_validation = []
@@ -43,11 +52,13 @@ class CachedMCMLSentRETransform(TransformBase):
                     num_truncated_rels += 1
                     continue
                 valid_ent_pair2rels[(rel[1], rel[2])].add(
-                    self.label_encoder.update_encode_one(rel[0])
+                    self.label_encoder.label2id[rel[0]]
                 )
             if len(valid_ent_pair2rels) == 0:
                 continue
-            token_ids, _ = self.vocab.encode(d["tokens"], self.max_seq_len, update=True)
+            token_ids, _ = self.vocab.encode(
+                d["tokens"], self.max_seq_len, update=False
+            )
             for ent_pair, rels in valid_ent_pair2rels.items():
                 head_pos = construct_relative_positions(
                     d["entities"][ent_pair[0]][1], self.max_seq_len

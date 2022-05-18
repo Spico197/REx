@@ -2,7 +2,7 @@ from typing import Iterable, Optional, List
 
 import torch
 from rex.utils.logging import logger
-from rex.utils.progress_bar import tqdm
+from rex.utils.progress_bar import pbar
 from rex.data.label_encoder import LabelEncoder
 from rex.data.transforms.base import TransformBase
 
@@ -46,7 +46,7 @@ class CachedMCTransform(TransformBase):
         final_data = []
         if debug:
             dataset = dataset[:500]
-        transform_loader = tqdm(dataset, desc=desc)
+        transform_loader = pbar(dataset, desc=desc)
 
         num_tot_ins = 0
         for data in transform_loader:

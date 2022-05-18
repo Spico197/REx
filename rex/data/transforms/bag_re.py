@@ -5,7 +5,7 @@ from rex.utils.logging import logger
 from rex.data.label_encoder import LabelEncoder
 from rex.utils.position import construct_relative_positions, find_all_positions
 from rex.utils.mask import construct_piecewise_mask
-from rex.utils.progress_bar import tqdm
+from rex.utils.progress_bar import pbar
 from rex.data.transforms.base import TransformBase
 
 
@@ -32,7 +32,7 @@ class CachedMCBagRETransform(TransformBase):
 
         if debug:
             data = data[:5]
-        transform_loader = tqdm(data, desc=desc)
+        transform_loader = pbar(data, desc=desc)
 
         for d in transform_loader:
             ent_validation = []

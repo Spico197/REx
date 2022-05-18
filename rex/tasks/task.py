@@ -5,15 +5,18 @@ import torch
 import torch.nn as nn
 from omegaconf import OmegaConf
 
-from rex.data.manager import Manager
+from rex.data.data_manager import DataManager
 from rex.tasks.base_task import TaskBase
+from rex.utils.dict import get_dict_content
 from rex.utils.io import dump_json
 from rex.utils.logging import logger
 from rex.utils.wrapper import safe_try
-from rex.utils.progress_bar import tqdm
+from rex.utils.progress_bar import pbar, rbar
 from rex.utils.tensor_move import move_to_device
+from rex.utils.registry import register
 
 
+@register("task")
 class Task(TaskBase):
     def __init__(
         self,
@@ -31,6 +34,7 @@ class Task(TaskBase):
 
         self.transform = self.init_transform()
         self.data_manager = self.init_data_manager()
+
         self.model = self.init_model()
         self.model.to(self.device)
 
@@ -39,11 +43,14 @@ class Task(TaskBase):
             self.lr_scheduler = None
         else:
             self.optimizer = self.init_optimizer()
-            self.lr_scheduler = self.init_lr_sch
+            self.lr_scheduler = self.init_lr_scheduler()
 
         self.after_initialized()
 
     def after_initialized(self):
+        pass
+
+    def after_initialize_data_manager(self):
         pass
 
     def init_transform(self):
@@ -62,18 +69,28 @@ class Task(TaskBase):
         return None
 
     @torch.no_grad()
-    def get_eval_results(self, origin: List, output: List) -> dict:
+    def _get_eval_results_impl(self, input_batches: List, output_batches: List) -> dict:
+        return self.get_eval_results(input_batches, output_batches)
+
+    def get_eval_results(self, input_batches: List, output_batches: List) -> dict:
         """Get evaluation measurements
 
         Args:
-            origin: list of model input
-            output: list of model results (`preds`)
+            input_batches: list of model input. Raw batch input.
+            output_batches: list of model results (`preds`)
 
         Returns:
             ``rex.utils.dict.PrettyPrintDefaultDict``
                 and ``rex.utils.dict.PrettyPrintDict`` is highly recommended
                 to replace vanilla ``defaultdict`` and ``dict`` here.
         """
+        raise NotImplementedError
+
+    @torch.no_grad()
+    def predict(self, *args, **kwargs):
+        return self.predict_api(*args, **kwargs)
+
+    def predict_api(self, *args, **kwargs):
         raise NotImplementedError
 
     @safe_try
@@ -86,15 +103,17 @@ class Task(TaskBase):
         continue_training = True
         resumed_training = self.config.resumed_training
         total_steps = self.history["curr_epoch"] * len(self.data_manager.train_loader)
-        for epoch_idx in range(self.history["curr_epoch"], self.config.num_epochs):
+        for epoch_idx in rbar(
+            self.history["curr_epoch"], self.config.num_epochs, desc="Epoch"
+        ):
             if not resumed_training:
                 self.history["curr_epoch"] = epoch_idx
             logger.info(f"Epoch: {epoch_idx}/{self.config.num_epochs}")
 
             self.model.train()
             self.optimizer.zero_grad()
-            loader = tqdm(self.data_manager.train_loader, desc=f"Train(e{epoch_idx})")
-            for batch_idx, batch in loader:
+            loader = pbar(self.data_manager.train_loader, desc=f"Train(e{epoch_idx})")
+            for batch_idx, batch in enumerate(loader):
                 if not resumed_training:
                     self.history["curr_batch"] = batch_idx
                     self.history["total_steps"] = total_steps
@@ -127,7 +146,7 @@ class Task(TaskBase):
                     self.config.step_eval_interval > 0
                     and total_steps + 1 % self.config.step_eval_interval
                 ):
-                    self._eval_in_train("step")
+                    self._eval_during_train("step")
                     if not self._check_patience():
                         break
                 total_steps += 1
@@ -138,22 +157,23 @@ class Task(TaskBase):
                 break
             if (
                 self.config.epoch_eval_interval > 0
-                and epoch_idx + 1 % self.config.epoch_eval_interval
+                and epoch_idx + 1 % self.config.epoch_eval_interval == 0
             ):
-                self._eval_in_train("epoch")
+                self._eval_during_train("epoch")
                 if not self._check_patience():
                     break
 
         logger.info("Trial finished.")
         if self.config.select_best_by_key == "metric":
-            tmp_string = f"{100 * self.history['best_metric']:.3f} %"
+            tmp_string = f"{self.history['best_metric']:.5f}"
         else:
             tmp_string = f"{self.history['best_loss']}"
-        finished_string = (
-            f"Best epoch: {self.history['best_epoch']}, step: {self.history['best_step']}\n"
+        logger.info(
+            f"Best epoch: {self.history['best_epoch']}, step: {self.history['best_step']}"
+        )
+        logger.info(
             f"Best {self.config.select_best_on_data}.{self.config.select_best_by_key}.{self.config.best_metric_field} : {tmp_string}"
         )
-        logger.info(finished_string)
 
         if self.config.final_eval_on_test:
             logger.info("Loading best ckpt")
@@ -162,7 +182,7 @@ class Task(TaskBase):
                 "test", verbose=True, dump=True, postfix="final"
             )
 
-    def _eval_in_train(self, eval_on: Optional[str] = "epoch"):
+    def _eval_during_train(self, eval_on: Optional[str] = "epoch"):
         """Evaluation during training to record eval info, and control training process
 
         Args:
@@ -179,8 +199,8 @@ class Task(TaskBase):
         ], f"select_best_by_key is {self.config.select_best_by_key}, while candidates are: `metric` and `loss`"
         assert (self.config.select_best_by_key == "train") or (
             self.config.select_best_by_key != "train"
-            and self.config.select_best_by_key in self.config.eval_on_data
-        ), f"{self.config.select_best_by_key} is not included in eval_on_data: {self.config.eval_on_data}"
+            and self.config.select_best_on_data in self.config.eval_on_data
+        ), f"{self.config.select_best_on_data} is not included in eval_on_data: {self.config.eval_on_data}"
 
         if len(self.config.eval_on_data) < 1:
             logger.warning(
@@ -198,7 +218,7 @@ class Task(TaskBase):
         # eval to get measurements and loss
         eval_on_datasets = set()
         for dataset_name in self.config.eval_on_data:
-            dataset_name = Manager._get_normalized_dataset_name(dataset_name)
+            dataset_name = DataManager._get_normalized_dataset_name(dataset_name)
             eval_on_datasets.add(dataset_name)
         for dataset_name in eval_on_datasets:
             eval_loss, eval_measures = self.eval(dataset_name, verbose=False)
@@ -215,17 +235,18 @@ class Task(TaskBase):
         this_eval_result["train_loss"] = self.history["current_train_loss"]
 
         # update the best
-        select_best_on_data = Manager._get_normalized_dataset_name(
+        select_best_on_data = DataManager._get_normalized_dataset_name(
             self.config.select_best_on_data
         )
-        metric = self.history[eval_on][select_best_on_data]["metrics"]
+        metric = self.history[eval_on][select_best_on_data]["metrics"][history_index]
+        metric = get_dict_content(metric, self.config.best_metric_field)
         is_best_metric = False
         if metric > self.history["best_metric"]:
             is_best_metric = True
             self.history["best_metric"] = metric
         this_eval_result["is_best_metric"] = is_best_metric
 
-        loss = self.history[eval_on][select_best_on_data]["loss"]
+        loss = self.history[eval_on][select_best_on_data]["loss"][history_index]
         is_best_loss = False
         if loss < self.history["best_loss"]:
             is_best_loss = True
@@ -256,31 +277,32 @@ class Task(TaskBase):
         this_eval_result["no_climbing_step_cnt"] = self.history["no_climbing_step_cnt"]
 
         # print results
-        epoch_finished_string = (
-            f"Eval on {eval_on}, Idx: {history_index_identifier}, is_best: {is_best}\n"
+        logger.info(
+            f"Eval on {eval_on}, Idx: {history_index_identifier}, is_best: {is_best}"
         )
-        epoch_finished_string += f"Train loss: {self.history['current_train_loss']}\n"
+        logger.info(f"Train loss: {self.history['current_train_loss']:.5f}")
         for dataset_name in eval_on_datasets:
             eval_measures = self.history[eval_on][dataset_name]["metrics"][
                 history_index
             ]
             eval_loss = self.history[eval_on][dataset_name]["loss"][history_index]
-            epoch_finished_string += (
-                f"{dataset_name} - "
-                f"{self.config.best_metric_field}: "
-                f"{100 * eval_measures[self.config.best_metric_field]:.3f} %, "
-                f"eval loss: {eval_loss}\n"
+            logger.info(
+                (
+                    f"{dataset_name} - "
+                    f"{self.config.best_metric_field}: "
+                    f"{get_dict_content(eval_measures, self.config.best_metric_field):.5f}, "
+                    f"eval loss: {eval_loss:.5f}"
+                )
             )
         if self.config.select_best_by_key == "metric":
-            tmp_string = f"{100 * self.history['best_metric']:.3f} %"
+            tmp_string = f"{self.history['best_metric']:.5f}"
         else:
-            tmp_string = f"{self.history['best_loss']}"
-        epoch_finished_string += (
-            f"Best {self.config.select_best_by_key}: {tmp_string}\n"
-            f"Best {eval_on}: {self.history[f'best_{eval_on}']}\n"
+            tmp_string = f"{self.history['best_loss']:.5f}"
+        logger.info(f"Best {self.config.select_best_by_key}: {tmp_string}")
+        logger.info(f"Best {eval_on}: {self.history[f'best_{eval_on}']}")
+        logger.info(
             f"No Climbing Count of {eval_on}: {self.history[f'no_climbing_{eval_on}_cnt']}"
         )
-        logger.info(epoch_finished_string)
         dump_json(
             this_eval_result,
             self.measures_path.joinpath(f"{history_index_identifier}.json"),
@@ -343,28 +365,27 @@ class Task(TaskBase):
         loader = self.data_manager.load_loader(
             dataset_name, is_eval=True, epoch=self.history["curr_epoch"]
         )
-        loader = tqdm(loader, desc=f"{dataset_name} Eval", ncols=80, ascii=True)
+        loader = pbar(loader, desc=f"{dataset_name} Eval", ncols=80, ascii=True)
 
         eval_loss = 0.0
         metrics = {}
         origin = []
         output = []
+        # raw_batch: dict
         for raw_batch in loader:
             batch = move_to_device(raw_batch, self.device)
-            out = self.model.eval(**batch)
+            out = self.model(**batch)
             eval_loss += out["loss"].item()
-            origin.extend(raw_batch)
-            output.extend(out)
+            origin.append(raw_batch)
+            output.append(out["pred"])
 
-        metrics = self.get_eval_results(origin, output)
+        metrics = self._get_eval_results_impl(origin, output)
 
         if verbose:
+            logger.info(f"Eval dataset: {dataset_name}")
+            logger.info(f"Eval loss: {eval_loss}")
             logger.info(
-                (
-                    f"Eval dataset: {dataset_name}\n"
-                    f"Eval loss: {eval_loss}\n"
-                    f"Eval metrics: {metrics}\n"
-                )
+                f"Eval metrics: {get_dict_content(metrics, self.config.best_metric_field)}"
             )
         if dump:
             dump_obj = {
@@ -375,3 +396,5 @@ class Task(TaskBase):
             dump_json(
                 dump_obj, self.measures_path.joinpath(f"{dataset_name}.{postfix}.json")
             )
+
+        return eval_loss, metrics

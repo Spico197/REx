@@ -10,16 +10,6 @@ class ModelBase(nn.Module):
         To override this function, you must make sure `**kwargs` is in your args
 
         Returns:
-            return a dict of results, loss must be included
-            example: {"loss": loss}
-        """
-        raise NotImplementedError
-
-    def eval(self, *args, **kwargs) -> dict:
-        """Model evaluating
-        To override this function, you must make sure `**kwargs` is in your args
-
-        Returns:
             return a dict of results, loss and preds must be included
             example: {"loss": loss, "preds": preds}
         """

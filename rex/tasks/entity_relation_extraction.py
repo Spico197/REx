@@ -4,15 +4,15 @@ from omegaconf import OmegaConf
 
 from rex.utils.logging import logger
 from rex.models.casrel import CasRel
-from rex.utils.io import load_line_json, load_json
-from rex.utils.progress_bar import tqdm
+from rex.utils.io import load_jsonlines, load_json
+from rex.utils.progress_bar import pbar
 from rex.utils.tensor_move import move_to_cuda_device
 from rex.data.collate_fn import subj_obj_span_collate_fn
 from rex.data.transforms.entity_re import (
     StreamBERTSubjObjSpanTransform,
     StreamSubjObjSpanTransform,
 )
-from rex.data.manager import StreamTransformManager
+from rex.data.data_manager import StreamTransformManager
 from rex.data.dataset import StreamTransformDataset
 from rex.tasks.base_task import TaskBase
 from rex.metrics.triple import measure_triple
@@ -32,7 +32,7 @@ class EntityRelationExtractionTask(TaskBase):
             config.test_filepath,
             StreamTransformDataset,
             self.transform,
-            load_line_json,
+            load_jsonlines,
             config.train_batch_size,
             config.eval_batch_size,
             subj_obj_span_collate_fn,
@@ -54,7 +54,7 @@ class EntityRelationExtractionTask(TaskBase):
         for epoch_idx in range(self.config.num_epochs):
             logger.info(f"Epoch: {epoch_idx}/{self.config.num_epochs}")
             self.model.train()
-            loader = tqdm(self.data_manager.train_loader, desc=f"Train(e{epoch_idx})")
+            loader = pbar(self.data_manager.train_loader, desc=f"Train(e{epoch_idx})")
             for batch in loader:
                 batch = move_to_cuda_device(batch, self.config.device)
                 used_keys = {
@@ -122,7 +122,7 @@ class EntityRelationExtractionTask(TaskBase):
             "dev": self.data_manager.dev_loader,
             "test": self.data_manager.test_loader,
         }
-        loader = tqdm(name2loader[dataset_name], desc=f"{dataset_name} Eval")
+        loader = pbar(name2loader[dataset_name], desc=f"{dataset_name} Eval")
         preds = []
         golds = []
         for batch in loader:

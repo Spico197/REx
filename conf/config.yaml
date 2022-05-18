@@ -3,13 +3,13 @@
 ## override part of the configurations below as you wish in your task
 
 # task
-name: task_name
+task_name: task_name
 
 # data preprocessing
 
 # filepaths
 output_dir: outputs
-task_dir: ${output_dir}/${name}
+task_dir: ${output_dir}/${task_name}
 data_dir: data
 train_filepath: ${data_dir}/train.jsonl
 dev_filepath: ${data_dir}/dev.jsonl
@@ -34,12 +34,10 @@ epoch_eval_interval: 1
 eval_on_data: [dev]
 select_best_on_data: dev
 select_best_by_key: metric
-best_metric_field: f1
+best_metric_field: micro.f1
 save_every_ckpt: false
 save_best_ckpt: true
 final_eval_on_test: true
-
-# model
 
 # misc
 only_master_logging: true

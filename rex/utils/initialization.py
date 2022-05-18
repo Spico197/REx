@@ -7,6 +7,7 @@ import numpy as np
 from omegaconf.omegaconf import OmegaConf
 
 from rex.utils.logging import logger
+from rex.utils.progress_bar import pbar
 from rex.tasks import LOG_FILENAME, CONFIG_PARAMS_FILENAME
 
 

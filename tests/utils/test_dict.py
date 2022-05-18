@@ -1,4 +1,4 @@
-from rex.utils.dict import PrettyPrintDefaultDict, _pretty_format
+from rex.utils.dict import PrettyPrintDefaultDict, _pretty_format, get_dict_content
 
 
 def test_pretty_dict():
@@ -36,3 +36,12 @@ def test_pretty_dict():
     assert dict(pdict) == pdict.to_dict()
 
     assert _pretty_format(2) == 2
+
+
+def test_get_dict_val():
+    dict_item = {"1": 2, "3": {"4": 5, "6": {"7": 8}}}
+    assert get_dict_content(dict_item, "1") == 2
+    assert get_dict_content(dict_item, "3") == {"4": 5, "6": {"7": 8}}
+    assert get_dict_content(dict_item, "3.4") == 5
+    assert get_dict_content(dict_item, "3.6") == {"7": 8}
+    assert get_dict_content(dict_item, "3.6.7") == 8

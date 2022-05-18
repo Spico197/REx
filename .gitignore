@@ -135,3 +135,6 @@ data/*/formatted
 debug.py
 outputs/
 examples/CCIRCup2021-KnowledgeProbing/
+data/IPRE/cache
+data/IPRE/vocab.emb
+data/IPRE/label2id.json

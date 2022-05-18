@@ -18,6 +18,18 @@ def _convert_list_str_to_list(string: str, item_type: Callable):
     return ret
 
 
+def get_pad_mask(token_len, max_len, token_mask=1, pad_mask=0):
+    mask = [token_mask] * token_len + [pad_mask] * (max_len - token_len)
+    return mask
+
+
+def get_pad_token(tokens, max_len, pad_token):
+    tokens_len = len(tokens)
+    tokens = tokens[:max_len]
+    tokens = tokens + [pad_token] * (max_len - tokens_len)
+    return tokens
+
+
 class Vocab(object):
     def __init__(
         self,
@@ -59,6 +71,11 @@ class Vocab(object):
             self.token2id[token] = token_id
             self.id2token[token_id] = token
 
+            if token == self.pad:
+                self.pad_idx = token_id
+            elif token == self.unk:
+                self.unk_idx = token_id
+
             if weights is not None:
                 if token_id != len(self.weights):
                     raise ValueError(
@@ -95,9 +112,8 @@ class Vocab(object):
             token_ids: token ids after encoding
             mask: padding mask
         """
-        tokens = tokens[:max_seq_len]
-        mask = [1] * len(tokens) + [0] * (max_seq_len - len(tokens))
-        tokens = tokens + [self.pad] * (max_seq_len - len(tokens))
+        tokens = get_pad_token(tokens, max_seq_len, self.pad)
+        mask = get_pad_mask(len(tokens), max_seq_len, 1, 0)
         if update:
             return self.update_convert_tokens_to_ids(tokens), mask
         else:

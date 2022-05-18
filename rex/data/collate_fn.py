@@ -68,7 +68,7 @@ class GeneralCollateFn(object):
         """For those who transform data while collating, override this function"""
         return data
 
-    def __call__(self, data: List[Dict[Any]]) -> Dict[str, Any]:
+    def __call__(self, data: List[Dict[str, Any]]) -> Dict[str, Any]:
         self._validate_data(data)
         if len(self.key2type) == 0 and self.guessing:
             self.guess_types(data[0], update=True)

@@ -11,8 +11,8 @@ from rex.modules.embeddings.static_embedding import StaticEmbedding
 class SentPCNN(nn.Module):
     def __init__(
         self,
-        vocab,
         num_classes,
+        vocab_size,
         dim_token_emb,
         pos_emb_capacity,
         dim_pos,
@@ -23,7 +23,7 @@ class SentPCNN(nn.Module):
         super().__init__()
 
         self.token_embedding = StaticEmbedding(
-            vocab.size, dim_token_emb, dropout=dropout
+            vocab_size, dim_token_emb, dropout=dropout
         )
         self.pos1_embedding = nn.Embedding(
             num_embeddings=pos_emb_capacity, embedding_dim=dim_pos
@@ -38,7 +38,7 @@ class SentPCNN(nn.Module):
             in_features=num_filters * 3, out_features=num_classes, bias=True
         )
 
-    def forward(self, token_ids, head_pos, tail_pos, mask, labels=None):
+    def forward(self, token_ids, head_pos, tail_pos, mask, labels=None, **kwargs):
         token_embedding = self.token_embedding(token_ids)
         pos1_embedding = self.pos1_embedding(head_pos)
         pos2_embedding = self.pos2_embedding(tail_pos)

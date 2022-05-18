@@ -44,3 +44,21 @@ def test_config_argument():
 
     with pytest.raises(AssertionError):
         config = ConfigParser(("-d", "--task-dir"))
+
+
+def test_resolve_update(tmp_path):
+    base_config = OmegaConf.from_dotlist(["name=${data_type}", "data_type=dev"])
+    assert base_config.name == "dev"
+    base_path = tmp_path / "base_config.yaml"
+    OmegaConf.save(base_config, base_path)
+
+    custom_config = OmegaConf.from_dotlist(["data_type=test"])
+    custom_path = tmp_path / "custom_config.yaml"
+    OmegaConf.save(custom_config, custom_path)
+
+    args = [f"--base-config-filepath={base_path}", f"-c={custom_path}"]
+    config = ConfigParser.parse_cmd(cmd_args=args)
+    assert config.data_type == "test"
+
+    config.data_type = "new"
+    assert config.name == "new"

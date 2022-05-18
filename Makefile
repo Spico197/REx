@@ -28,6 +28,10 @@ test:
 	coverage report -m
 	flake8
 
+.PHONY: debug
+debug:
+	pytest -vv tests/utils/test_dict.py
+
 .PHONY: clean
 clean:
 	cd docs && make clean

@@ -97,6 +97,17 @@ Checkout the `examples` folder.
   - add `PrettyPrintDict`
   - add `flatten_all` utility in `rex.utils.iteration`
   - update tagging and classification metrics
+  - change `*_line_json*` into `*_jsonlines*`
+  - add `emb` and `train` rex entries
+  - update token_idx in vocab
+  - update `progress_bar` into `pbar` and `rbar`
+  - remove `max_seq_len` and `vocab` in base transform
+  - add registries
+  - fix evaluation printing strings
+  - add default base config
+  - add deprecation warning string
+  - remove `sys.stderr` in logging handlers
+  - add `detach_cpu_list` in `tensor_move`
 - v0.0.15: add safe_try to kill ugly statements in example main call
 - v0.0.14: update vocab embedding loading to be compatible with other embedding files
 - v0.0.13: update vocab, label_encoder, fix bugs in cnn reshaping and crf importing

@@ -3,6 +3,7 @@ import pickle
 from typing import Iterable, Any, Optional, List
 
 from rex.utils.logging import logger
+from rex.utils.deprecation import deprecation_warning
 
 
 def dump_json(obj, filepath, **kwargs):
@@ -25,6 +26,11 @@ def dump_line_json(obj, filepath, **kwargs):
 
 
 def load_line_json(filepath, **kwargs):
+    deprecation_warning("load_line_json", "load_jsonlines")
+    return load_jsonlines(filepath, **kwargs)
+
+
+def load_jsonlines(filepath, **kwargs):
     data = list()
     with open(filepath, "rt", encoding="utf-8") as fin:
         for line in fin:
@@ -39,7 +45,7 @@ def dump_pickle(obj, filepath, **kwargs):
 
 
 def load_pickle(filepath, **kwargs):
-    data = []
+    data = None
     with open(filepath, "rb") as fin:
         data = pickle.load(fin, **kwargs)
     return data
@@ -132,7 +138,12 @@ def load_line_iterator(filepath):
             yield line
 
 
-def load_line_json_iterator(filepath):
+def load_line_json_iterator(filepath, **kwargs):
+    deprecation_warning("load_line_json_iterator", "load_jsonlines_iterator")
+    return load_jsonlines_iterator(filepath, **kwargs)
+
+
+def load_jsonlines_iterator(filepath):
     for line in load_line_iterator(filepath):
         yield json.loads(line)
 

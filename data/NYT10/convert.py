@@ -1,12 +1,12 @@
 import os
 
-from rex.utils.io import load_line_json_iterator, dump_line_json
+from rex.utils.io import load_jsonlines_iterator, dump_line_json
 from rex.utils.position import find_all_positions
 
 
 def convert_data(dataset_name, filepath):
     final_data = []
-    for idx, ins in enumerate(load_line_json_iterator(filepath)):
+    for idx, ins in enumerate(load_jsonlines_iterator(filepath)):
         d = {
             "id": str(idx),
             "tokens": list(ins["text"].lower().split()),

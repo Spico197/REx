@@ -2,6 +2,13 @@ import json
 from collections import defaultdict
 
 
+def get_dict_content(dict_item: dict, key: str):
+    val = dict_item
+    for k in key.split("."):
+        val = val[k]
+    return val
+
+
 def _pretty_format(
     obj: dict, decimal=3, return_percentage=False, add_percentage_symbol=True
 ):
