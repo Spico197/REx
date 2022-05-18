@@ -81,33 +81,7 @@ Checkout the `examples` folder.
 
 ## ✉️Update
 
-- v0.0.15beta:
-  - add new manager: `Manager` with lazy loading interface
-  - add `StreamReadDataset`
-  - `init_all` returns `logger_handler_id`
-  - add `PrettyPrintDefaultDict` to support pretty printing to console
-  - add `[dev]` installation option
-  - update task loading, remove `load_(train|dev|test)_data`, add `update_dict`
-  - `load_config` is `False` in default to prevent config overriding after `load_best_ckpt`
-  - add `Task` for easy training on single node with single GPU card
-  - update example `config.yaml` to adapt with `Task`
-  - add `ModelBase` for showing API
-  - add `GeneralCollateFn` for universal collate function, support guessing field types
-  - update `history` var in base task
-  - add `PrettyPrintDict`
-  - add `flatten_all` utility in `rex.utils.iteration`
-  - update tagging and classification metrics
-  - change `*_line_json*` into `*_jsonlines*`
-  - add `emb` and `train` rex entries
-  - update token_idx in vocab
-  - update `progress_bar` into `pbar` and `rbar`
-  - remove `max_seq_len` and `vocab` in base transform
-  - add registries
-  - fix evaluation printing strings
-  - add default base config
-  - add deprecation warning string
-  - remove `sys.stderr` in logging handlers
-  - add `detach_cpu_list` in `tensor_move`
+- v0.1.0: huge update with lots of new features, check the usage in `examples/IPRE` ~
 - v0.0.15: add safe_try to kill ugly statements in example main call
 - v0.0.14: update vocab embedding loading to be compatible with other embedding files
 - v0.0.13: update vocab, label_encoder, fix bugs in cnn reshaping and crf importing
