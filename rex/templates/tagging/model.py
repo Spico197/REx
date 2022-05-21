@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+
 from rex.modules.crf import PlainCRF
 
 

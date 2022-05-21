@@ -20,6 +20,7 @@ docs:
 
 .PHONY: format
 format:
+	isort --profile black --filter-files .
 	black .
 
 .PHONY: test

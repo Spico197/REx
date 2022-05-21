@@ -16,7 +16,6 @@ dev_filepath: ${data_dir}/dev.jsonl
 test_filepath: ${data_dir}/test.jsonl
 
 # training control
-device: cuda:0
 random_seed: 1227
 num_epochs: 50
 num_steps: -1

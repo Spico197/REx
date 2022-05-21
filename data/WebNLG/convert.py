@@ -3,7 +3,7 @@ from collections import Counter
 
 import numpy as np
 
-from rex.utils.io import dump_csv, dump_iterable, dump_json, load_json, dump_line_json
+from rex.utils.io import dump_csv, dump_iterable, dump_json, dump_line_json, load_json
 
 
 def convert_data(dataset_name, filepath):

@@ -1,21 +1,21 @@
 import torch
-from torch.optim import Adam
 from omegaconf import OmegaConf
+from torch.optim import Adam
 
-from rex.utils.logging import logger
-from rex.models.casrel import CasRel
-from rex.utils.io import load_jsonlines, load_json
-from rex.utils.progress_bar import pbar
-from rex.utils.tensor_move import move_to_cuda_device
 from rex.data.collate_fn import subj_obj_span_collate_fn
+from rex.data.data_manager import StreamTransformManager
+from rex.data.dataset import StreamTransformDataset
 from rex.data.transforms.entity_re import (
     StreamBERTSubjObjSpanTransform,
     StreamSubjObjSpanTransform,
 )
-from rex.data.data_manager import StreamTransformManager
-from rex.data.dataset import StreamTransformDataset
-from rex.tasks.base_task import TaskBase
 from rex.metrics.triple import measure_triple
+from rex.models.casrel import CasRel
+from rex.tasks.base_task import TaskBase
+from rex.utils.io import load_json, load_jsonlines
+from rex.utils.logging import logger
+from rex.utils.progress_bar import pbar
+from rex.utils.tensor_move import move_to_cuda_device
 
 
 class EntityRelationExtractionTask(TaskBase):

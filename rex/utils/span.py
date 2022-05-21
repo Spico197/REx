@@ -1,8 +1,8 @@
 import copy
 from typing import Iterable, Optional
 
-import torch
 import numpy as np
+import torch
 
 
 def find_closest_span_pairs(

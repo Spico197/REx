@@ -1,8 +1,8 @@
 import argparse
 import pathlib
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from dataclasses import dataclass, field, asdict
-from typing import Iterable, Optional, List
+from typing import Iterable, List, Optional
 
 from omegaconf import OmegaConf
 

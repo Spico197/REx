@@ -1,4 +1,4 @@
-from typing import Type, Union, List, Any
+from typing import Any, List, Type, Union
 
 
 def find_all_positions(

@@ -1,6 +1,6 @@
-from rex.utils.logging import logger
-from rex.utils.config import get_config_from_cmd
 from rex.tasks.relation_extraction import MCMLBagRelationClassificationTask
+from rex.utils.config import get_config_from_cmd
+from rex.utils.logging import logger
 
 
 def main():

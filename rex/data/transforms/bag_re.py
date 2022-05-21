@@ -1,12 +1,12 @@
 from collections import defaultdict
-from typing import Iterable, Optional, List
+from typing import Iterable, List, Optional
 
-from rex.utils.logging import logger
 from rex.data.label_encoder import LabelEncoder
-from rex.utils.position import construct_relative_positions, find_all_positions
-from rex.utils.mask import construct_piecewise_mask
-from rex.utils.progress_bar import pbar
 from rex.data.transforms.base import TransformBase
+from rex.utils.logging import logger
+from rex.utils.mask import construct_piecewise_mask
+from rex.utils.position import construct_relative_positions, find_all_positions
+from rex.utils.progress_bar import pbar
 
 
 class CachedMCBagRETransform(TransformBase):

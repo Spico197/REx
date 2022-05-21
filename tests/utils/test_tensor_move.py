@@ -1,7 +1,6 @@
 import torch
 
 from rex.utils.tensor_move import move_to_cuda_device
-
 from tests import RunIf
 
 

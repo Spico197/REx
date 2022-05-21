@@ -2,12 +2,12 @@ from pathlib import Path
 from typing import Callable, Optional, Union
 
 from torch.utils.data import DataLoader, Dataset
-from torch.utils.data.sampler import RandomSampler, SequentialSampler
 from torch.utils.data.distributed import DistributedSampler
+from torch.utils.data.sampler import RandomSampler, SequentialSampler
 
-from rex.utils.logging import logger
-from rex.utils.io import load_pickle, dump_pickle
 from rex.utils.deprecation import deprecation_warning
+from rex.utils.io import dump_pickle, load_pickle
+from rex.utils.logging import logger
 
 
 class DataManager(object):

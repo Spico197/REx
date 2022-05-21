@@ -2,8 +2,8 @@ from collections import defaultdict
 
 from rex.metrics import (
     DEFAULT_PRF1_RESULT_DICT,
-    safe_division,
     calc_p_r_f1_from_tp_fp_fn,
+    safe_division,
 )
 
 

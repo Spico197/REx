@@ -6,8 +6,8 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 from transformers.models.bert import BertModel
 
-from rex.modules.span import SubjObjSpan
 from rex.modules.embeddings.static_embedding import StaticEmbedding
+from rex.modules.span import SubjObjSpan
 
 
 class LSTMCasRel(nn.Module):

@@ -4,8 +4,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from rex.modules.pcnn import PiecewiseCNN
 from rex.modules.embeddings.static_embedding import StaticEmbedding
+from rex.modules.pcnn import PiecewiseCNN
 
 
 class PCNNOne(nn.Module):

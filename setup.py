@@ -1,8 +1,8 @@
 import os
+
 import setuptools
 
 from rex import __version__
-
 
 readme_filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "README.md")
 with open(readme_filepath, "r") as fh:
@@ -29,10 +29,12 @@ setuptools.setup(
         "numpy>=1.19.0",
         "scikit-learn>=0.21.3",
         "omegaconf>=2.0.6",
-        "loguru==0.5.3",
-        "tqdm==4.61.1",
+        "loguru>=0.5.3",
+        "tqdm>=4.61.1",
     ],
-    extras_require={"dev": ["pytest", "coverage", "black", "flake8"]},
+    extras_require={
+        "dev": ["pytest", "coverage", "black", "isort", "flake8", "pre-commit"]
+    },
     include_package_data=True,
-    entry_points={"console_scripts": ["rex = rex.cmd:main"]},
+    entry_points={"console_scripts": ["rex = rex.cmds:main"]},
 )

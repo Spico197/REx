@@ -3,10 +3,11 @@ from typing import Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from rex.modules.embeddings.static_embedding import StaticEmbedding
-from rex.modules.cnn import MultiKernelCNN
-from rex.modules.ffn import FFN
 from transformers import AutoModel
+
+from rex.modules.cnn import MultiKernelCNN
+from rex.modules.embeddings.static_embedding import StaticEmbedding
+from rex.modules.ffn import FFN
 
 
 class DummyModel(nn.Module):

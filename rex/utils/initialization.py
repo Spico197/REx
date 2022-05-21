@@ -2,13 +2,13 @@ import os
 import random
 from typing import Optional
 
-import torch
 import numpy as np
+import torch
 from omegaconf.omegaconf import OmegaConf
 
+from rex.tasks import CONFIG_PARAMS_FILENAME, LOG_FILENAME
 from rex.utils.logging import logger
 from rex.utils.progress_bar import pbar
-from rex.tasks import LOG_FILENAME, CONFIG_PARAMS_FILENAME
 
 
 def set_seed(seed: Optional[int] = 1227, set_cudnn: Optional[bool] = False):

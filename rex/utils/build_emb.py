@@ -1,8 +1,8 @@
-from rex.utils.io import load_embedding_file, load_line_iterator
-from rex.utils.config import ConfigParser, ConfigArgument
 from rex.data.vocab import Vocab
-from rex.utils.progress_bar import pbar
+from rex.utils.config import ConfigArgument, ConfigParser
+from rex.utils.io import load_embedding_file, load_line_iterator
 from rex.utils.logging import logger
+from rex.utils.progress_bar import pbar
 
 
 def build_emb(

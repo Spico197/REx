@@ -1,10 +1,11 @@
-from typing import Iterable, Optional, List
+from typing import Iterable, List, Optional
 
 import torch
-from rex.utils.logging import logger
-from rex.utils.progress_bar import pbar
+
 from rex.data.label_encoder import LabelEncoder
 from rex.data.transforms.base import TransformBase
+from rex.utils.logging import logger
+from rex.utils.progress_bar import pbar
 
 
 def mc_collate_fn(data):

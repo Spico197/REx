@@ -1,6 +1,6 @@
 import os
 
-from rex.utils.io import load_jsonlines_iterator, dump_line_json
+from rex.utils.io import dump_line_json, load_jsonlines_iterator
 from rex.utils.position import find_all_positions
 
 

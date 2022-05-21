@@ -1,13 +1,13 @@
 import random
 from collections import defaultdict
-from typing import Iterable, List, Dict, Optional
+from typing import Dict, Iterable, List, Optional
 
 import numpy as np
 from transformers.models.bert import BertTokenizerFast
 
-from rex.data.vocab import Vocab
 from rex.data.label_encoder import LabelEncoder
 from rex.data.transforms.base import TransformBase
+from rex.data.vocab import Vocab
 
 
 class StreamSubjObjSpanTransform(TransformBase):

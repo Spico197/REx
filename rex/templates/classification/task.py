@@ -1,19 +1,20 @@
 import json
 from pathlib import Path
 
-from omegaconf import OmegaConf
 import torch
 import torch.optim as optim
-from rex.utils.config import ConfigParser
-from rex.utils.logging import logger
-from rex.utils.io import dump_json, load_jsonlines
-from rex.data.dataset import CachedDataset
+from omegaconf import OmegaConf
+
 from rex.data.data_manager import CachedManager
-from rex.utils.tensor_move import move_to_cuda_device
-from rex.utils.progress_bar import pbar
-from rex.tasks.base_task import TaskBase
-from rex.utils.initialization import init_all
+from rex.data.dataset import CachedDataset
 from rex.metrics.classification import mc_prf1
+from rex.tasks.base_task import TaskBase
+from rex.utils.config import ConfigParser
+from rex.utils.initialization import init_all
+from rex.utils.io import dump_json, load_jsonlines
+from rex.utils.logging import logger
+from rex.utils.progress_bar import pbar
+from rex.utils.tensor_move import move_to_cuda_device
 
 from .data import CachedMCTransform, mc_collate_fn
 from .model import DummyPLMModel

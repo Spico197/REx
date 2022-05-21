@@ -1,29 +1,20 @@
-from multiprocessing import Manager
-from typing import Optional
-
-import torch
 from torch.optim import Adam
-from omegaconf import OmegaConf
 
-from rex.utils.logging import logger
-from rex.models.sent_pcnn import SentPCNN
-from rex.models.bag_pcnn import PCNNOne
-from rex.utils.io import load_jsonlines
-from rex.utils.progress_bar import pbar
-from rex.utils.tensor_move import move_to_cuda_device, detach_cpu_list
-from rex.utils.dict import PrettyPrintDict
-from rex.utils.registry import register
-from rex.data.collate_fn import bag_re_collate_fn, re_collate_fn
+from rex.data.collate_fn import re_collate_fn
+from rex.data.data_manager import DataManager
+from rex.data.dataset import CachedDataset
 from rex.data.transforms.sent_re import CachedMCMLSentRETransform
-from rex.data.transforms.bag_re import CachedMCBagRETransform
-from rex.data.data_manager import CachedManager, DataManager
-from rex.data.dataset import CachedBagREDataset, CachedDataset
-from rex.tasks.task import Task
-from rex.metrics.classification import mc_prf1, mcml_prf1
+from rex.metrics.classification import mcml_prf1
+from rex.models.sent_pcnn import SentPCNN
+from rex.tasks.task import SimpleTask
+from rex.utils.dict import PrettyPrintDict
+from rex.utils.io import load_jsonlines
+from rex.utils.registry import register
+from rex.utils.tensor_move import detach_cpu_list
 
 
 @register("task")
-class MCMLSentRelationClassificationTask(Task):
+class MCMLSentRelationClassificationTask(SimpleTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -74,7 +65,7 @@ class MCMLSentRelationClassificationTask(Task):
         for batch_input, batch_output in zip(input_batches, output_batches):
             batch_gold = detach_cpu_list(batch_input["labels"])
             batch_pred = detach_cpu_list(
-                batch_output.ge(self.config.pred_threshold).long()
+                batch_output["pred"].ge(self.config.pred_threshold).long()
             )
             golds.extend(batch_gold)
             preds.extend(batch_pred)
@@ -91,7 +82,6 @@ class MCMLSentRelationClassificationTask(Task):
             del tensor_batch["labels"]
         if "id" in tensor_batch:
             del tensor_batch["id"]
-        tensor_batch = move_to_cuda_device(tensor_batch, self.config.device)
         result = self.model(**tensor_batch)
         outs = result["pred"]
         outs = detach_cpu_list(outs.ge(self.config.pred_threshold).long())[0]

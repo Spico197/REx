@@ -1,9 +1,9 @@
 import json
 import pickle
-from typing import Iterable, Any, Optional, List
+from typing import Any, Iterable, List, Optional
 
-from rex.utils.logging import logger
 from rex.utils.deprecation import deprecation_warning
+from rex.utils.logging import logger
 
 
 def dump_json(obj, filepath, **kwargs):
