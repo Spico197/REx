@@ -6,7 +6,7 @@ from rex.data.dataset import CachedDataset
 from rex.data.transforms.sent_re import CachedMCMLSentRETransform
 from rex.metrics.classification import mcml_prf1
 from rex.models.sent_pcnn import SentPCNN
-from rex.tasks.task import SimpleTask
+from rex.tasks.simple_task import SimpleTask
 from rex.utils.dict import PrettyPrintDict
 from rex.utils.io import load_jsonlines
 from rex.utils.registry import register

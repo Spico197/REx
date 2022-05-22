@@ -174,25 +174,30 @@ class DataManager(object):
                 raise ValueError(f"Not recognized `is_eval`: {is_eval}")
 
             dataset = self.load_dataset(dataset_name)
-            shuffle_flag = self.eval_shuffle if is_eval else self.train_shuffle
-            batch_size = self.eval_batch_size if is_eval else self.train_batch_size
-
-            if self.distributed_mode:
-                sampler = DistributedSampler(dataset, shuffle=shuffle_flag)
-                sampler.set_epoch(epoch)
-            elif shuffle_flag:
-                sampler = RandomSampler(dataset)
-            else:
-                sampler = SequentialSampler(dataset)
-
-            loader = DataLoader(
-                dataset,
-                batch_size=batch_size,
-                sampler=sampler,
-                num_workers=self.num_workers,
-                collate_fn=self.collate_fn,
-            )
+            loader = self.prepare_loader(dataset, is_eval=is_eval, epoch_idx=epoch)
             self._update_loader(dataset_name, loader)
+        return loader
+
+    def prepare_loader(self, dataset, is_eval=True, epoch_idx=0, **kwargs):
+        shuffle_flag = self.eval_shuffle if is_eval else self.train_shuffle
+        batch_size = self.eval_batch_size if is_eval else self.train_batch_size
+
+        if self.distributed_mode:
+            sampler = DistributedSampler(dataset, shuffle=shuffle_flag)
+            sampler.set_epoch(epoch_idx)
+        elif shuffle_flag:
+            sampler = RandomSampler(dataset)
+        else:
+            sampler = SequentialSampler(dataset)
+
+        loader = DataLoader(
+            dataset,
+            batch_size=batch_size,
+            sampler=sampler,
+            num_workers=self.num_workers,
+            collate_fn=self.collate_fn,
+            **kwargs,
+        )
         return loader
 
     def load(self, dataset_name: str):

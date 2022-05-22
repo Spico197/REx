@@ -5,6 +5,5 @@ BEST_IDENTIFIER = "best"
 BEST_CHECKPOINT_FILENAME_TEMPLATE = "{}.best.pth"
 LOG_FILENAME = "log.log"
 
-
 from .relation_extraction import MCMLSentRelationClassificationTask
-from .task import SimpleTask
+from .simple_task import SimpleTask

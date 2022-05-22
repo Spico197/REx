@@ -64,7 +64,7 @@ class GeneralCollateFn(object):
                     set(d.keys()) == all_keys
                 ), "Data instances does not have the same keys!"
 
-    def update_data(data: List[dict]) -> List[dict]:
+    def update_data(self, data: List[dict]) -> List[dict]:
         """For those who transform data while collating, override this function"""
         return data
 
@@ -83,8 +83,6 @@ class GeneralCollateFn(object):
         for key, val_type in self.key2type.items():
             if val_type is not None and all(val is not None for val in final_data[key]):
                 final_data[key] = torch.tensor(final_data[key], dtype=val_type)
-            else:
-                final_data[key] = None
 
         return final_data
 

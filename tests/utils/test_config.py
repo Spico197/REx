@@ -37,13 +37,13 @@ def test_cmd_args(tmp_path):
 
 def test_config_argument():
     config = ConfigParser.parse_cmd(
-        ConfigArgument("-d", "--task-dir", type=str, help="task dir"),
-        cmd_args=["-d", "/path/to/123"],
+        ConfigArgument("-t", "--task-dir", type=str, help="task dir"),
+        cmd_args=["-t", "/path/to/123"],
     )
     assert config.task_dir == "/path/to/123"
 
     with pytest.raises(AssertionError):
-        config = ConfigParser(("-d", "--task-dir"))
+        config = ConfigParser(("-t", "--task-dir"))
 
 
 def test_resolve_update(tmp_path):

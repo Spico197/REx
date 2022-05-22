@@ -14,11 +14,6 @@ TEMPLATES_DIR = REX_DIR.joinpath("templates")
 def new(cmd_args=None):
     new_args = ConfigParser.parse_cmd(
         ConfigArgument(
-            "task_type",
-            choices=["classification", "tagging"],
-            help="Type of the new task",
-        ),
-        ConfigArgument(
             "task_name", help="Name of the task (used for creating new task folder)"
         ),
         init_priority_args=False,

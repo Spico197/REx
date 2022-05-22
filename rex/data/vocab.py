@@ -19,6 +19,8 @@ def _convert_list_str_to_list(string: str, item_type: Callable):
 
 
 def get_pad_mask(token_len, max_len, token_mask=1, pad_mask=0):
+    if token_len > max_len:
+        token_len = max_len
     mask = [token_mask] * token_len + [pad_mask] * (max_len - token_len)
     return mask
 
@@ -112,8 +114,8 @@ class Vocab(object):
             token_ids: token ids after encoding
             mask: padding mask
         """
-        tokens = get_pad_token(tokens, max_seq_len, self.pad)
         mask = get_pad_mask(len(tokens), max_seq_len, 1, 0)
+        tokens = get_pad_token(tokens, max_seq_len, self.pad)
         if update:
             return self.update_convert_tokens_to_ids(tokens), mask
         else:

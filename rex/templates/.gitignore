@@ -129,14 +129,8 @@ dmypy.json
 .pyre/
 
 # self-defined
-.vscode/
-data/*/raw
-data/*/formatted
-debug.py
+data/cache/
+data/formatted/cache/
+*.cache
+*.pth
 outputs/
-examples/CCIRCup2021-KnowledgeProbing/
-data/IPRE/cache
-data/IPRE/vocab.emb
-data/IPRE/label2id.json
-rex/templates/data/cache
-rex/templates/data/formatted

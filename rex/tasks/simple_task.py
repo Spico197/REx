@@ -32,28 +32,34 @@ class SimpleTask(TaskBase):
         self.measures_path = Path(config.task_dir).joinpath("measures")
         self.measures_path.mkdir(parents=True, exist_ok=True)
 
+        self.logging("Init transform", level="DEBUG")
         self.transform: TransformBase = self.init_transform()
+        self.logging("Init data_manager", level="DEBUG")
         self.data_manager: DataManager = self.init_data_manager()
 
+        self.logging("Init model", level="DEBUG")
         self.model = self.init_model()
 
         if self.config.skip_train:
             self.optimizer = None
             self.lr_scheduler = None
         else:
+            self.logging("Init optimizer", level="DEBUG")
             self.optimizer = self.init_optimizer()
+            self.logging("Init lr_scheduler", level="DEBUG")
             self.lr_scheduler = self.init_lr_scheduler()
 
         self.after_initialized()
+        self.logging("SimpleTask initialised", level="DEBUG")
 
     def after_initialized(self):
+        self.logging("Prepare model", level="DEBUG")
         self.model = self.accelerator.prepare(self.model)
+        self.logging("Prepare optimizer", level="DEBUG")
         self.optimizer = self.accelerator.prepare(self.optimizer)
         if self.lr_scheduler is not None:
+            self.logging("Prepare lr_scheduler", level="DEBUG")
             self.lr_scheduler = self.accelerator.prepare(self.lr_scheduler)
-
-    def after_initialize_data_manager(self):
-        pass
 
     def init_transform(self):
         raise NotImplementedError
@@ -90,6 +96,7 @@ class SimpleTask(TaskBase):
 
     @torch.no_grad()
     def predict(self, *args, **kwargs):
+        self.model.eval()
         return self.predict_api(*args, **kwargs)
 
     def predict_api(self, *args, **kwargs):
@@ -136,6 +143,7 @@ class SimpleTask(TaskBase):
                     resumed_training = False
 
                 result = self.model(**batch)
+
                 loss = result["loss"] / self.config.grad_accum_steps
                 loader.set_postfix({"loss": loss.item()})
                 self.history["current_train_loss"] += loss.item()
@@ -167,9 +175,8 @@ class SimpleTask(TaskBase):
             if not continue_training:
                 # if break from inner step loop, early break
                 break
-            if (
-                self.config.epoch_eval_interval > 0
-                and epoch_idx + 1 % self.config.epoch_eval_interval == 0
+            if (self.config.epoch_eval_interval > 0) and (
+                ((epoch_idx + 1) % self.config.epoch_eval_interval) == 0
             ):
                 self._eval_during_train("epoch")
                 if not self._check_patience():
@@ -234,7 +241,9 @@ class SimpleTask(TaskBase):
             dataset_name = DataManager._get_normalized_dataset_name(dataset_name)
             eval_on_datasets.add(dataset_name)
         for dataset_name in eval_on_datasets:
-            eval_loss, eval_measures = self.eval(dataset_name, verbose=False)
+            eval_loss, eval_measures = self.eval(
+                dataset_name, verbose=False, postfix=history_index_identifier
+            )
             self.history[eval_on][dataset_name]["metrics"][
                 history_index
             ] = eval_measures
@@ -378,7 +387,9 @@ class SimpleTask(TaskBase):
         eval_loader = self.get_data_loader(
             dataset_name, is_eval=True, epoch=self.history["curr_epoch"]
         )
-        loader = pbar(eval_loader, desc=f"{dataset_name} Eval", ncols=80, ascii=True)
+        loader = pbar(
+            eval_loader, desc=f"{dataset_name} - {postfix} Eval", ncols=80, ascii=True
+        )
 
         eval_loss = 0.0
         metrics = {}

@@ -2,7 +2,7 @@ import sys
 
 from rex.utils.config import ConfigArgument, ConfigParser
 from rex.utils.logging import logger
-from rex.utils.registry import NAMESPACE_REGISTRY, get_registered
+from rex.utils.registry import NAMESPACE_REGISTRY, call_register, get_registered
 
 from .emb import emb
 from .new import new
@@ -11,7 +11,11 @@ from .train import train
 
 def main():
     args = ConfigParser.parse_cmd(
-        ConfigArgument("command", choices=["new", "train", "emb"], help="REx mode."),
+        ConfigArgument(
+            "command",
+            choices=list(NAMESPACE_REGISTRY["rex_init_call"].keys()),
+            help="REx mode.",
+        ),
         init_priority_args=False,
         cmd_args=sys.argv[1:2],
     )

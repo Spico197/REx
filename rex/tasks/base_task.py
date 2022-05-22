@@ -31,7 +31,7 @@ class TaskBase(object):
         self.config = config
 
         # `batch_size` in config is the total batch size number
-        self.accelerator = Accelerator(split_batches=True)
+        self.accelerator = Accelerator()
         self.device = self.accelerator.device
 
         self.model = None
@@ -226,9 +226,6 @@ class TaskBase(object):
         self.save(os.path.join(ckpt_dir, ckpt_name))
 
     def logging(self, msg: str, level: Optional[int] = logging.INFO):
-        if self.in_distributed_mode():
-            msg = "Rank {} - {}".format(distributed.get_rank(), msg)
-
         if self.config.only_master_logging:
             if self.accelerator.is_local_main_process:
                 logger.log(level, msg)
@@ -237,9 +234,6 @@ class TaskBase(object):
 
     def is_master_node(self):
         return self.accelerator.is_local_main_process
-
-    def in_distributed_mode(self):
-        return self.config.local_rank >= 0
 
     @classmethod
     def from_config(

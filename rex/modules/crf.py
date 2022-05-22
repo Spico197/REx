@@ -278,7 +278,7 @@ class PlainCRF(nn.Module):
         self,
         logits: torch.Tensor,
         tags: torch.LongTensor,
-        mask: Optional[torch.BoolTensor] = None,
+        mask: Optional[torch.LongTensor] = None,
         reduction: str = "sum",
     ) -> torch.Tensor:
         """Compute the conditional log likelihood of a sequence of tags given emission scores.
@@ -299,8 +299,6 @@ class PlainCRF(nn.Module):
             `~torch.Tensor`: The log likelihood. This will have size ``(batch_size,)`` if
             reduction is ``none``, ``()`` otherwise.
         """
-        if mask is not None:
-            mask = mask.byte()
         self._validate(logits, tags=tags, mask=mask)
         if reduction not in ("none", "sum", "mean", "token_mean"):
             raise ValueError(f"invalid reduction: {reduction}")
@@ -329,7 +327,7 @@ class PlainCRF(nn.Module):
         return llh.sum() / mask.float().sum()
 
     def decode(
-        self, logits: torch.Tensor, mask: Optional[torch.BoolTensor] = None
+        self, logits: torch.Tensor, mask: Optional[torch.LongTensor] = None
     ) -> List[List[int]]:
         """Find the most likely tag sequence using Viterbi algorithm.
         Args:
@@ -355,7 +353,7 @@ class PlainCRF(nn.Module):
         self,
         emissions: torch.Tensor,
         tags: Optional[torch.LongTensor] = None,
-        mask: Optional[torch.ByteTensor] = None,
+        mask: Optional[torch.LongTensor] = None,
     ) -> None:
         if emissions.dim() != 3:
             raise ValueError(
@@ -425,7 +423,7 @@ class PlainCRF(nn.Module):
         return score
 
     def _compute_normalizer(
-        self, emissions: torch.Tensor, mask: torch.ByteTensor
+        self, emissions: torch.Tensor, mask: torch.LongTensor
     ) -> torch.Tensor:
         # emissions: (seq_length, batch_size, num_tags)
         # mask: (seq_length, batch_size)
@@ -466,7 +464,7 @@ class PlainCRF(nn.Module):
 
             # Set score to the next score if this timestep is valid (mask == 1)
             # shape: (batch_size, num_tags)
-            score = torch.where(mask[i].unsqueeze(1), next_score, score)
+            score = torch.where(mask[i].unsqueeze(1).bool(), next_score, score)
 
         # End transition score
         # shape: (batch_size, num_tags)
@@ -477,7 +475,7 @@ class PlainCRF(nn.Module):
         return torch.logsumexp(score, dim=1)
 
     def _viterbi_decode(
-        self, emissions: torch.FloatTensor, mask: torch.ByteTensor
+        self, emissions: torch.FloatTensor, mask: torch.LongTensor
     ) -> List[List[int]]:
         # emissions: (seq_length, batch_size, num_tags)
         # mask: (seq_length, batch_size)
@@ -523,7 +521,7 @@ class PlainCRF(nn.Module):
             # Set score to the next score if this timestep is valid (mask == 1)
             # and save the index that produces the next score
             # shape: (batch_size, num_tags)
-            score = torch.where(mask[i].unsqueeze(1), next_score, score)
+            score = torch.where(mask[i].unsqueeze(1).bool(), next_score, score)
             history.append(indices)
 
         # End transition score
@@ -628,7 +626,7 @@ class MaskedCRF(nn.Module):
         self,
         logits: torch.Tensor,
         tags: torch.LongTensor,
-        mask: Optional[torch.BoolTensor] = None,
+        mask: Optional[torch.LongTensor] = None,
         reduction: str = "sum",
     ) -> torch.Tensor:
         """Compute the conditional log likelihood of a sequence of tags given emission scores.
@@ -649,8 +647,6 @@ class MaskedCRF(nn.Module):
             `~torch.Tensor`: The log likelihood. This will have size ``(batch_size,)`` if
             reduction is ``none``, ``()`` otherwise.
         """
-        if mask is not None:
-            mask = mask.byte()
         self._validate(logits, tags=tags, mask=mask)
         if reduction not in ("none", "sum", "mean", "token_mean"):
             raise ValueError(f"invalid reduction: {reduction}")
@@ -737,7 +733,7 @@ class MaskedCRF(nn.Module):
         self,
         emissions: torch.Tensor,
         tags: Optional[torch.LongTensor] = None,
-        mask: Optional[torch.ByteTensor] = None,
+        mask: Optional[torch.LongTensor] = None,
     ) -> None:
         if emissions.dim() != 3:
             raise ValueError(
@@ -774,7 +770,7 @@ class MaskedCRF(nn.Module):
         end_transitions,
         emissions: torch.Tensor,
         tags: torch.LongTensor,
-        mask: torch.ByteTensor,
+        mask: torch.LongTensor,
     ) -> torch.Tensor:
         # emissions: (seq_length, batch_size, num_tags)
         # tags: (seq_length, batch_size)
@@ -859,7 +855,7 @@ class MaskedCRF(nn.Module):
 
             # Set score to the next score if this timestep is valid (mask == 1)
             # shape: (batch_size, num_tags)
-            score = torch.where(mask[i].unsqueeze(1), next_score, score)
+            score = torch.where(mask[i].unsqueeze(1).bool(), next_score, score)
 
         # End transition score
         # shape: (batch_size, num_tags)
@@ -921,7 +917,7 @@ class MaskedCRF(nn.Module):
             # Set score to the next score if this timestep is valid (mask == 1)
             # and save the index that produces the next score
             # shape: (batch_size, num_tags)
-            score = torch.where(mask[i].unsqueeze(1), next_score, score)
+            score = torch.where(mask[i].unsqueeze(1).bool(), next_score, score)
             history.append(indices)
 
         # End transition score

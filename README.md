@@ -96,9 +96,12 @@ $ pre-commit install
 
 ## ✉️Update
 
-- 0.1.1beta:
+- v0.1.1beta:
   - add [accelerate](https://github.com/huggingface/accelerate) support
   - add `isort` and `pre-commit`
+  - fix `_tqdm` import from `logging`
+  - update test case for config
+  - add `call_register` in `registry` to automatically load registered modules
 - v0.1.0: huge update with lots of new features, check the usage in `examples/IPRE` ~
 - v0.0.15: add safe_try to kill ugly statements in example main call
 - v0.0.14: update vocab embedding loading to be compatible with other embedding files

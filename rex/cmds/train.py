@@ -1,12 +1,25 @@
 from rex.tasks.base_task import TaskBase
-from rex.utils.config import ConfigParser
+from rex.utils.config import ConfigArgument, ConfigParser
 from rex.utils.logging import logger
-from rex.utils.registry import get_registered, register
+from rex.utils.registry import get_registered, import_module_and_submodules, register
 
 
 @register("rex_init_call")
 def train(cmd_args=None):
-    config = ConfigParser.parse_cmd(cmd_args=cmd_args)
+    parser, args = ConfigParser.parse_cmd_args(
+        ConfigArgument(
+            "-m",
+            "--include-package",
+            action="append",
+            type=str,
+            default=[],
+            help="packages to load",
+        ),
+        cmd_args=cmd_args,
+    )
+    for package_name in getattr(args, "include_package", []):
+        import_module_and_submodules(package_name)
+    config = ConfigParser.parse_args_config(parser, args)
     if "task_type" not in config:
         raise ValueError(
             (
