@@ -21,7 +21,7 @@ class TaggingTask(SimpleTask):
         return CachedTaggingTransform(
             self.config.max_seq_len,
             self.config.label2id_filepath,
-            self.config.emb_filepath,
+            self.config.plm_dir,
         )
 
     def init_data_manager(self):
@@ -42,14 +42,11 @@ class TaggingTask(SimpleTask):
 
     def init_model(self):
         m = LSTMCRFModel(
-            self.transform.vocab.size,
-            self.config.emb_size,
-            self.config.hidden_size,
+            self.config.plm_dir,
             num_lstm_layers=self.config.num_lstm_layers,
             num_tags=self.transform.label_encoder.num_tags,
             dropout=self.config.dropout,
         )
-        m.token_emb.from_pretrained(self.config.emb_filepath)
         return m
 
     def init_optimizer(self):
@@ -63,6 +60,8 @@ class TaggingTask(SimpleTask):
             batch_gold = batch_input["ner_tags"]
             batch_pred = batch_output["pred"]
             for tokens, ins_gold, ins_pred in zip(batch_tokens, batch_gold, batch_pred):
+                ins_gold = ins_gold[: len(tokens)]
+                ins_pred = ins_pred[: len(tokens)]
                 ins_gold_ents = get_entities_from_tag_seq(tokens, ins_gold)
                 ins_pred = self.transform.label_encoder.decode(ins_pred)
                 ins_pred_ents = get_entities_from_tag_seq(tokens, ins_pred)
@@ -78,6 +77,7 @@ class TaggingTask(SimpleTask):
         for batch in loader:
             batch_out = self.model(**batch)
             for tokens, ins_pred in zip(batch["tokens"], batch_out["pred"]):
+                ins_pred = ins_pred[: len(tokens)]
                 ins_pred = self.transform.label_encoder.decode(ins_pred)
                 ins_pred_ents = get_entities_from_tag_seq(tokens, ins_pred)
                 results.append(ins_pred_ents)

@@ -1,11 +1,12 @@
 from typing import Iterable, List, Optional
 
 import torch
+from transformers import BertTokenizerFast
 
 from rex.data.collate_fn import GeneralCollateFn
 from rex.data.label_encoder import LabelEncoder
 from rex.data.transforms.base import TransformBase
-from rex.data.vocab import Vocab, get_pad_token
+from rex.data.vocab import Vocab, get_pad_mask, get_pad_token
 from rex.utils.logging import logger
 from rex.utils.progress_bar import pbar
 
@@ -13,20 +14,12 @@ from rex.utils.progress_bar import pbar
 class CachedTaggingTransform(TransformBase):
     """Cached data transform for classification task."""
 
-    def __init__(
-        self, max_seq_len: int, label2id_filepath: str, emb_filepath: str
-    ) -> None:
+    def __init__(self, max_seq_len: int, label2id_filepath: str, plm_dir: str) -> None:
         super().__init__()
 
         self.max_seq_len = max_seq_len
         self.label_encoder = LabelEncoder.from_pretrained(label2id_filepath)
-        self.vocab = Vocab.from_pretrained(
-            emb_filepath,
-            include_weights=True,
-            init_pad_unk_emb=False,
-            include_pad=False,
-            include_unk=False,
-        )
+        self.tokenizer = BertTokenizerFast.from_pretrained(plm_dir)
 
         self.collate_fn = GeneralCollateFn(
             {
@@ -55,9 +48,11 @@ class CachedTaggingTransform(TransformBase):
         num_tot_ins = 0
         for data in transform_loader:
             tokens = data["tokens"]
-            token_ids, mask = self.vocab.encode(
-                tokens, max_seq_len=self.max_seq_len, update=False
+            token_ids = self.tokenizer.convert_tokens_to_ids(tokens)
+            token_ids = get_pad_token(
+                token_ids, self.max_seq_len, self.tokenizer.pad_token_id
             )
+            mask = get_pad_mask(len(token_ids), self.max_seq_len)
             labels = data["ner_tags"]
             label_ids = self.label_encoder.encode(labels, update=False)
             label_ids = get_pad_token(
@@ -92,12 +87,12 @@ class CachedTaggingTransform(TransformBase):
                     "text": "text",
                 }
         """
-        token_ids, mask = self.vocab.encode(
-            list(text), max_seq_len=self.max_seq_len, update=False
-        )
+        token_ids = self.tokenizer.convert_tokens_to_ids(list(text))
+        token_ids = get_pad_token(token_ids, self.max_seq_len, self.tokenizer.pad)
+        mask = get_pad_mask(len(token_ids), self.max_seq_len)
 
         obj = {
-            "tokens": text,
+            "tokens": list(text),
             "token_ids": token_ids,
             "mask": mask,
         }

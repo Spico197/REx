@@ -4,7 +4,7 @@ task_name: lstm_crf
 comment: 'LSTM CRF w/ financial emb'
 
 # data preprocessing
-max_seq_len: 200
+max_seq_len: 80
 emb_size: 300
 
 # filepaths
@@ -17,8 +17,8 @@ dev_filepath: ${data_dir}/validation.jsonl
 test_filepath: ${data_dir}/test.jsonl
 label2id_filepath: ${data_dir}/label2id.json
 emb_filepath: ${data_dir}/vocab.emb
-data_cache_dir: ${data_dir}/cache
-# data_cache_dir: null
+# data_cache_dir: ${data_dir}/cache
+data_cache_dir: null
 
 # training
 debug_mode: false
@@ -30,12 +30,11 @@ best_metric_field: micro.f1
 final_eval_on_test: true
 
 num_epochs: 30
-epoch_patience: 7
-train_batch_size: 16
+epoch_patience: -1
+train_batch_size: 32
 eval_batch_size: 64
-learning_rate: !!float 1e-3
+learning_rate: !!float 5e-5
 
 # model
 dropout: 0.0
-hidden_size: 300
 num_lstm_layers: 2

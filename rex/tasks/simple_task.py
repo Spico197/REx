@@ -77,10 +77,14 @@ class SimpleTask(TaskBase):
         return None
 
     @torch.no_grad()
-    def _get_eval_results_impl(self, input_batches: List, output_batches: List) -> dict:
-        return self.get_eval_results(input_batches, output_batches)
+    def _get_eval_results_impl(
+        self, input_batches: List, output_batches: List, *args, **kwargs
+    ) -> dict:
+        return self.get_eval_results(input_batches, output_batches, *args, **kwargs)
 
-    def get_eval_results(self, input_batches: List, output_batches: List) -> dict:
+    def get_eval_results(
+        self, input_batches: List, output_batches: List, *args, **kwargs
+    ) -> dict:
         """Get evaluation measurements
 
         Args:
