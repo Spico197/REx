@@ -1,7 +1,7 @@
 import os
 from collections import Counter
 
-from rex.utils.io import dump_json, load_json, dump_line_json
+from rex.utils.io import dump_json, dump_line_json, load_json
 from rex.utils.position import find_all_positions
 
 

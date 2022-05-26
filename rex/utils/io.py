@@ -1,9 +1,9 @@
 import json
 import pickle
-from typing import Iterable, Any, Optional, List
+from typing import Any, Iterable, List, Optional
 
-from rex.utils.logging import logger
 from rex.utils.deprecation import deprecation_warning
+from rex.utils.logging import logger
 
 
 def dump_json(obj, filepath, **kwargs):
@@ -19,6 +19,11 @@ def load_json(filepath, **kwargs):
 
 
 def dump_line_json(obj, filepath, **kwargs):
+    deprecation_warning("dump_line_json", "dump_jsonlines")
+    return dump_jsonlines(obj, filepath, **kwargs)
+
+
+def dump_jsonlines(obj, filepath, **kwargs):
     with open(filepath, "wt", encoding="utf-8") as fout:
         for d in obj:
             line_d = json.dumps(d, ensure_ascii=False, **kwargs)

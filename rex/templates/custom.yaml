@@ -1,0 +1,40 @@
+# task
+task_type: TaggingTask
+task_name: lstm_crf
+comment: 'LSTM CRF w/ financial emb'
+
+# data preprocessing
+max_seq_len: 80
+emb_size: 300
+
+# filepaths
+plm_dir: hfl/rbt3
+data_dir: data/formatted
+output_dir: outputs
+task_dir: ${output_dir}/${task_name}
+train_filepath: ${data_dir}/train.jsonl
+dev_filepath: ${data_dir}/validation.jsonl
+test_filepath: ${data_dir}/test.jsonl
+label2id_filepath: ${data_dir}/label2id.json
+emb_filepath: ${data_dir}/vocab.emb
+# data_cache_dir: ${data_dir}/cache
+data_cache_dir: null
+
+# training
+debug_mode: false
+random_seed: 1227
+eval_on_data: [dev]
+select_best_on_data: dev
+select_best_by_key: metric
+best_metric_field: micro.f1
+final_eval_on_test: true
+
+num_epochs: 30
+epoch_patience: -1
+train_batch_size: 32
+eval_batch_size: 64
+learning_rate: !!float 5e-5
+
+# model
+dropout: 0.0
+num_lstm_layers: 2

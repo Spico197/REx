@@ -1,6 +1,6 @@
-from typing import Dict, Iterable, Optional, List, Union
+from typing import Dict, Iterable, List, Optional, Union
 
-from rex.utils.io import load_json, dump_json
+from rex.utils.io import dump_json, load_json
 
 
 class LabelEncoder(object):

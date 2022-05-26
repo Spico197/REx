@@ -1,14 +1,12 @@
-import sys
 import logging
+import sys
 from typing import Optional
 
 from loguru import logger
-
-from rex.utils.progress_bar import pbar
-
+from tqdm import tqdm as _tqdm
 
 logger.remove()
-logger.add(lambda msg: pbar.write(msg, end=""))
+logger.add(lambda msg: _tqdm.write(msg, end=""))
 
 
 class Logger(object):

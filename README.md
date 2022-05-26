@@ -78,9 +78,25 @@ Checkout the `examples` folder.
 - PCNN + ONE
 - PCNN + ATT
 
+## ⚗ Development
+
+1. fork to your namespace
+
+2. install `pytorch-rex` with `[dev]` option
+
+```bash
+$ pip install pytorch-rex[dev]
+```
+
+3. install pre-commit hooks
+
+```bash
+$ pre-commit install
+```
 
 ## ✉️Update
 
+- v0.1.1: update registry and add `accelerate` multi-gpu support
 - v0.1.0: huge update with lots of new features, check the usage in `examples/IPRE` ~
 - v0.0.15: add safe_try to kill ugly statements in example main call
 - v0.0.14: update vocab embedding loading to be compatible with other embedding files
@@ -94,7 +110,7 @@ Checkout the `examples` folder.
 - v0.0.6: integrate omega conf loading into the inner task, add `load_*_data` option to data managers
 - v0.0.5: update ffn
 - v0.0.4: return detailed classification information in `mc_prf1`, support nested dict tensor movement
-- v0.0.3: fix packaging bug in `setup.py` 
+- v0.0.3: fix packaging bug in `setup.py`
 - v0.0.2: add black formatter and pytest testing
 - v0.0.1: change `LabelEncoder.to_binary_labels` into `convert_to_multi_hot` or `convert_to_one_hot`
 

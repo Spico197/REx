@@ -20,6 +20,7 @@ docs:
 
 .PHONY: format
 format:
+	isort --profile black --filter-files .
 	black .
 
 .PHONY: test
@@ -30,7 +31,7 @@ test:
 
 .PHONY: debug
 debug:
-	pytest -vv tests/utils/test_dict.py
+	pytest -vv tests/utils/test_progress_bar.py
 
 .PHONY: clean
 clean:

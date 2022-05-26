@@ -1,19 +1,16 @@
-from rex.utils.io import load_embedding_file, load_line_iterator
-from rex.utils.config import ConfigParser, ConfigArgument
 from rex.data.vocab import Vocab
-from rex.utils.progress_bar import pbar
+from rex.utils.config import ConfigArgument, ConfigParser
+from rex.utils.io import load_embedding_file, load_line_iterator
 from rex.utils.logging import logger
+from rex.utils.progress_bar import pbar
 
 
-def build_emb(
-    raw_emb_filepath, dump_emb_filepath, train_filepath, dev_filepath, test_filepath
-):
+def build_emb(raw_emb_filepath, dump_emb_filepath, *files):
     """build vocab and filter out useless embeddings from ``raw_emb_filepath``"""
     logger.info(f"loading embedding from {raw_emb_filepath}")
     tokens, token2vec = load_embedding_file(raw_emb_filepath)
 
     logger.info("building vocab")
-    files = [train_filepath, dev_filepath, test_filepath]
     raw_vocab = set()
     for filepath in pbar(files):
         for line in load_line_iterator(filepath):

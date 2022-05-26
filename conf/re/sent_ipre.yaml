@@ -27,7 +27,6 @@ select_best_by_key: metric
 eval_on_data: [dev]
 select_best_on_data: dev
 best_metric_field: micro.f1
-device: 3
 local_rank: -1
 random_seed: 1227
 num_epochs: 1

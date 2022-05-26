@@ -1,8 +1,9 @@
 import argparse
+import importlib
 import pathlib
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from dataclasses import dataclass, field, asdict
-from typing import Iterable, Optional, List
+from typing import Iterable, List, Optional
 
 from omegaconf import OmegaConf
 
@@ -76,6 +77,26 @@ class ConfigParser(argparse.ArgumentParser):
         )
 
     @classmethod
+    def parse_cmd_args(cls, *args, cmd_args: Optional[List[str]] = None, **kwargs):
+        parser = cls(*args, **kwargs)
+        args = parser.parse_args(args=cmd_args)
+        return parser, args
+
+    @classmethod
+    def parse_args_config(cls, parser, args):
+        if parser._inited:
+            for path in ["base_config_filepath", "custom_config_filepath"]:
+                # arg: pathlib.Path
+                arg = getattr(args, path)
+                if arg is not None:
+                    assert arg.exists() is True and arg.is_file() is True
+                    setattr(args, path, str(arg.absolute()))
+
+        config = parser.convert_args_to_config(args)
+
+        return config
+
+    @classmethod
     def parse_cmd(
         cls, *args, cmd_args: Optional[List[str]] = None, **kwargs
     ) -> OmegaConf:
@@ -104,18 +125,8 @@ class ConfigParser(argparse.ArgumentParser):
             $ python run.py -c conf/re/sent_ipre.yaml -a lr.encoder=1e-4 dropout=0.6
             $ python run.py -b conf/config.yaml -c conf/re/sent_ipre.yaml -a lr.encoder=1e-4 dropout=0.6
         """
-        parser = cls(*args, **kwargs)
-        args = parser.parse_args(args=cmd_args)
-
-        if parser._inited:
-            for path in ["base_config_filepath", "custom_config_filepath"]:
-                # arg: pathlib.Path
-                arg = getattr(args, path)
-                if arg is not None:
-                    assert arg.exists() is True and arg.is_file() is True
-                    setattr(args, path, str(arg.absolute()))
-
-        config = parser.convert_args_to_config(args)
+        parser, args = cls.parse_cmd_args(*args, cmd_args=cmd_args, **kwargs)
+        config = cls.parse_args_config(parser, args)
 
         return config
 
@@ -205,7 +216,12 @@ class DefaultBaseConfig:
         default=5000,
         metadata={"help": "stop training if the metric does not grow in [x] steps"},
     )
-    batch_size: int = field(default=64, metadata={"help": "training batch size"})
+    batch_size: int = field(
+        default=64,
+        metadata={
+            "help": "training batch size for each process (if ddp, the real batch size is num_process * batch_size)"
+        },
+    )
     learning_rate: float = field(
         default=1e-3, metadata={"help": "training learning rate"}
     )

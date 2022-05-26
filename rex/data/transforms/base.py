@@ -1,4 +1,4 @@
-from typing import Iterable, Any
+from typing import Any, Iterable
 
 
 class TransformBase(object):

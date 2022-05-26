@@ -1,7 +1,7 @@
 from typing import Optional
 
-import torch
 import pytest
+import torch
 
 
 class RunIf(object):
