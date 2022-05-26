@@ -96,6 +96,7 @@ $ pre-commit install
 
 ## ✉️Update
 
+- v0.1.3: fix emb import
 - v0.1.1: update registry and add `accelerate` multi-gpu support
 - v0.1.0: huge update with lots of new features, check the usage in `examples/IPRE` ~
 - v0.0.15: add safe_try to kill ugly statements in example main call
