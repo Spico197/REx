@@ -96,7 +96,7 @@ $ pre-commit install
 
 ## ✉️Update
 
-- v0.1.4: move accelerate to `rex.__init__`, update multi process tqdm & logging (only show in the main process in default)
+- v0.1.4: move accelerate to `rex.__init__`, update multi process tqdm & logging (only show in the main process in default), remove cache in debug mode
 - v0.1.3: fix emb import
 - v0.1.1: update registry and add `accelerate` multi-gpu support
 - v0.1.0: huge update with lots of new features, check the usage in `examples/IPRE` ~
