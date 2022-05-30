@@ -9,6 +9,7 @@ from omegaconf import OmegaConf
 from torch import distributed
 from torch.nn import parallel
 
+from rex import accelerator
 from rex.tasks import (
     BEST_CHECKPOINT_FILENAME_TEMPLATE,
     BEST_IDENTIFIER,
@@ -31,8 +32,7 @@ class TaskBase(object):
         self.config = config
 
         # `batch_size` in config is the total batch size number
-        self.accelerator = Accelerator()
-        self.device = self.accelerator.device
+        self.device = accelerator.device
 
         self.model = None
         self.optimizer = None
@@ -68,13 +68,13 @@ class TaskBase(object):
             )
 
         config_string = OmegaConf.to_yaml(config, resolve=True)
-        self.logging(config_string)
+        logger.info(config_string)
 
         if makedirs:
             if not os.path.exists(config.task_dir):
                 os.makedirs(config.task_dir)
             else:
-                self.logging(f"Overwrite task dir: {config.task_dir}", level="WARNING")
+                logger.warning(f"Overwrite task dir: {config.task_dir}")
 
         if dump_configfile:
             OmegaConf.save(
@@ -118,20 +118,18 @@ class TaskBase(object):
         load_optimizer: Optional[bool] = False,
         load_history: Optional[bool] = True,
     ):
-        self.accelerator.wait_for_everyone()
+        accelerator.wait_for_everyone()
         if os.path.exists(path):
-            self.logging("Resume checkpoint from {}".format(path))
+            logger.info("Resume checkpoint from {}".format(path))
         else:
             raise ValueError("Checkpoint does not exist, {}".format(path))
 
         if torch.cuda.device_count() == 0:
-            self.logging("Load store_dict into cpu", level="DEBUG")
+            logger.debug("Load store_dict into cpu")
             store_dict = torch.load(path, map_location="cpu")
         else:
-            self.logging(
-                f"Load store_dict into {self.accelerator.device}", level="DEBUG"
-            )
-            store_dict = torch.load(path, map_location=self.accelerator.device)
+            logger.debug(f"Load store_dict into {accelerator.device}")
+            store_dict = torch.load(path, map_location=accelerator.device)
 
         if load_config:
             self.config = OmegaConf.load(
@@ -140,26 +138,26 @@ class TaskBase(object):
 
         if load_model:
             if self.model and "model_state" in store_dict:
-                unwrapped_model = self.accelerator.unwrap_model(self.model)
+                unwrapped_model = accelerator.unwrap_model(self.model)
                 unwrapped_model.load_state_dict(store_dict["model_state"])
-                self.logging("Load model successfully")
+                logger.info("Load model successfully")
             else:
                 raise ValueError(
                     f"Model loading failed. self.model={self.model}, stored_dict_keys={store_dict.keys()}"
                 )
         else:
-            self.logging("Not load model")
+            logger.info("Not load model")
 
         if load_optimizer:
             if self.optimizer and "optimizer_state" in store_dict:
                 self.optimizer.load_state_dict(store_dict["optimizer_state"])
-                self.logging("Load optimizer successfully")
+                logger.info("Load optimizer successfully")
             else:
                 raise ValueError(
                     f"Model loading failed. self.model={self.optimizer}, stored_dict_keys={store_dict.keys()}"
                 )
         else:
-            self.logging("Not load optimizer")
+            logger.info("Not load optimizer")
 
         if load_history:
             history = store_dict.pop("history")
@@ -167,7 +165,7 @@ class TaskBase(object):
             if history is not None:
                 self.history = history
             else:
-                self.logging(
+                logger.info(
                     "Loaded history is None, reset history to empty.", level="WARNING"
                 )
 
@@ -185,7 +183,7 @@ class TaskBase(object):
                 BEST_CHECKPOINT_FILENAME_TEMPLATE.format(model_name),
             )
         )
-        self.logging(f"Loading model from: {ckpt_filepath}")
+        logger.info(f"Loading model from: {ckpt_filepath}")
         self.load(
             ckpt_filepath,
             load_model=True,
@@ -195,21 +193,21 @@ class TaskBase(object):
         )
 
     def save(self, path):
-        self.accelerator.wait_for_everyone()
-        self.logging(f"Dumping checkpoint into: {path}")
+        accelerator.wait_for_everyone()
+        logger.info(f"Dumping checkpoint into: {path}")
         store_dict = {}
 
         if self.model:
-            model = self.accelerator.unwrap_model(self.model)
+            model = accelerator.unwrap_model(self.model)
             model_state = model.state_dict()
             store_dict["model_state"] = model_state
         else:
-            self.logging("No model state is dumped", logging.WARNING)
+            logger.info("No model state is dumped", logging.WARNING)
 
         if self.optimizer:
             store_dict["optimizer_state"] = self.optimizer.state_dict()
         else:
-            self.logging("No optimizer state is dumped", logging.WARNING)
+            logger.info("No optimizer state is dumped", logging.WARNING)
 
         store_dict["history"] = self.history
 
@@ -224,16 +222,6 @@ class TaskBase(object):
             self.model.__class__.__name__, identifier
         )
         self.save(os.path.join(ckpt_dir, ckpt_name))
-
-    def logging(self, msg: str, level: Optional[int] = logging.INFO):
-        if self.config.only_master_logging:
-            if self.accelerator.is_local_main_process:
-                logger.log(level, msg)
-        else:
-            logger.log(level, msg)
-
-    def is_master_node(self):
-        return self.accelerator.is_local_main_process
 
     @classmethod
     def from_config(

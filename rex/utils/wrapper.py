@@ -1,6 +1,5 @@
 import datetime
 import functools
-from datetime import timedelta
 from typing import Callable, Optional
 
 from rex.utils.logging import logger

@@ -39,4 +39,4 @@ save_best_ckpt: true
 final_eval_on_test: true
 
 # misc
-only_master_logging: true
+main_process_logging: true

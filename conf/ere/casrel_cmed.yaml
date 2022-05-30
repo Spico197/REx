@@ -34,4 +34,4 @@ debug_mode: false  # if debug mode, a small subset of the whole dataset will be 
 pred_threshold: 0.5
 
 # logging
-only_master_logging: true
+main_process_logging: true

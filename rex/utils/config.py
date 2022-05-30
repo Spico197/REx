@@ -277,7 +277,7 @@ class DefaultBaseConfig:
         default=True, metadata={"help": "whether to evaluate on final test set"}
     )
     # misc
-    only_master_logging: bool = field(
+    main_process_logging: bool = field(
         default=True, metadata={"help": "whether to logging in only master node"}
     )
 
