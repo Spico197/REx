@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -7,6 +8,7 @@ from omegaconf import OmegaConf
 from rex import accelerator
 from rex.data.data_manager import DataManager
 from rex.data.transforms.base import TransformBase
+from rex.metrics import safe_division
 from rex.tasks.base_task import TaskBase
 from rex.utils.dict import get_dict_content
 from rex.utils.io import dump_json
@@ -121,17 +123,32 @@ class SimpleTask(TaskBase):
             raise RuntimeError(
                 "Training procedure started while config.skip_train is True!"
             )
-
-        continue_training = True
-        resumed_training = self.config.resumed_training
-        train_loader = self.get_data_loader("train", False, 0)
+        if self.config.resumed_training_path is not None:
+            self.load(
+                self.config.resumed_training_path,
+                load_config=False,
+                load_model=True,
+                load_optimizer=True,
+                load_history=True,
+            )
+            resumed_training = True
+        else:
+            resumed_training = False
+        train_loader = self.get_data_loader("train", False, self.history["curr_epoch"])
         total_steps = self.history["curr_epoch"] * len(train_loader)
-        for epoch_idx in rbar(
-            self.history["curr_epoch"], self.config.num_epochs, desc="Epoch"
-        ):
+        start_time = datetime.now()
+        for epoch_idx in range(self.history["curr_epoch"], self.config.num_epochs):
             if not resumed_training:
                 self.history["curr_epoch"] = epoch_idx
-            logger.info(f"Epoch: {epoch_idx}/{self.config.num_epochs}")
+
+            used_time = datetime.now() - start_time
+            time_per_epoch = safe_division(used_time, self.history["curr_epoch"])
+            remain_time = time_per_epoch * (
+                self.config.num_epochs - self.history["curr_epoch"]
+            )
+            logger.info(
+                f"Epoch: {epoch_idx}/{self.config.num_epochs} [{str(used_time)}<{str(remain_time)}, {str(time_per_epoch)}/epoch]"
+            )
 
             self.model.train()
             self.optimizer.zero_grad()
@@ -178,9 +195,6 @@ class SimpleTask(TaskBase):
                 total_steps += 1
 
             logger.info(loader)
-            if not continue_training:
-                # if break from inner step loop, early break
-                break
             if (self.config.epoch_eval_interval > 0) and (
                 ((epoch_idx + 1) % self.config.epoch_eval_interval) == 0
             ):
@@ -410,6 +424,7 @@ class SimpleTask(TaskBase):
             origin.append(all_batch)
             output.append(all_out)
 
+        logger.info(loader)
         metrics = self._get_eval_results_impl(origin, output)
 
         if verbose:

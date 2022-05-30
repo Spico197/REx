@@ -240,8 +240,11 @@ class DefaultBaseConfig:
     grad_accum_steps: int = field(
         default=1, metadata={"help": "gradient accumulation steps"}
     )
-    resumed_training: bool = field(
-        default=False, metadata={"help": "whether to resume training from latest epoch"}
+    resumed_training_path: str = field(
+        default=None,
+        metadata={
+            "help": "path to load checkpoint for resumed training, `None` if not resumed training"
+        },
     )
     step_eval_interval: int = field(
         default=-1, metadata={"help": "evaluation interval steps. `-1` if not use"}

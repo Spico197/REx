@@ -19,6 +19,7 @@ from rex.tasks import (
 )
 from rex.utils.initialization import init_all
 from rex.utils.logging import logger
+from rex.utils.wrapper import rank_zero_only
 
 
 class TaskBase(object):
@@ -118,7 +119,6 @@ class TaskBase(object):
         load_optimizer: Optional[bool] = False,
         load_history: Optional[bool] = True,
     ):
-        accelerator.wait_for_everyone()
         if os.path.exists(path):
             logger.info("Resume checkpoint from {}".format(path))
         else:
@@ -192,8 +192,8 @@ class TaskBase(object):
             load_history=load_history,
         )
 
+    @rank_zero_only
     def save(self, path):
-        accelerator.wait_for_everyone()
         logger.info(f"Dumping checkpoint into: {path}")
         store_dict = {}
 
