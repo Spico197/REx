@@ -176,10 +176,9 @@ class SimpleTask(TaskBase):
                     accelerator.clip_grad_norm_(
                         self.model.parameters(), max_norm=self.config.max_grad_norm
                     )
-                if (
-                    batch_idx + 1 % self.config.grad_accum_steps == 0
-                    or batch_idx + 1 == len(loader)
-                ):
+                if ((batch_idx + 1) % self.config.grad_accum_steps) == 0 or (
+                    batch_idx + 1
+                ) == len(loader):
                     self.optimizer.step()
                     if self.lr_scheduler is not None:
                         self.lr_scheduler.step()
@@ -187,7 +186,7 @@ class SimpleTask(TaskBase):
 
                 if (
                     self.config.step_eval_interval > 0
-                    and total_steps + 1 % self.config.step_eval_interval
+                    and (total_steps + 1) % self.config.step_eval_interval
                 ):
                     self._eval_during_train("step")
                     if not self._check_patience():
@@ -425,7 +424,7 @@ class SimpleTask(TaskBase):
             output.append(all_out)
 
         logger.info(loader)
-        metrics = self._get_eval_results_impl(origin, output)
+        metrics = self._get_eval_results_impl(origin, output, postfix)
 
         if verbose:
             logger.info(f"Eval dataset: {dataset_name}")

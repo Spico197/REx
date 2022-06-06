@@ -225,8 +225,8 @@ class DefaultBaseConfig:
     learning_rate: float = field(
         default=1e-3, metadata={"help": "training learning rate"}
     )
-    max_grad_norm: int = field(
-        default=-1, metadata={"help": "max gradient norm. `-1`: no clipping"}
+    max_grad_norm: float = field(
+        default=-1.0, metadata={"help": "max gradient norm. `-1`: no clipping"}
     )
     skip_train: bool = field(
         default=False, metadata={"help": "whether to skip training process"}

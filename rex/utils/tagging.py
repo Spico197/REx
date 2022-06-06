@@ -10,7 +10,7 @@ def get_entities_from_tag_seq(chars: List[str], tags: List[str]) -> List[Tuple]:
             if there is no postfix type string, entities will not be categorized
     Returns:
         list of tuples:
-            [(entity name, entity type, start position, end position + 1), ...]
+            [(entity name, entity type, (start position, end position + 1)), ...]
     """
     if len(tags) > len(chars):
         tags = tags[: len(chars)]
@@ -29,7 +29,7 @@ def get_entities_from_tag_seq(chars: List[str], tags: List[str]) -> List[Tuple]:
 
         if tag.startswith("B"):
             if len(ent) > 0:
-                entity_list.append((ent, last_type, ent_start, idx))
+                entity_list.append((ent, last_type, (ent_start, idx)))
 
             ent = char
             last_type = curr_type
@@ -41,7 +41,7 @@ def get_entities_from_tag_seq(chars: List[str], tags: List[str]) -> List[Tuple]:
             else:
                 # illegal case, early stop here
                 if len(ent) > 0:
-                    entity_list.append((ent, last_type, ent_start, idx))
+                    entity_list.append((ent, last_type, (ent_start, idx)))
                 ent = ""
                 last_type = ""
                 ent_start = -1
@@ -51,7 +51,7 @@ def get_entities_from_tag_seq(chars: List[str], tags: List[str]) -> List[Tuple]:
                 ent += char
 
             if len(ent) > 0:
-                entity_list.append((ent, last_type, ent_start, idx + 1))
+                entity_list.append((ent, last_type, (ent_start, idx + 1)))
 
             ent = ""
             last_type = ""
@@ -60,21 +60,21 @@ def get_entities_from_tag_seq(chars: List[str], tags: List[str]) -> List[Tuple]:
         elif tag.startswith("S"):
             if len(ent) > 0:
                 # last entity is not stopped
-                entity_list.append((ent, last_type, ent_start, idx))
+                entity_list.append((ent, last_type, (ent_start, idx)))
 
-            entity_list.append((char, curr_type, idx, idx + 1))
+            entity_list.append((char, curr_type, (idx, idx + 1)))
 
         else:
             # O
             if len(ent) > 0:
-                entity_list.append((ent, last_type, ent_start, idx))
+                entity_list.append((ent, last_type, (ent_start, idx)))
 
             ent = ""
             last_type = ""
             ent_start = -1
 
     if len(ent) > 0:
-        entity_list.append((ent, last_type, ent_start, ent_start + len(ent)))
+        entity_list.append((ent, last_type, (ent_start, ent_start + len(ent))))
 
     return entity_list
 
