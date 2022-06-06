@@ -1,7 +1,8 @@
 import datetime
 import functools
-from datetime import timedelta
 from typing import Callable, Optional
+
+from accelerate.state import AcceleratorState
 
 from rex.utils.logging import logger
 
@@ -42,3 +43,14 @@ def safe_try(
         return func_wrapper
     else:
         return func_wrapper(func_placeholder)
+
+
+def rank_zero_only(fn):
+    # inspired by pytorch-lightning / rank_zero
+    @functools.wraps(fn)
+    def wrapped_fn(*args, **kwargs):
+        if AcceleratorState().local_process_index == 0:
+            return fn(*args, **kwargs)
+        return None
+
+    return wrapped_fn

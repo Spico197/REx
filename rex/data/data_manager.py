@@ -133,7 +133,11 @@ class DataManager(object):
             else:
                 cache_filepath = None
 
-            if cache_filepath is not None and cache_filepath.exists():
+            if (
+                not self.debug_mode
+                and cache_filepath is not None
+                and cache_filepath.exists()
+            ):
                 dataset = load_pickle(cache_filepath)
                 logger.info(
                     f"Load cached {dataset_name} dataset from {str(cache_filepath)}"

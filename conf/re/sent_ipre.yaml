@@ -29,13 +29,13 @@ select_best_on_data: dev
 best_metric_field: micro.f1
 local_rank: -1
 random_seed: 1227
-num_epochs: 1
+num_epochs: 3
 num_early_stop: 5
 train_batch_size: 64
 eval_batch_size: 64
 learning_rate: 1e-3
 save_best_ckpt: true
-debug_mode: false  # if debug mode, a small subset of the whole dataset will be activated
+debug_mode: true  # if debug mode, a small subset of the whole dataset will be activated
 
 # eval
 pred_threshold: 0.5

@@ -1,51 +1,34 @@
-import logging
-import sys
-from typing import Optional
-
-from loguru import logger
+from accelerate.state import AcceleratorState
+from loguru._logger import Core as _Core
+from loguru._logger import Logger as _Logger
 from tqdm import tqdm as _tqdm
 
-logger.remove()
-logger.add(lambda msg: _tqdm.write(msg, end=""))
+
+class MultiProcessLogger(_Logger):
+    def __init__(self, *args, main_process_logging=True):
+        super().__init__(*args)
+
+        self.main_process_logging = main_process_logging
+
+    @staticmethod
+    def _should_log(main_process_only):
+        "Check if log should be performed"
+        return not main_process_only or (
+            main_process_only and AcceleratorState().local_process_index == 0
+        )
+
+    def _log(self, *args):
+        """
+        Delegates logger call after checking if we should log.
+
+        Accepts a new kwarg of `main_process_only`, which will dictate whether it will be logged across all processes
+        or only the main executed one. Default is `True` if not passed
+        """
+        if self._should_log(self.main_process_logging):
+            super()._log(*args)
 
 
-class Logger(object):
-    def __init__(
-        self,
-        name: str,
-        log_path: Optional[str] = None,
-        level: Optional[int] = logging.INFO,
-    ):
-        self.name = name
-        self.log_path = log_path
-
-        self.logger = logging.getLogger(self.name)
-        self.logger.setLevel(level)
-
-        fmt = "[%(asctime)-15s]-%(levelname)s-%(filename)s-%(lineno)d-%(process)d: %(message)s"
-        datefmt = "%a %d %b %Y %H:%M:%S"
-        formatter = logging.Formatter(fmt, datefmt)
-
-        stream_handler = logging.StreamHandler(sys.stdout)
-        stream_handler.setFormatter(formatter)
-        if not self.logger.handlers and log_path is not None:
-            fh = logging.FileHandler(log_path)
-            fh.setLevel(logging.INFO)
-            fh.setFormatter(formatter)
-
-            self.logger.addHandler(fh)
-            self.logger.addHandler(stream_handler)
-
-        self.debug = self.logger.debug
-        self.info = self.logger.info
-        self.warning = self.logger.warning
-        self.error = self.logger.error
-
-        self.logger.propagate = False
-        sys.excepthook = self.handle_exception
-
-    def handle_exception(self, exc_type, exc_value, exc_traceback):
-        if issubclass(exc_type, KeyboardInterrupt):
-            sys.__excepthook__(exc_type, exc_value, exc_traceback)
-            return
-        self.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+logger = MultiProcessLogger(_Core(), None, 0, False, False, True, False, True, None, {})
+logger.add(
+    lambda msg: _tqdm.write(msg, end=""), colorize=True, backtrace=True, diagnose=True
+)

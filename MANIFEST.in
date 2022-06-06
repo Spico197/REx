@@ -9,4 +9,4 @@ include rex/templates/.gitignore
 include rex/templates/README.md
 include rex/templates/run.sh
 include rex/templates/custom.yaml
-recursive-include rex/templates/src
+include rex/templates/src/*.py

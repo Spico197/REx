@@ -1,14 +1,18 @@
+from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Tuple
 
 import torch
 from omegaconf import OmegaConf
 
+from rex import accelerator
 from rex.data.data_manager import DataManager
 from rex.data.transforms.base import TransformBase
+from rex.metrics import safe_division
 from rex.tasks.base_task import TaskBase
 from rex.utils.dict import get_dict_content
 from rex.utils.io import dump_json
+from rex.utils.logging import logger
 from rex.utils.progress_bar import pbar, rbar
 from rex.utils.registry import register
 from rex.utils.wrapper import safe_try
@@ -32,34 +36,34 @@ class SimpleTask(TaskBase):
         self.measures_path = Path(config.task_dir).joinpath("measures")
         self.measures_path.mkdir(parents=True, exist_ok=True)
 
-        self.logging("Init transform", level="DEBUG")
+        logger.debug("Init transform")
         self.transform: TransformBase = self.init_transform()
-        self.logging("Init data_manager", level="DEBUG")
+        logger.debug("Init data_manager")
         self.data_manager: DataManager = self.init_data_manager()
 
-        self.logging("Init model", level="DEBUG")
+        logger.debug("Init model")
         self.model = self.init_model()
 
         if self.config.skip_train:
             self.optimizer = None
             self.lr_scheduler = None
         else:
-            self.logging("Init optimizer", level="DEBUG")
+            logger.debug("Init optimizer")
             self.optimizer = self.init_optimizer()
-            self.logging("Init lr_scheduler", level="DEBUG")
+            logger.debug("Init lr_scheduler")
             self.lr_scheduler = self.init_lr_scheduler()
 
         self.after_initialized()
-        self.logging("SimpleTask initialised", level="DEBUG")
+        logger.debug("SimpleTask initialised")
 
     def after_initialized(self):
-        self.logging("Prepare model", level="DEBUG")
-        self.model = self.accelerator.prepare(self.model)
-        self.logging("Prepare optimizer", level="DEBUG")
-        self.optimizer = self.accelerator.prepare(self.optimizer)
+        logger.debug("Prepare model")
+        self.model = accelerator.prepare(self.model)
+        logger.debug("Prepare optimizer")
+        self.optimizer = accelerator.prepare(self.optimizer)
         if self.lr_scheduler is not None:
-            self.logging("Prepare lr_scheduler", level="DEBUG")
-            self.lr_scheduler = self.accelerator.prepare(self.lr_scheduler)
+            logger.debug("Prepare lr_scheduler")
+            self.lr_scheduler = accelerator.prepare(self.lr_scheduler)
 
     def init_transform(self):
         raise NotImplementedError
@@ -110,7 +114,7 @@ class SimpleTask(TaskBase):
         loader = self.data_manager.load_loader(
             dataset_name, is_eval=is_eval, epoch=epoch
         )
-        loader = self.accelerator.prepare(loader)
+        loader = accelerator.prepare(loader)
         return loader
 
     @safe_try
@@ -119,17 +123,32 @@ class SimpleTask(TaskBase):
             raise RuntimeError(
                 "Training procedure started while config.skip_train is True!"
             )
-
-        continue_training = True
-        resumed_training = self.config.resumed_training
-        train_loader = self.get_data_loader("train", False, 0)
+        if self.config.resumed_training_path is not None:
+            self.load(
+                self.config.resumed_training_path,
+                load_config=False,
+                load_model=True,
+                load_optimizer=True,
+                load_history=True,
+            )
+            resumed_training = True
+        else:
+            resumed_training = False
+        train_loader = self.get_data_loader("train", False, self.history["curr_epoch"])
         total_steps = self.history["curr_epoch"] * len(train_loader)
-        for epoch_idx in rbar(
-            self.history["curr_epoch"], self.config.num_epochs, desc="Epoch"
-        ):
+        start_time = datetime.now()
+        for epoch_idx in range(self.history["curr_epoch"], self.config.num_epochs):
             if not resumed_training:
                 self.history["curr_epoch"] = epoch_idx
-            self.logging(f"Epoch: {epoch_idx}/{self.config.num_epochs}")
+
+            used_time = datetime.now() - start_time
+            time_per_epoch = safe_division(used_time, self.history["curr_epoch"])
+            remain_time = time_per_epoch * (
+                self.config.num_epochs - self.history["curr_epoch"]
+            )
+            logger.info(
+                f"Epoch: {epoch_idx}/{self.config.num_epochs} [{str(used_time)}<{str(remain_time)}, {str(time_per_epoch)}/epoch]"
+            )
 
             self.model.train()
             self.optimizer.zero_grad()
@@ -151,16 +170,15 @@ class SimpleTask(TaskBase):
                 loss = result["loss"] / self.config.grad_accum_steps
                 loader.set_postfix({"loss": loss.item()})
                 self.history["current_train_loss"] += loss.item()
-                self.accelerator.backward(loss)
+                accelerator.backward(loss)
 
                 if self.config.max_grad_norm > 0:
-                    self.accelerator.clip_grad_norm_(
+                    accelerator.clip_grad_norm_(
                         self.model.parameters(), max_norm=self.config.max_grad_norm
                     )
-                if (
-                    batch_idx + 1 % self.config.grad_accum_steps == 0
-                    or batch_idx + 1 == len(loader)
-                ):
+                if ((batch_idx + 1) % self.config.grad_accum_steps) == 0 or (
+                    batch_idx + 1
+                ) == len(loader):
                     self.optimizer.step()
                     if self.lr_scheduler is not None:
                         self.lr_scheduler.step()
@@ -168,17 +186,14 @@ class SimpleTask(TaskBase):
 
                 if (
                     self.config.step_eval_interval > 0
-                    and total_steps + 1 % self.config.step_eval_interval
+                    and (total_steps + 1) % self.config.step_eval_interval
                 ):
                     self._eval_during_train("step")
                     if not self._check_patience():
                         break
                 total_steps += 1
 
-            self.logging(loader)
-            if not continue_training:
-                # if break from inner step loop, early break
-                break
+            logger.info(loader)
             if (self.config.epoch_eval_interval > 0) and (
                 ((epoch_idx + 1) % self.config.epoch_eval_interval) == 0
             ):
@@ -186,20 +201,20 @@ class SimpleTask(TaskBase):
                 if not self._check_patience():
                     break
 
-        self.logging("Trial finished.")
+        logger.info("Trial finished.")
         if self.config.select_best_by_key == "metric":
             tmp_string = f"{self.history['best_metric']:.5f}"
         else:
             tmp_string = f"{self.history['best_loss']}"
-        self.logging(
+        logger.info(
             f"Best epoch: {self.history['best_epoch']}, step: {self.history['best_step']}"
         )
-        self.logging(
+        logger.info(
             f"Best {self.config.select_best_on_data}.{self.config.select_best_by_key}.{self.config.best_metric_field} : {tmp_string}"
         )
 
         if self.config.final_eval_on_test:
-            self.logging("Loading best ckpt")
+            logger.info("Loading best ckpt")
             self.load_best_ckpt()
             test_loss, test_measures = self.eval(
                 "test", verbose=True, dump=True, postfix="final"
@@ -226,7 +241,7 @@ class SimpleTask(TaskBase):
         ), f"{self.config.select_best_on_data} is not included in eval_on_data: {self.config.eval_on_data}"
 
         if len(self.config.eval_on_data) < 1:
-            self.logging(
+            logger.info(
                 "Does not provide any data to evaluate during training, continue training",
                 level="WARNING",
             )
@@ -303,16 +318,16 @@ class SimpleTask(TaskBase):
         this_eval_result["no_climbing_step_cnt"] = self.history["no_climbing_step_cnt"]
 
         # print results
-        self.logging(
+        logger.info(
             f"Eval on {eval_on}, Idx: {history_index_identifier}, is_best: {is_best}"
         )
-        self.logging(f"Train loss: {self.history['current_train_loss']:.5f}")
+        logger.info(f"Train loss: {self.history['current_train_loss']:.5f}")
         for dataset_name in eval_on_datasets:
             eval_measures = self.history[eval_on][dataset_name]["metrics"][
                 history_index
             ]
             eval_loss = self.history[eval_on][dataset_name]["loss"][history_index]
-            self.logging(
+            logger.info(
                 (
                     f"{dataset_name} - "
                     f"{self.config.best_metric_field}: "
@@ -324,9 +339,9 @@ class SimpleTask(TaskBase):
             tmp_string = f"{self.history['best_metric']:.5f}"
         else:
             tmp_string = f"{self.history['best_loss']:.5f}"
-        self.logging(f"Best {self.config.select_best_by_key}: {tmp_string}")
-        self.logging(f"Best {eval_on}: {self.history[f'best_{eval_on}']}")
-        self.logging(
+        logger.info(f"Best {self.config.select_best_by_key}: {tmp_string}")
+        logger.info(f"Best {eval_on}: {self.history[f'best_{eval_on}']}")
+        logger.info(
             f"No Climbing Count of {eval_on}: {self.history[f'no_climbing_{eval_on}_cnt']}"
         )
         dump_json(
@@ -353,7 +368,7 @@ class SimpleTask(TaskBase):
             self.config.step_patience > 0
             and self.history["no_climbing_step_cnt"] >= self.config.step_patience
         ):
-            self.logging(
+            logger.info(
                 (
                     "Early Stopped: No climbing count: "
                     f"Epoch: {self.history['no_climbing_epoch_cnt']} / {self.config.epoch_patience} "
@@ -365,7 +380,7 @@ class SimpleTask(TaskBase):
             self.config.num_steps > 0
             and self.history["total_steps"] >= self.config.num_steps
         ):
-            self.logging(
+            logger.info(
                 f"Reached the max num of steps: {self.history['total_steps']} / {self.config.num_steps}"
             )
             return False
@@ -403,17 +418,18 @@ class SimpleTask(TaskBase):
         for batch in loader:
             out = self.model(**batch)
             eval_loss += out["loss"].item()
-            all_batch = self.accelerator.gather(batch)
-            all_out = self.accelerator.gather(out)
+            all_batch = accelerator.gather(batch)
+            all_out = accelerator.gather(out)
             origin.append(all_batch)
             output.append(all_out)
 
-        metrics = self._get_eval_results_impl(origin, output)
+        logger.info(loader)
+        metrics = self._get_eval_results_impl(origin, output, postfix)
 
         if verbose:
-            self.logging(f"Eval dataset: {dataset_name}")
-            self.logging(f"Eval loss: {eval_loss}")
-            self.logging(
+            logger.info(f"Eval dataset: {dataset_name}")
+            logger.info(f"Eval loss: {eval_loss}")
+            logger.info(
                 f"Eval metrics: {get_dict_content(metrics, self.config.best_metric_field)}"
             )
         if dump:

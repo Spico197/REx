@@ -31,7 +31,7 @@ save_best_ckpt: true
 debug_mode: false  # if debug mode, a small subset of the whole dataset will be activated
 
 # logging
-only_master_logging: true
+main_process_logging: true
 
 # model
 num_filters: 230
