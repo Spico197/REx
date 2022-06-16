@@ -25,5 +25,9 @@ def move_to_device(
     return obj
 
 
+def detach_cpu(tensor: torch.Tensor):
+    return tensor.detach().cpu()
+
+
 def detach_cpu_list(tensor: torch.Tensor):
-    return tensor.detach().cpu().tolist()
+    return detach_cpu(tensor).tolist()

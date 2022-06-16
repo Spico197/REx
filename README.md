@@ -96,6 +96,7 @@ $ pre-commit install
 
 ## ✉️Update
 
+- v0.1.5: add `update_before_tensorify` into `GeneralCollateFn`, fix logging level displaying problem
 - v0.1.4: move accelerate to `rex.__init__`, update multi process tqdm & logging (only show in the main process in default), remove cache in debug mode, fix bugs in `rex.cmds.new`, add `rank_zero_only` in task dump, `load_best_ckpt` if `resumed_training`
 - v0.1.3: fix emb import
 - v0.1.1: update registry and add `accelerate` multi-gpu support

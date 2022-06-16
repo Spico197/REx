@@ -28,7 +28,8 @@ class MultiProcessLogger(_Logger):
             super()._log(*args)
 
 
-logger = MultiProcessLogger(_Core(), None, 0, False, False, True, False, True, None, {})
+# logger depth=1 to show original filename and call info under logger inheritance
+logger = MultiProcessLogger(_Core(), None, 1, False, False, True, False, True, None, {})
 logger.add(
     lambda msg: _tqdm.write(msg, end=""), colorize=True, backtrace=True, diagnose=True
 )
