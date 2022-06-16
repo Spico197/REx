@@ -15,6 +15,7 @@ from rex.utils.io import dump_json
 from rex.utils.logging import logger
 from rex.utils.progress_bar import pbar, rbar
 from rex.utils.registry import register
+from rex.utils.tensor_move import move_to_device
 from rex.utils.wrapper import safe_try
 
 
@@ -161,6 +162,7 @@ class SimpleTask(TaskBase):
                     self.history["curr_batch"] = batch_idx
                     self.history["total_steps"] = total_steps
                 if resumed_training and total_steps < self.history["total_steps"]:
+                    total_steps += 1
                     continue
                 elif resumed_training and total_steps == self.history["total_steps"]:
                     resumed_training = False
@@ -418,6 +420,8 @@ class SimpleTask(TaskBase):
         for batch in loader:
             out = self.model(**batch)
             eval_loss += out["loss"].item()
+            batch = move_to_device(batch, "cpu")
+            out = move_to_device(out, "cpu")
             all_batch = accelerator.gather(batch)
             all_out = accelerator.gather(out)
             origin.append(all_batch)

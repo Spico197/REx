@@ -230,7 +230,7 @@ class TaskBase(object):
         update_config: Optional[dict] = None,
         **kwargs,
     ):
-        cls.logging(f"Initializing from configuration: {OmegaConf.to_yaml(config)}")
+        logger.info(f"Initializing from configuration: {OmegaConf.to_yaml(config)}")
 
         # update
         if update_config is not None:
@@ -248,7 +248,7 @@ class TaskBase(object):
         config_filepath: str,
         **kwargs,
     ):
-        cls.logging(f"Initializing from configuration file: {config_filepath}")
+        logger.info(f"Initializing from configuration file: {config_filepath}")
         config = OmegaConf.load(config_filepath)
 
         return cls.from_config(config, **kwargs)

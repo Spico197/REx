@@ -68,6 +68,9 @@ class GeneralCollateFn(object):
         """For those who transform data while collating, override this function"""
         return data
 
+    def update_before_tensorify(self, data: dict):
+        return data
+
     def __call__(self, data: List[Dict[str, Any]]) -> Dict[str, Any]:
         self._validate_data(data)
         if len(self.key2type) == 0 and self.guessing:
@@ -79,6 +82,8 @@ class GeneralCollateFn(object):
         for d in data:
             for key in self.key2type:
                 final_data[key].append(d[key])
+
+        final_data = self.update_before_tensorify(final_data)
 
         for key, val_type in self.key2type.items():
             if val_type is not None and all(val is not None for val in final_data[key]):
