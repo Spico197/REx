@@ -32,6 +32,7 @@ setuptools.setup(
         "loguru>=0.5.3",
         "tqdm>=4.61.1",
         "accelerate>=0.9.0",
+        "transformers>=4.0.1",
     ],
     extras_require={
         "dev": ["pytest", "coverage", "black", "isort", "flake8", "pre-commit"]

@@ -169,10 +169,11 @@ class SimpleTask(TaskBase):
 
                 result = self.model(**batch)
 
-                loss = result["loss"] / self.config.grad_accum_steps
-                loader.set_postfix({"loss": loss.item()})
-                self.history["current_train_loss"] += loss.item()
-                accelerator.backward(loss)
+                result["loss"] /= self.config.grad_accum_steps
+                accelerator.backward(result["loss"])
+                loss_item = result["loss"].item()
+                self.history["current_train_loss"] += loss_item
+                loader.set_postfix({"loss": loss_item})
 
                 if self.config.max_grad_norm > 0:
                     accelerator.clip_grad_norm_(
@@ -272,9 +273,6 @@ class SimpleTask(TaskBase):
             this_eval_result[f"{eval_on}.{dataset_name}.metrics"] = eval_measures
             this_eval_result[f"{eval_on}.{dataset_name}.loss"] = eval_loss
 
-        self.history[eval_on][dataset_name]["loss"][history_index] = self.history[
-            "current_train_loss"
-        ]
         this_eval_result["train_loss"] = self.history["current_train_loss"]
 
         # update the best

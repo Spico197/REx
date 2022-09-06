@@ -1,12 +1,17 @@
 import sys
 
+from rex import __version__
 from rex.utils.config import ConfigArgument, ConfigParser
-from rex.utils.logging import logger
-from rex.utils.registry import NAMESPACE_REGISTRY, call_register, get_registered
+from rex.utils.registry import NAMESPACE_REGISTRY, get_registered, register
 
 from .emb import emb
 from .new import new
 from .train import train
+
+
+@register("rex_init_call")
+def version(*args, **kwargs):
+    print(f"{__version__}")
 
 
 def main():
@@ -18,8 +23,8 @@ def main():
         ),
         init_priority_args=False,
         cmd_args=sys.argv[1:2],
+        description=f"REx (version: {__version__}) - A toolkit for Relation, Event eXtraction (REx) and more...",
     )
-    logger.info(f"Entering {args.command} mode...")
 
     if args.command in NAMESPACE_REGISTRY["rex_init_call"]:
         command = get_registered("rex_init_call", args.command)

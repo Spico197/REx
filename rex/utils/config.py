@@ -208,6 +208,10 @@ class DefaultBaseConfig:
             "help": "max number of training steps. `-1` if not training in steps"
         },
     )
+    warmup_proportion: float = field(
+        default=0.1,
+        metadata={"help": "proportion of steps for model parameters' warming up"},
+    )
     epoch_patience: int = field(
         default=5,
         metadata={"help": "stop training if the metric does not grow in [x] epochs"},

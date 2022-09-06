@@ -1,0 +1,30 @@
+name: Feature Request
+description: I want to request a new feature
+title: "[Feature Request]: "
+labels: ["feature request"]
+assignees:
+  - Spico197
+body:
+  - type: markdown
+    attributes:
+      value: |
+        - ** Idea sharing ** While sharing what you want to do, make sure to protect your ideas.
+        - ** Problems ** If you have any questions about event extraction, make sure you have read the latest papers or searched on the Internet.
+        - ** Others ** Other things you may want to share or discuss.
+  - type: textarea
+    id: content
+    attributes:
+      label: Content
+      description: Please describe the new feature to be merged into REx.
+      placeholder: Content goes here
+      value: "My request is ..."
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/Spico197/REx/blob/main/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
