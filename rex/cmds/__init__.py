@@ -1,8 +1,8 @@
 import sys
 
-from rex import __version__
 from rex.utils.config import ConfigArgument, ConfigParser
 from rex.utils.registry import NAMESPACE_REGISTRY, get_registered, register
+from rex.version import __version__
 
 from .emb import emb
 from .new import new

@@ -1,6 +1,15 @@
 # Changelog
 
+## Working on
 
+- v0.1.6
+    - add `warmup_proportion` to default config. ref to [#7](https://github.com/Spico197/REx/issues/7)
+    - add `rex version` command
+    - fix train loss == eval loss problem in issue [#6](https://github.com/Spico197/REx/issues/6)
+    - fix type err in [#9](https://github.com/Spico197/REx/issues/9)
+    - add `encode_one` and `decode_one` into `LabelEncoder`
+    - add json-friendly dumping type convertion function (as a `dump_json*` built-in convertion)
+    - add tests for relation extraction tasks
 
 ## Previous versions
 

@@ -2,13 +2,36 @@ import json
 import pickle
 from typing import Any, Iterable, List, Optional
 
+import numpy as np
+import torch
+
 from rex.utils.deprecation import deprecation_warning
 from rex.utils.logging import logger
 
 
+def tensor_friendly_json_encoding(obj: Any):
+    if isinstance(obj, np.ndarray):
+        obj = obj.tolist()
+    elif isinstance(obj, np.generic):
+        obj = obj.item()
+    elif isinstance(obj, torch.Tensor):
+        if len(obj.shape) == 0:
+            # scalar
+            obj = obj.item()
+        else:
+            obj = obj.tolist()
+    return obj
+
+
 def dump_json(obj, filepath, **kwargs):
     with open(filepath, "wt", encoding="utf-8") as fout:
-        json.dump(obj, fout, ensure_ascii=False, **kwargs)
+        json.dump(
+            obj,
+            fout,
+            ensure_ascii=False,
+            default=tensor_friendly_json_encoding,
+            **kwargs,
+        )
 
 
 def load_json(filepath, **kwargs):
@@ -26,7 +49,9 @@ def dump_line_json(obj, filepath, **kwargs):
 def dump_jsonlines(obj, filepath, **kwargs):
     with open(filepath, "wt", encoding="utf-8") as fout:
         for d in obj:
-            line_d = json.dumps(d, ensure_ascii=False, **kwargs)
+            line_d = json.dumps(
+                d, ensure_ascii=False, default=tensor_friendly_json_encoding, **kwargs
+            )
             fout.write("{}\n".format(line_d))
 
 

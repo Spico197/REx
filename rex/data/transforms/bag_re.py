@@ -3,6 +3,7 @@ from typing import Iterable, List, Optional
 
 from rex.data.label_encoder import LabelEncoder
 from rex.data.transforms.base import TransformBase
+from rex.data.vocab import Vocab
 from rex.utils.logging import logger
 from rex.utils.mask import construct_piecewise_mask
 from rex.utils.position import construct_relative_positions, find_all_positions
@@ -14,9 +15,18 @@ class CachedMCBagRETransform(TransformBase):
     Data transform for cached bag-level relation classification task.
     """
 
-    def __init__(self, max_seq_len) -> None:
-        super().__init__(max_seq_len)
-        self.label_encoder = LabelEncoder()
+    def __init__(self, max_seq_len, rel2id_filepath, emb_filepath) -> None:
+        super().__init__()
+
+        self.max_seq_len = max_seq_len
+        self.vocab = Vocab.from_pretrained(
+            emb_filepath,
+            include_weights=True,
+            init_pad_unk_emb=False,
+            include_pad=False,
+            include_unk=False,
+        )
+        self.label_encoder = LabelEncoder.from_pretrained(rel2id_filepath)
 
     def transform(
         self,
@@ -47,11 +57,13 @@ class CachedMCBagRETransform(TransformBase):
                     num_truncated_rels += 1
                     continue
                 valid_ent_pair2rels[(rel[1], rel[2])].add(
-                    self.label_encoder.update_encode_one(rel[0])
+                    self.label_encoder.encode_one(rel[0])
                 )
             if len(valid_ent_pair2rels) == 0:
                 continue
-            token_ids, _ = self.vocab.encode(d["tokens"], self.max_seq_len, update=True)
+            token_ids, _ = self.vocab.encode(
+                d["tokens"], self.max_seq_len, update=False
+            )
             for ent_pair, rels in valid_ent_pair2rels.items():
                 head = "_".join(
                     d["tokens"][

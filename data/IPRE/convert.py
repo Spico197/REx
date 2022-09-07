@@ -1,6 +1,6 @@
 import os
 
-from rex.utils.io import dump_line_json, load_csv
+from rex.utils.io import dump_jsonlines, load_csv
 from rex.utils.position import find_all_positions
 
 
@@ -38,7 +38,7 @@ def convert_data(dataset_name, sentence_filepath, sent_relation_filepath):
         final_data.append(d)
 
     print(f"len of {dataset_name}:", len(final_data), final_data[:2])
-    dump_line_json(final_data, f"formatted/{dataset_name}.linejson")
+    dump_jsonlines(final_data, f"formatted/{dataset_name}.linejson")
 
 
 if __name__ == "__main__":

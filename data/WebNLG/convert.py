@@ -3,7 +3,7 @@ from collections import Counter
 
 import numpy as np
 
-from rex.utils.io import dump_csv, dump_iterable, dump_json, dump_line_json, load_json
+from rex.utils.io import dump_csv, dump_iterable, dump_json, dump_jsonlines, load_json
 
 
 def convert_data(dataset_name, filepath):
@@ -40,7 +40,7 @@ def convert_data(dataset_name, filepath):
         final_data.append(d)
 
     print(f"len of {dataset_name}:", len(final_data), final_data[:2])
-    dump_line_json(final_data, f"formatted/{dataset_name}.linejson")
+    dump_jsonlines(final_data, f"formatted/{dataset_name}.linejson")
 
     len_counter = Counter(lens)
     print(max(lens), len_counter.most_common())

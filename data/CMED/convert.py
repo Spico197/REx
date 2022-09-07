@@ -1,7 +1,7 @@
 import os
 from collections import Counter
 
-from rex.utils.io import dump_json, dump_line_json, load_json
+from rex.utils.io import dump_json, dump_jsonlines, load_json
 from rex.utils.position import find_all_positions
 
 
@@ -52,7 +52,7 @@ def convert_data(dataset_name, filepath):
         final_data.append(d)
 
     print(f"len of {dataset_name}:", len(final_data), final_data[:2])
-    dump_line_json(final_data, f"formatted/{dataset_name}.linejson")
+    dump_jsonlines(final_data, f"formatted/{dataset_name}.linejson")
 
     len_counter = Counter(lens)
     print(max(lens), len_counter.most_common())

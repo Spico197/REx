@@ -27,6 +27,12 @@ class LabelEncoder(object):
 
         return list(map(lambda x: self.label2id[x], labels))
 
+    def encode_one(self, label, update: bool = False):
+        return self.encode([label], update=update)[0]
+
+    def decode_one(self, label_idx):
+        return self.decode([label_idx])[0]
+
     def update_encode(self, labels):
         self.update(labels)
         return self.encode(labels)

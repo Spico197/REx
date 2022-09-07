@@ -26,7 +26,6 @@ class ConfigParser(argparse.ArgumentParser):
     Examples:
         >>> config = ConfigParser.parse_cmd()
         >>> config = ConfigParser(
-        ...     ConfigArgument('-d', '--task-dir', type=str, help='path to task directory'),
         ...     ConfigArgument('-n', '--task-name', type=str, help='name of task')
         ... ).parse_cmd()
     """
@@ -185,6 +184,9 @@ class DefaultBaseConfig:
     task_dir: str = field(
         default="outputs/temp_task",
         metadata={"help": "task directory"},
+    )
+    dump_cache_dir: str = field(
+        default=None, metadata={"help": "dumped cache directory, None if not dump"}
     )
     data_dir: str = field(default="data", metadata={"help": "data directory"})
     train_filepath: str = field(

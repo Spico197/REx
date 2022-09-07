@@ -31,7 +31,7 @@ test:
 
 .PHONY: debug
 debug:
-	pytest -vv tests/utils/test_progress_bar.py
+	pytest -vv tests/tasks/test_re.py
 
 .PHONY: clean
 clean:

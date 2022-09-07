@@ -1,7 +1,11 @@
+from typing import Union
+
 DEFAULT_PRF1_RESULT_DICT = {"p": 0.0, "r": 0.0, "f1": 0.0, "tp": 0, "fp": 0, "fn": 0}
 
 
-def safe_division(numerator, denominator):
+def safe_division(
+    numerator: Union[int, float], denominator: Union[int, float]
+) -> float:
     try:
         val = numerator / denominator
     except ZeroDivisionError:
@@ -9,7 +13,7 @@ def safe_division(numerator, denominator):
     return val
 
 
-def calc_p_r_f1_from_tp_fp_fn(tp, fp, fn):
+def calc_p_r_f1_from_tp_fp_fn(tp: int, fp: int, fn: int) -> dict:
     p = safe_division(tp, tp + fp)
     r = safe_division(tp, tp + fn)
     f1 = safe_division(2 * p * r, p + r)
