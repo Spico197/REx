@@ -2,7 +2,7 @@ import os
 
 import setuptools
 
-from rex import __version__
+from rex.version import __version__
 
 readme_filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "README.md")
 with open(readme_filepath, "r") as fh:
@@ -32,9 +32,19 @@ setuptools.setup(
         "loguru>=0.5.3",
         "tqdm>=4.61.1",
         "accelerate>=0.9.0",
+        "transformers>=4.0.1",
     ],
     extras_require={
-        "dev": ["pytest", "coverage", "black", "isort", "flake8", "pre-commit"]
+        "dev": [
+            "pytest",
+            "coverage",
+            "black",
+            "isort",
+            "flake8",
+            "pre-commit",
+            "sphinx_rtd_theme",
+            "sphinx",
+        ]
     },
     include_package_data=True,
     entry_points={"console_scripts": ["rex = rex.cmds:main"]},

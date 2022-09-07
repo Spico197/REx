@@ -1,0 +1,60 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug"]
+assignees:
+  - Spico197
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Please tell us, what bug do you encounter?
+      placeholder: Tell us what you see!
+      value: "A bug happened!"
+    validations:
+      required: true
+  - type: input
+    id: python_version
+    attributes:
+      label: Python Version
+      description: |
+        What version of Python are you running?
+  - type: input
+    id: torch_version
+    attributes:
+      label: PyTorch Version
+      description: |
+        What version of PyTorch are you running?
+  - type: input
+    id: rex_version
+    attributes:
+      label: REx Version
+      description: |
+        What version of our software are you running?
+        You may check REx version by typing `rex version` in the shell.
+  - type: input
+    id: other_version
+    attributes:
+      label: Other Dependencies' Versions
+      description: |
+        If there are some other problems when REx's calling its dependencies,
+        please provide those information here.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output.
+      render: shell
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/Spico197/REx/blob/main/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

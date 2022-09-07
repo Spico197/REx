@@ -26,7 +26,6 @@ class ConfigParser(argparse.ArgumentParser):
     Examples:
         >>> config = ConfigParser.parse_cmd()
         >>> config = ConfigParser(
-        ...     ConfigArgument('-d', '--task-dir', type=str, help='path to task directory'),
         ...     ConfigArgument('-n', '--task-name', type=str, help='name of task')
         ... ).parse_cmd()
     """
@@ -186,6 +185,9 @@ class DefaultBaseConfig:
         default="outputs/temp_task",
         metadata={"help": "task directory"},
     )
+    dump_cache_dir: str = field(
+        default=None, metadata={"help": "dumped cache directory, None if not dump"}
+    )
     data_dir: str = field(default="data", metadata={"help": "data directory"})
     train_filepath: str = field(
         default="train.jsonl", metadata={"help": "filepath to train set"}
@@ -207,6 +209,10 @@ class DefaultBaseConfig:
         metadata={
             "help": "max number of training steps. `-1` if not training in steps"
         },
+    )
+    warmup_proportion: float = field(
+        default=0.1,
+        metadata={"help": "proportion of steps for model parameters' warming up"},
     )
     epoch_patience: int = field(
         default=5,

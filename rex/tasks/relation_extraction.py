@@ -1,10 +1,12 @@
 from torch.optim import Adam
 
-from rex.data.collate_fn import re_collate_fn
+from rex.data.collate_fn import bag_re_collate_fn, re_collate_fn
 from rex.data.data_manager import DataManager
-from rex.data.dataset import CachedDataset
+from rex.data.dataset import CachedBagREDataset, CachedDataset
+from rex.data.transforms.bag_re import CachedMCBagRETransform
 from rex.data.transforms.sent_re import CachedMCMLSentRETransform
-from rex.metrics.classification import mcml_prf1
+from rex.metrics.classification import mc_prf1, mcml_prf1
+from rex.models.bag_pcnn import PCNNAtt, PCNNOne
 from rex.models.sent_pcnn import SentPCNN
 from rex.tasks.simple_task import SimpleTask
 from rex.utils.dict import PrettyPrintDict
@@ -38,7 +40,7 @@ class MCMLSentRelationClassificationTask(SimpleTask):
             re_collate_fn,
             use_stream_transform=False,
             debug_mode=self.config.debug_mode,
-            dump_cache_dir=self.config.data_cache_dir,
+            dump_cache_dir=self.config.dump_cache_dir,
         )
         return dm
 
@@ -59,7 +61,9 @@ class MCMLSentRelationClassificationTask(SimpleTask):
     def init_optimizer(self):
         return Adam(self.model.parameters(), lr=self.config.learning_rate)
 
-    def get_eval_results(self, input_batches: list, output_batches: list) -> dict:
+    def get_eval_results(
+        self, input_batches: list, output_batches: list, *args, **kwargs
+    ) -> dict:
         preds = []
         golds = []
         for batch_input, batch_output in zip(input_batches, output_batches):
@@ -85,6 +89,94 @@ class MCMLSentRelationClassificationTask(SimpleTask):
         result = self.model(**tensor_batch)
         outs = result["pred"]
         outs = detach_cpu_list(outs.ge(self.config.pred_threshold).long())[0]
+        preds = []
+        for type_idx, pred in enumerate(outs):
+            if pred == 1:
+                preds.append(self.transform.label_encoder.id2label[type_idx])
+
+        return preds
+
+
+@register("task")
+class MCBagRelationClassificationTask(SimpleTask):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+    def init_transform(self):
+        return CachedMCBagRETransform(
+            self.config.max_seq_len,
+            self.config.rel2id_filepath,
+            self.config.emb_filepath,
+        )
+
+    def init_data_manager(self):
+        dm = DataManager(
+            self.config.train_filepath,
+            self.config.dev_filepath,
+            self.config.test_filepath,
+            CachedBagREDataset,
+            self.transform,
+            load_jsonlines,
+            self.config.train_batch_size,
+            self.config.eval_batch_size,
+            bag_re_collate_fn,
+            use_stream_transform=False,
+            debug_mode=self.config.debug_mode,
+            dump_cache_dir=self.config.dump_cache_dir,
+        )
+        return dm
+
+    def init_model(self):
+        if self.config.model_type == "PCNNOne":
+            model_class = PCNNOne
+        elif self.config.model_type == "PCNNAtt":
+            model_class = PCNNAtt
+        else:
+            raise ValueError(
+                f"Configuration `model_type`: {self.config.model_type} not supported!"
+            )
+        m = model_class(
+            self.transform.vocab.size,
+            self.transform.label_encoder.num_tags,
+            self.config.dim_token_emb,
+            self.config.max_seq_len,
+            self.config.dim_pos_emb,
+            self.config.num_filters,
+            self.config.kernel_size,
+            self.config.dropout,
+        )
+        m.token_embedding.from_pretrained(self.config.emb_filepath)
+        return m
+
+    def init_optimizer(self):
+        return Adam(self.model.parameters(), lr=self.config.learning_rate)
+
+    def get_eval_results(
+        self, input_batches: list, output_batches: list, *args, **kwargs
+    ) -> dict:
+        preds = []
+        golds = []
+        for batch_input, batch_output in zip(input_batches, output_batches):
+            batch_gold = detach_cpu_list(batch_input["labels"])
+            batch_pred = detach_cpu_list(batch_output["pred"])
+            golds.extend(batch_gold)
+            preds.extend(batch_pred)
+        measures = mc_prf1(preds, golds)
+        return PrettyPrintDict(measures)
+
+    def predict_api(self, text, head, tail):
+        self.model.eval()
+        batch = self.transform.predict_transform(
+            {"text": text, "head": head, "tail": tail}
+        )
+        tensor_batch = self.data_manager.collate_fn([batch])
+        if "labels" in tensor_batch:
+            del tensor_batch["labels"]
+        if "id" in tensor_batch:
+            del tensor_batch["id"]
+        result = self.model(**tensor_batch)
+        outs = result["pred"]
+        outs = detach_cpu_list(outs)[0]
         preds = []
         for type_idx, pred in enumerate(outs):
             if pred == 1:

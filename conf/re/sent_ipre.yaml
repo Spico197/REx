@@ -12,7 +12,7 @@ dev_filepath: data/IPRE/formatted/dev.linejson
 test_filepath: data/IPRE/formatted/test.linejson
 emb_filepath: data/IPRE/vocab.emb
 rel2id_filepath: data/IPRE/label2id.json
-data_cache_dir: data/IPRE/cache
+dump_cache_dir: data/IPRE/cache
 output_dir: examples/IPRE/outputs
 task_dir: ${output_dir}/${task_name}
 
@@ -35,7 +35,7 @@ train_batch_size: 64
 eval_batch_size: 64
 learning_rate: 1e-3
 save_best_ckpt: true
-debug_mode: true  # if debug mode, a small subset of the whole dataset will be activated
+debug_mode: false  # if debug mode, a small subset of the whole dataset will be activated
 
 # eval
 pred_threshold: 0.5

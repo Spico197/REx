@@ -17,6 +17,7 @@ class CachedMCMLSentRETransform(TransformBase):
 
     def __init__(self, max_seq_len, rel2id_filepath, emb_filepath) -> None:
         super().__init__()
+
         self.max_seq_len = max_seq_len
         self.vocab = Vocab.from_pretrained(
             emb_filepath,
@@ -52,7 +53,7 @@ class CachedMCMLSentRETransform(TransformBase):
                     num_truncated_rels += 1
                     continue
                 valid_ent_pair2rels[(rel[1], rel[2])].add(
-                    self.label_encoder.label2id[rel[0]]
+                    self.label_encoder.encode_one(rel[0])
                 )
             if len(valid_ent_pair2rels) == 0:
                 continue

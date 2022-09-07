@@ -2,6 +2,18 @@
 - URL: https://github.com/thunlp/OpenNRE/blob/master/benchmark/download_nyt10.sh
 - Paper: Modeling Relations and Their Mentions without Labeled Text
 
+## Download and convert to json format
+
+1. make sure you've `cd` into this directory
+2. change input embedding filepath in `convert.py`
+3. run command below
+
+```bash
+source download_and_convert.sh
+```
+
+And you'll able to find the converted json file in `formatted` folder.
+
 ## References
 
 ```bibtex
@@ -22,10 +34,3 @@
     isbn="978-3-642-15939-8"
 }
 ```
-
-## Download and convert to json format
-```bash
-source download_and_convert.sh
-```
-
-And you'll able to find the converted json file in `formatted` folder.

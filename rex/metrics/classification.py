@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Iterable, Mapping, Optional
+from typing import Iterable, List, Mapping, Optional
 
 import numpy as np
 from sklearn import metrics
@@ -7,7 +7,7 @@ from sklearn import metrics
 from rex.metrics import DEFAULT_PRF1_RESULT_DICT, calc_p_r_f1_from_tp_fp_fn
 
 
-def accuracy(preds, golds):
+def accuracy(preds: List[int], golds: List[int]):
     if len(preds) == 0 or len(golds) == 0:
         raise ValueError("Preds or golds is empty.")
     correct = total = 0
@@ -18,7 +18,7 @@ def accuracy(preds, golds):
     return correct / total
 
 
-def mcml_prf1(preds, golds):
+def mcml_prf1(preds: List[int], golds: List[int]):
     if len(preds) == 0 or len(golds) == 0:
         raise ValueError("Preds or golds is empty.")
     measure_results = defaultdict(lambda: {"p": 0.0, "r": 0.0, "f1": 0.0})
@@ -59,10 +59,10 @@ def mcml_prf1(preds, golds):
 
 
 def mc_prf1(
-    preds,
-    golds,
-    num_classes=-1,
-    ignore_labels: Optional[Iterable] = None,
+    preds: List[int],
+    golds: List[int],
+    num_classes: int = -1,
+    ignore_labels: Optional[Iterable[int]] = None,
     label_idx2name: Optional[Mapping[int, str]] = None,
 ):
     """

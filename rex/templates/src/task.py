@@ -37,7 +37,7 @@ class TaggingTask(SimpleTask):
             self.transform.collate_fn,
             use_stream_transform=False,
             debug_mode=self.config.debug_mode,
-            dump_cache_dir=self.config.data_cache_dir,
+            dump_cache_dir=self.config.dump_cache_dir,
         )
 
     def init_model(self):

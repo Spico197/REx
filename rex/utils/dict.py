@@ -1,6 +1,8 @@
 import json
 from collections import defaultdict
 
+from rex.utils.io import tensor_friendly_json_encoding
+
 
 def get_dict_content(dict_item: dict, key: str):
     val = dict_item
@@ -49,13 +51,23 @@ class PrettyPrintDict(dict):
             return_percentage=return_percentage,
             add_percentage_symbol=add_percentage_symbol,
         )
-        return json.dumps(pretty_dict, ensure_ascii=False, indent=indent)
+        return json.dumps(
+            pretty_dict,
+            ensure_ascii=False,
+            indent=indent,
+            default=tensor_friendly_json_encoding,
+        )
 
     def to_dict(self) -> dict:
         return dict(self)
 
     def jsonify(self, **kwargs) -> str:
-        return json.dumps(dict(self), ensure_ascii=False, **kwargs)
+        return json.dumps(
+            dict(self),
+            ensure_ascii=False,
+            default=tensor_friendly_json_encoding,
+            **kwargs,
+        )
 
 
 class PrettyPrintDefaultDict(defaultdict):
@@ -68,10 +80,20 @@ class PrettyPrintDefaultDict(defaultdict):
             return_percentage=return_percentage,
             add_percentage_symbol=add_percentage_symbol,
         )
-        return json.dumps(pretty_dict, ensure_ascii=False, indent=indent)
+        return json.dumps(
+            pretty_dict,
+            ensure_ascii=False,
+            default=tensor_friendly_json_encoding,
+            indent=indent,
+        )
 
     def to_dict(self) -> dict:
         return dict(self)
 
     def jsonify(self, **kwargs) -> str:
-        return json.dumps(dict(self), ensure_ascii=False, **kwargs)
+        return json.dumps(
+            dict(self),
+            ensure_ascii=False,
+            default=tensor_friendly_json_encoding,
+            **kwargs,
+        )

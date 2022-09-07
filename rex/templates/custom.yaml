@@ -17,8 +17,8 @@ dev_filepath: ${data_dir}/validation.jsonl
 test_filepath: ${data_dir}/test.jsonl
 label2id_filepath: ${data_dir}/label2id.json
 emb_filepath: ${data_dir}/vocab.emb
-# data_cache_dir: ${data_dir}/cache
-data_cache_dir: null
+# dump_cache_dir: ${data_dir}/cache
+dump_cache_dir: null
 
 # training
 debug_mode: false
