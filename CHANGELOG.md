@@ -2,6 +2,10 @@
 
 ## Working on
 
+
+
+## Previous versions
+
 - v0.1.6
     - add `warmup_proportion` to default config. ref to [#7](https://github.com/Spico197/REx/issues/7)
     - add `rex version` command
@@ -10,9 +14,6 @@
     - add `encode_one` and `decode_one` into `LabelEncoder`
     - add json-friendly dumping type convertion function (as a `dump_json*` built-in convertion)
     - add tests for relation extraction tasks
-
-## Previous versions
-
 - v0.1.5: add `update_before_tensorify` into `GeneralCollateFn`, fix logging level displaying problem
 - v0.1.4: move accelerate to `rex.__init__`, update multi process tqdm & logging (only show in the main process in default), remove cache in debug mode, fix bugs in `rex.cmds.new`, add `rank_zero_only` in task dump, `load_best_ckpt` if `resumed_training`
 - v0.1.3: fix emb import
