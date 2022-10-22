@@ -6,6 +6,14 @@
 
 ## Previous versions
 
+- v0.1.7
+  - add `SimpleMetricTask` for training and evaluation with metric instances
+  - add `MetricBase` as a reference base class for `SimpleMetricTask`
+  - fix online testing bug when data is not provided
+  - show dataset name in cached transforming
+  - show the number of model parameters when training
+  - add `type_idx=None` to support micro-averaged-only `tagging_f1` scores calculation
+
 - v0.1.6
     - add `warmup_proportion` to default config. ref to [#7](https://github.com/Spico197/REx/issues/7)
     - add `rex version` command

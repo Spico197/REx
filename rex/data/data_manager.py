@@ -149,7 +149,11 @@ class DataManager(object):
                     )
                 else:
                     dataset = self.dataset_class(
-                        self.transform(self.load_fn(filepath), debug=self.debug_mode)
+                        self.transform(
+                            self.load_fn(filepath),
+                            debug=self.debug_mode,
+                            desc=f"Transform {dataset_name}",
+                        )
                     )
                 if self.dump_cache_dir and not cache_filepath.exists():
                     logger.info(
@@ -186,7 +190,8 @@ class DataManager(object):
         shuffle_flag = self.eval_shuffle if is_eval else self.train_shuffle
         batch_size = self.eval_batch_size if is_eval else self.train_batch_size
 
-        if self.distributed_mode:
+        # use whole dataset for each process when evaluating
+        if self.distributed_mode and not is_eval:
             sampler = DistributedSampler(dataset, shuffle=shuffle_flag)
             sampler.set_epoch(epoch_idx)
         elif shuffle_flag:

@@ -25,6 +25,7 @@ def tagging_prf1(gold_ents, pred_ents, type_idx=1) -> dict:
         pred_ents: ditto
         type_idx: index to entity type in entity tuples.
             e.g. `type_idx` in `(Alan, PER, (0, 4))` is `1`
+            If `type_idx` is None, calculate Micro-averaged scores only.
 
     Returns:
         {
@@ -46,20 +47,21 @@ def tagging_prf1(gold_ents, pred_ents, type_idx=1) -> dict:
         measure_results["micro"]["fp"] += _result["fp"]
         measure_results["micro"]["fn"] += _result["fn"]
 
-        _type2ent = defaultdict(lambda: {"gold": set(), "pred": set()})
-        for ent in one_ins_gold_ents:
-            ent_type = ent[type_idx]
-            _type2ent[ent_type]["gold"].add(ent)
-        for ent in one_ins_pred_ents:
-            ent_type = ent[type_idx]
-            _type2ent[ent_type]["pred"].add(ent)
-        for ent_type in _type2ent:
-            _result = get_measures_from_sets(
-                _type2ent[ent_type]["gold"], _type2ent[ent_type]["pred"]
-            )
-            measure_results["types"][ent_type]["tp"] += _result["tp"]
-            measure_results["types"][ent_type]["fp"] += _result["fp"]
-            measure_results["types"][ent_type]["fn"] += _result["fn"]
+        if type_idx is not None:
+            _type2ent = defaultdict(lambda: {"gold": set(), "pred": set()})
+            for ent in one_ins_gold_ents:
+                ent_type = ent[type_idx]
+                _type2ent[ent_type]["gold"].add(ent)
+            for ent in one_ins_pred_ents:
+                ent_type = ent[type_idx]
+                _type2ent[ent_type]["pred"].add(ent)
+            for ent_type in _type2ent:
+                _result = get_measures_from_sets(
+                    _type2ent[ent_type]["gold"], _type2ent[ent_type]["pred"]
+                )
+                measure_results["types"][ent_type]["tp"] += _result["tp"]
+                measure_results["types"][ent_type]["fp"] += _result["fp"]
+                measure_results["types"][ent_type]["fn"] += _result["fn"]
 
     # micro
     measure_results["micro"] = calc_p_r_f1_from_tp_fp_fn(
@@ -69,23 +71,24 @@ def tagging_prf1(gold_ents, pred_ents, type_idx=1) -> dict:
     )
 
     # for each type
-    for ent_type in measure_results["types"]:
-        measure_results["types"][ent_type] = calc_p_r_f1_from_tp_fp_fn(
-            measure_results["types"][ent_type]["tp"],
-            measure_results["types"][ent_type]["fp"],
-            measure_results["types"][ent_type]["fn"],
-        )
+    if type_idx is not None:
+        for ent_type in measure_results["types"]:
+            measure_results["types"][ent_type] = calc_p_r_f1_from_tp_fp_fn(
+                measure_results["types"][ent_type]["tp"],
+                measure_results["types"][ent_type]["fp"],
+                measure_results["types"][ent_type]["fn"],
+            )
 
-    measure_results["types"] = dict(measure_results["types"])
+        measure_results["types"] = dict(measure_results["types"])
 
-    # macro
-    macro_results = defaultdict(list)
-    for ent_type in measure_results["types"]:
-        for key in measure_results["types"][ent_type]:
-            macro_results[key].append(measure_results["types"][ent_type][key])
-    for key in macro_results:
-        measure_results["macro"][key] = safe_division(
-            sum(macro_results[key]), len(macro_results[key])
-        )
+        # macro
+        macro_results = defaultdict(list)
+        for ent_type in measure_results["types"]:
+            for key in measure_results["types"][ent_type]:
+                macro_results[key].append(measure_results["types"][ent_type][key])
+        for key in macro_results:
+            measure_results["macro"][key] = safe_division(
+                sum(macro_results[key]), len(macro_results[key])
+            )
 
     return measure_results

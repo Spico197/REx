@@ -13,6 +13,7 @@ from rex.tasks.base_task import TaskBase
 from rex.utils.dict import get_dict_content
 from rex.utils.io import dump_json
 from rex.utils.logging import logger
+from rex.utils.param import calc_module_params
 from rex.utils.progress_bar import pbar, rbar
 from rex.utils.registry import register
 from rex.utils.tensor_move import move_to_device
@@ -44,6 +45,8 @@ class SimpleTask(TaskBase):
 
         logger.debug("Init model")
         self.model = self.init_model()
+        num_model_params = calc_module_params(self.model)
+        logger.debug(f"#ModelParams: {num_model_params}")
 
         if self.config.skip_train:
             self.optimizer = None
@@ -139,6 +142,7 @@ class SimpleTask(TaskBase):
         total_steps = self.history["curr_epoch"] * len(train_loader)
         start_time = datetime.now()
         for epoch_idx in range(self.history["curr_epoch"], self.config.num_epochs):
+            logger.info(f"Start training {epoch_idx}/{self.config.num_epochs}")
             if not resumed_training:
                 self.history["curr_epoch"] = epoch_idx
 
@@ -256,6 +260,7 @@ class SimpleTask(TaskBase):
         history_index = curr_epoch_idx if eval_on == "epoch" else curr_total_steps
         history_index_identifier = f"{eval_on}.{history_index}"
         this_eval_result = {}  # to dump results
+        logger.info(f"Start evaluating at {history_index_identifier}")
 
         # eval to get measurements and loss
         eval_on_datasets = set()
@@ -418,12 +423,10 @@ class SimpleTask(TaskBase):
         for batch in loader:
             out = self.model(**batch)
             eval_loss += out["loss"].item()
-            batch = move_to_device(batch, "cpu")
-            out = move_to_device(out, "cpu")
-            all_batch = accelerator.gather(batch)
-            all_out = accelerator.gather(out)
-            origin.append(all_batch)
-            output.append(all_out)
+            # all_batch = accelerator.gather(batch)
+            # all_out = accelerator.gather(out)
+            origin.append(batch)
+            output.append(out)
 
         logger.info(loader)
         metrics = self._get_eval_results_impl(origin, output, postfix)
