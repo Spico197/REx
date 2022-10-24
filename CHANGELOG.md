@@ -6,6 +6,10 @@
 
 ## Previous versions
 
+- v0.1.8
+  - fix wrong call in `MetricBase`
+  - change default `ncols` of `pbar` into 100
+
 - v0.1.7
   - add `SimpleMetricTask` for training and evaluation with metric instances
   - add `MetricBase` as a reference base class for `SimpleMetricTask`

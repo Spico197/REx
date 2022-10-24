@@ -5,7 +5,7 @@ from tqdm import tqdm as _tqdm
 class pbar(_tqdm):
     def __init__(self, *args, **kwargs):
         if "ncols" not in kwargs:
-            kwargs["ncols"] = 80
+            kwargs["ncols"] = 100
         if "ascii" not in kwargs:
             kwargs["ascii"] = True
 

@@ -412,7 +412,7 @@ class SimpleTask(TaskBase):
             dataset_name, is_eval=True, epoch=self.history["curr_epoch"]
         )
         loader = pbar(
-            eval_loader, desc=f"{dataset_name} - {postfix} Eval", ncols=80, ascii=True
+            eval_loader, desc=f"{dataset_name} - {postfix} Eval", ascii=True
         )
 
         eval_loss = 0.0
