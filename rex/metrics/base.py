@@ -31,7 +31,9 @@ class MetricBase(object):
         Returns:
             a dict containing neccessary information from
         """
-        gold_instances, pred_instances = self.get_instances_from_batch(raw_batch, out_batch)
+        gold_instances, pred_instances = self.get_instances_from_batch(
+            raw_batch, out_batch
+        )
 
         self.golds.extend(gold_instances)
         self.preds.extend(pred_instances)

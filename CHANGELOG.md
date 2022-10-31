@@ -9,6 +9,7 @@
 - v0.1.8
   - fix wrong call in `MetricBase`
   - change default `ncols` of `pbar` into 100
+  - add `dump_middle=True` argument to `.eval()` in `SimpleMetricTask`
 
 - v0.1.7
   - add `SimpleMetricTask` for training and evaluation with metric instances

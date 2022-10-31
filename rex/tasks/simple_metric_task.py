@@ -2,7 +2,6 @@ from typing import Tuple
 
 import torch
 
-from rex import accelerator
 from rex.metrics.base import MetricBase
 from rex.tasks.simple_task import SimpleTask
 from rex.utils.dict import get_dict_content
@@ -28,14 +27,15 @@ class SimpleMetricTask(SimpleTask):
 
     @torch.no_grad()
     def eval(
-        self, dataset_name, verbose=False, dump=False, postfix=""
+        self, dataset_name, verbose=False, dump=False, dump_middle=True, postfix=""
     ) -> Tuple[float, dict]:
         """Eval on specific dataset and return loss and measurements
 
         Args:
             dataset_name: which dataset to evaluate
             verbose: whether to log evaluation results
-            dump: if True, dump result to this filepath
+            dump: if True, dump metric results to `self.measures_path`
+            dump_middle: if True, dump middle results to `self.middle_path`
             postfix: filepath postfix for dumping
 
         Returns:
@@ -46,9 +46,7 @@ class SimpleMetricTask(SimpleTask):
         eval_loader = self.get_data_loader(
             dataset_name, is_eval=True, epoch=self.history["curr_epoch"]
         )
-        loader = pbar(
-            eval_loader, desc=f"{dataset_name} - {postfix} Eval", ascii=True
-        )
+        loader = pbar(eval_loader, desc=f"{dataset_name} - {postfix} Eval", ascii=True)
 
         eval_loss = 0.0
         tot_batch_results = []
@@ -82,6 +80,7 @@ class SimpleMetricTask(SimpleTask):
                 f"{dataset_name}.{postfix}" if len(postfix) > 0 else f"{dataset_name}"
             )
             dump_json(dump_obj, self.measures_path.joinpath(f"{filename_prefix}.json"))
+        if dump_middle:
             dump_jsonlines(
                 tot_batch_results, self.middle_path.joinpath(f"{filename_prefix}.jsonl")
             )
