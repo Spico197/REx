@@ -70,19 +70,19 @@ class SimpleMetricTask(SimpleTask):
             logger.info(
                 f"Eval metrics: {get_dict_content(measurements, self.config.best_metric_field)}"
             )
+        _filename_prefix = (
+            f"{dataset_name}.{postfix}" if len(postfix) > 0 else f"{dataset_name}"
+        )
         if dump:
             dump_obj = {
                 "dataset_name": dataset_name,
                 "eval_loss": eval_loss,
                 "metrics": measurements,
             }
-            filename_prefix = (
-                f"{dataset_name}.{postfix}" if len(postfix) > 0 else f"{dataset_name}"
-            )
-            dump_json(dump_obj, self.measures_path.joinpath(f"{filename_prefix}.json"))
+            dump_json(dump_obj, self.measures_path.joinpath(f"{_filename_prefix}.json"))
         if dump_middle:
             dump_jsonlines(
-                tot_batch_results, self.middle_path.joinpath(f"{filename_prefix}.jsonl")
+                tot_batch_results, self.middle_path.joinpath(f"{_filename_prefix}.jsonl")
             )
 
         self.metric.reset()
