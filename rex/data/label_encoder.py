@@ -1,12 +1,22 @@
-from typing import Dict, Iterable, List, Optional, Union
+from typing import Iterable, List, Optional, Union
 
 from rex.utils.io import dump_json, load_json
 
 
 class LabelEncoder(object):
-    def __init__(self, initial_dict: Optional[Dict] = {}) -> None:
-        self.label2id = initial_dict
-        self.id2label = {idx: label for idx, label in enumerate(self.label2id)}
+    def __init__(self, initial: Optional[Union[dict, Iterable]] = None) -> None:
+        self.label2id = {}
+        self.id2label = {}
+
+        if initial is not None:
+            if isinstance(initial, dict):
+                _pairs = tuple(initial.items())
+                self.label2id = {key: val for key, val in _pairs}
+                self.id2label = {idx: label for idx, label in enumerate(self.label2id)}
+            elif isinstance(initial, Iterable):
+                self.update(initial)
+            else:
+                raise ValueError(f"Type {type(initial)} not supported!")
 
     def add(self, label: Union[str, int]):
         if label not in self.label2id:
@@ -60,6 +70,9 @@ class LabelEncoder(object):
     def __len__(self):
         return len(self.label2id)
 
+    def __contains__(self, item):
+        return item in self.label2id
+
     @property
     def num_tags(self):
         return len(self)
@@ -67,7 +80,7 @@ class LabelEncoder(object):
     @classmethod
     def from_pretrained(cls, filepath: str):
         label2id = load_json(filepath)
-        return cls(initial_dict=label2id)
+        return cls(initial=label2id)
 
     def save_pretrained(self, filepath: str):
         dump_json(self.label2id, filepath)
