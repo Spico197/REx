@@ -233,6 +233,16 @@ class SimpleTask(TaskBase):
         Args:
             eval_on: epoch or step
         """
+        curr_epoch_idx = self.history["curr_epoch"]
+        curr_total_steps = self.history["total_steps"]
+        history_index = curr_epoch_idx if eval_on == "epoch" else curr_total_steps
+        history_index_identifier = f"{eval_on}.{history_index}"
+
+        # make sure the model save at least one checkpoint no matter
+        #   evaluation or not
+        if self.config.save_every_ckpt:
+            self.save_ckpt(f"{history_index_identifier}")
+
         # validate
         assert eval_on in [
             "epoch",
@@ -255,10 +265,6 @@ class SimpleTask(TaskBase):
             return True
 
         # init
-        curr_epoch_idx = self.history["curr_epoch"]
-        curr_total_steps = self.history["total_steps"]
-        history_index = curr_epoch_idx if eval_on == "epoch" else curr_total_steps
-        history_index_identifier = f"{eval_on}.{history_index}"
         this_eval_result = {}  # to dump results
         logger.info(f"Start evaluating at {history_index_identifier}")
 
@@ -359,8 +365,6 @@ class SimpleTask(TaskBase):
         self.history["current_train_loss"] = 0.0
 
         # save checkpoints
-        if self.config.save_every_ckpt:
-            self.save_ckpt(f"{history_index_identifier}")
         if is_best and self.config.save_best_ckpt:
             self.save_ckpt("best")
 
