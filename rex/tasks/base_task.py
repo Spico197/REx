@@ -154,7 +154,7 @@ class TaskBase(object):
                 logger.info("Load optimizer successfully")
             else:
                 raise ValueError(
-                    f"Model loading failed. self.model={self.optimizer}, stored_dict_keys={store_dict.keys()}"
+                    f"Model loading failed. self.optimizer={self.optimizer}, stored_dict_keys={store_dict.keys()}"
                 )
         else:
             logger.info("Not load optimizer")

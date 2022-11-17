@@ -79,14 +79,16 @@ class SimpleMetricTask(SimpleTask):
                 "eval_loss": eval_loss,
                 "metrics": measurements,
             }
-            _measure_result_filepath = self.measures_path.joinpath(f"{_filename_prefix}.json")
+            _measure_result_filepath = self.measures_path.joinpath(
+                f"{_filename_prefix}.json"
+            )
             dump_json(dump_obj, _measure_result_filepath)
             logger.info(f"Dump measure results into {_measure_result_filepath}")
         if dump_middle:
-            _middle_result_filepath = self.middle_path.joinpath(f"{_filename_prefix}.jsonl")
-            dump_jsonlines(
-                tot_batch_results, _middle_result_filepath
+            _middle_result_filepath = self.middle_path.joinpath(
+                f"{_filename_prefix}.jsonl"
             )
+            dump_jsonlines(tot_batch_results, _middle_result_filepath)
             logger.info(f"Dump middle results into {_middle_result_filepath}")
 
         self.metric.reset()

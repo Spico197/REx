@@ -66,7 +66,7 @@ class MetricBase(object):
         Calculate scores from gold and pred instances
 
         Args:
-            golds: a list of gold instances obtained from `process_batch()`
+            golds: a list of gold instances obtained from `get_instances_from_batch()`
             preds: a list of predicted instances
 
         Returns:

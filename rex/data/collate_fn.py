@@ -2,6 +2,10 @@ from typing import Any, Dict, List, Optional
 
 import torch
 
+from rex.utils.batch import (
+    group_instances_into_batch,
+    validate_instance_has_the_same_keys,
+)
 from rex.utils.iteration import flatten_all
 
 
@@ -23,10 +27,16 @@ class GeneralCollateFn(object):
     DEFAULT_TYPE_MAP = {int: torch.long, float: torch.float, str: None}
 
     def __init__(
-        self, key2type: Optional[dict] = {}, guessing: Optional[bool] = False
+        self,
+        key2type: Optional[Dict[str, Any]],
+        guessing: Optional[bool] = False,
+        none_as_missing_keys: Optional[bool] = False,
     ) -> None:
-        self.key2type = key2type
+        self.key2type = {}
+        if isinstance(key2type, dict) and len(key2type) > 0:
+            self.key2type.update(key2type)
         self.guessing = guessing
+        self.none_as_missing_keys = none_as_missing_keys
 
     def update_type_mapping(self, key2type: dict):
         for key, val_type in key2type.items():
@@ -53,17 +63,6 @@ class GeneralCollateFn(object):
             self.update_type_mapping(key2type)
         return key2type
 
-    def _validate_data(self, data: List[dict]):
-        """Validate if all data have the same keys"""
-        all_keys = set()
-        for d in data:
-            if len(all_keys) == 0:
-                all_keys.update(d.keys())
-            else:
-                assert (
-                    set(d.keys()) == all_keys
-                ), "Data instances does not have the same keys!"
-
     def update_data(self, data: List[dict]) -> List[dict]:
         """For those who transform data while collating, override this function"""
         return data
@@ -72,17 +71,18 @@ class GeneralCollateFn(object):
         return data
 
     def __call__(self, data: List[Dict[str, Any]]) -> Dict[str, Any]:
-        self._validate_data(data)
+        validate_instance_has_the_same_keys(data)
         if len(self.key2type) == 0 and self.guessing:
             self.guess_types(data[0], update=True)
 
+        if self.none_as_missing_keys:
+            for d in data:
+                missing_keys = set(d.keys()) - set(self.key2type.keys())
+                for mkey in missing_keys:
+                    self.key2type[mkey] = None
+
         data = self.update_data(data)
-
-        final_data = {key: [] for key in self.key2type}
-        for d in data:
-            for key in self.key2type:
-                final_data[key].append(d[key])
-
+        final_data = group_instances_into_batch(data, self.key2type.keys())
         final_data = self.update_before_tensorify(final_data)
 
         for key, val_type in self.key2type.items():
