@@ -139,6 +139,7 @@ class DataManager(object):
 
             if (
                 not self.debug_mode
+                and not self.regenerate_cache
                 and cache_filepath is not None
                 and cache_filepath.exists()
             ):
