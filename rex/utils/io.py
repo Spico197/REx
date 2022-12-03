@@ -1,6 +1,6 @@
 import json
 import pickle
-from typing import Any, Iterable, List, Optional
+from typing import Any, Iterable, List, Optional, DefaultDict, OrderedDict
 
 import numpy as np
 import torch
@@ -10,7 +10,11 @@ from rex.utils.logging import logger
 
 
 def tensor_friendly_json_encoding(obj: Any):
-    if isinstance(obj, np.ndarray):
+    if isinstance(obj, DefaultDict) or isinstance(obj, OrderedDict):
+        obj = dict(obj)
+    elif isinstance(obj, set):
+        obj = list(obj)
+    elif isinstance(obj, np.ndarray):
         obj = obj.tolist()
     elif isinstance(obj, np.generic):
         obj = obj.item()

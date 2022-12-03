@@ -45,6 +45,7 @@ class DataManager(object):
         load_test_data: Optional[bool] = False,
         load_train_eval_data: Optional[bool] = False,
         dump_cache_dir: Optional[str] = None,
+        regenerate_cache: Optional[bool] = False,
     ):
         self._dataset_name_to_filepath = {
             "train": train_filepath,
@@ -78,6 +79,7 @@ class DataManager(object):
         self.debug_mode = debug_mode
         self.distributed_mode = distributed_mode
         self.dump_cache_dir = dump_cache_dir
+        self.regenerate_cache = regenerate_cache
         if self.dump_cache_dir is not None:
             self.dump_cache_dir = Path(self.dump_cache_dir)
             if not self.dump_cache_dir.exists():
@@ -86,6 +88,8 @@ class DataManager(object):
                 logger.warning(
                     f"Cached dir exists: {str(self.dump_cache_dir.absolute())}"
                 )
+        if regenerate_cache:
+            logger.warning("Regenerate cache files")
 
         if load_train_data:
             self.load("train")
@@ -155,9 +159,9 @@ class DataManager(object):
                             desc=f"Transform {dataset_name}",
                         )
                     )
-                if self.dump_cache_dir and not cache_filepath.exists():
+                if self.dump_cache_dir and (self.regenerate_cache or (not cache_filepath.exists())):
                     logger.info(
-                        f"Dump cached {dataset_name} dataset tp {str(cache_filepath)}"
+                        f"Dump cached {dataset_name} dataset to {str(cache_filepath)}"
                     )
                     dump_pickle(dataset, cache_filepath)
             self._update_dataset(dataset_name, dataset)

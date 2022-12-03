@@ -3,9 +3,9 @@ import importlib
 import pathlib
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, Union
 
-from omegaconf import OmegaConf
+from omegaconf import OmegaConf, DictConfig
 
 
 class ConfigArgument(object):
@@ -98,7 +98,7 @@ class ConfigParser(argparse.ArgumentParser):
     @classmethod
     def parse_cmd(
         cls, *args, cmd_args: Optional[List[str]] = None, **kwargs
-    ) -> OmegaConf:
+    ) -> DictConfig:
         """
         Get command arguments from `base_config_filepath`, `custom_config_filepath` and `additional_args`.
 
@@ -129,7 +129,7 @@ class ConfigParser(argparse.ArgumentParser):
 
         return config
 
-    def convert_args_to_config(self, args: argparse.Namespace) -> OmegaConf:
+    def convert_args_to_config(self, args: argparse.Namespace) -> DictConfig:
         """Convert args into config"""
         config = OmegaConf.create(
             {"_config_info": {"create_time": datetime.now().strftime("%F %X")}}
@@ -185,8 +185,11 @@ class DefaultBaseConfig:
         default="outputs/temp_task",
         metadata={"help": "task directory"},
     )
-    dump_cache_dir: str = field(
+    dump_cache_dir: Union[str, None] = field(
         default=None, metadata={"help": "dumped cache directory, None if not dump"}
+    )
+    regenerate_cache: bool = field(
+        default=False, metadata={"help": "whether to generate cache files again"}
     )
     data_dir: str = field(default="data", metadata={"help": "data directory"})
     train_filepath: str = field(
@@ -246,7 +249,7 @@ class DefaultBaseConfig:
     grad_accum_steps: int = field(
         default=1, metadata={"help": "gradient accumulation steps"}
     )
-    resumed_training_path: str = field(
+    resumed_training_path: Union[str, None] = field(
         default=None,
         metadata={
             "help": "path to load checkpoint for resumed training, `None` if not resumed training"

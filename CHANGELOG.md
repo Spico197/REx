@@ -9,11 +9,12 @@
   - change logic in `SimpleTask._eval_during_train()` to make sure ckpt dumping
   - dump model at the beginning of `_eval_during_train` if `save_every_ckpt` in case of any unexpected crashes
   - fix mutable arg in `LabelEncoder`: change `initial_dict` into `initial`, default is None
-  - add `none_as_missing_keys` arg in `GeneralCollateFn`
+  - add `missing_key_as_null` arg in `GeneralCollateFn`
   - remove mutable default dict value in `key2type` arg in `GeneralCollateFn`
   - move `GeneralCollateFn._valid_data` to `rex.utils.batch/validate_instance_has_the_same_keys()`
   - add `group_instances_into_batch` and `decompose_batch_into_instances` in `rex.utils.batch`
   - fix comment typos in `TaskBase.load()` and `MetricBase.calculate_scores()`
+  - add `regenerate_cache` config flag for `DataManager`
 
 ## Previous versions
 
