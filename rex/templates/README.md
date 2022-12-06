@@ -2,9 +2,15 @@
 
 ## 🌴 Dependencies
 
-- torch
-- pytorch-rex
-- transformers
+- Basics
+  - torch
+  - pytorch-rex
+  - transformers
+
+- Recommended (for dev as in `Makefile`)
+  - formatting tools: isort, black
+  - linting: flake8
+  - testing: pytest, coverage
 
 ## 💾 Data Preprocessing
 
