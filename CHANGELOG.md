@@ -15,6 +15,7 @@
   - add `group_instances_into_batch` and `decompose_batch_into_instances` in `rex.utils.batch`
   - fix comment typos in `TaskBase.load()` and `MetricBase.calculate_scores()`
   - add `regenerate_cache` config flag for `DataManager`
+  - update template
 
 ## Previous versions
 
