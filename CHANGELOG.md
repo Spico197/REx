@@ -2,6 +2,9 @@
 
 ## Working on
 
+
+## Previous versions
+
 - v0.1.8
   - fix wrong call in `MetricBase`
   - change default `ncols` of `pbar` into 100
@@ -16,8 +19,6 @@
   - fix comment typos in `TaskBase.load()` and `MetricBase.calculate_scores()`
   - add `regenerate_cache` config flag for `DataManager`
   - update template
-
-## Previous versions
 
 - v0.1.7
   - add `SimpleMetricTask` for training and evaluation with metric instances
