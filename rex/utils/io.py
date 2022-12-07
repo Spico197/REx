@@ -1,6 +1,6 @@
 import json
 import pickle
-from typing import Any, Iterable, List, Optional, DefaultDict, OrderedDict
+from typing import Any, DefaultDict, Iterable, List, Optional, OrderedDict
 
 import numpy as np
 import torch

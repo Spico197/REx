@@ -160,7 +160,9 @@ class DataManager(object):
                             desc=f"Transform {dataset_name}",
                         )
                     )
-                if self.dump_cache_dir and (self.regenerate_cache or (not cache_filepath.exists())):
+                if self.dump_cache_dir and (
+                    self.regenerate_cache or (not cache_filepath.exists())
+                ):
                     logger.info(
                         f"Dump cached {dataset_name} dataset to {str(cache_filepath)}"
                     )
