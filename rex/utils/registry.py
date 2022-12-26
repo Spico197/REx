@@ -34,7 +34,7 @@ NAMESPACE_REGISTRY = defaultdict(dict)
 
 
 def register(namespace: str):
-    def register_on_namespace(call: Callable):
+    def register_on_namespace(call):
         cname = call.__name__
         # if cname in NAMESPACE_REGISTRY[namespace]:
         #     raise ValueError(

@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.distributed import DistributedSampler
 from torch.utils.data.sampler import RandomSampler, SequentialSampler
 
+from rex import accelerator
 from rex.utils.deprecation import deprecation_warning
 from rex.utils.io import dump_pickle, load_pickle
 from rex.utils.logging import logger
@@ -150,13 +151,17 @@ class DataManager(object):
             else:
                 if self.use_stream_transform:
                     dataset = self.dataset_class(
-                        self.load_fn(filepath), self.transform, debug=self.debug_mode
+                        self.load_fn(filepath),
+                        self.transform,
+                        dataset_name=dataset_name,
+                        debug=self.debug_mode,
                     )
                 else:
                     dataset = self.dataset_class(
                         self.transform(
                             self.load_fn(filepath),
                             debug=self.debug_mode,
+                            dataset_name=dataset_name,
                             desc=f"Transform {dataset_name}",
                         )
                     )
@@ -214,6 +219,7 @@ class DataManager(object):
             collate_fn=self.collate_fn,
             **kwargs,
         )
+        loader = accelerator.prepare_data_loader(loader)
         return loader
 
     def load(self, dataset_name: str):

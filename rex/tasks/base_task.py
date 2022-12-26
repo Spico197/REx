@@ -1,13 +1,10 @@
 import logging
-import os
 from pathlib import Path
-from typing import Optional
+from abc import ABC, abstractmethod
+from typing import Optional, Union
 
 import torch
-from accelerate import Accelerator
-from omegaconf import OmegaConf
-from torch import distributed
-from torch.nn import parallel
+from omegaconf import DictConfig, OmegaConf
 
 from rex import accelerator
 from rex.tasks import (
@@ -17,15 +14,16 @@ from rex.tasks import (
     CHECKPOINT_FILENAME_TEMPLATE,
     CONFIG_PARAMS_FILENAME,
 )
+from rex.utils.config import DefaultBaseConfig
 from rex.utils.initialization import init_all
 from rex.utils.logging import logger
 from rex.utils.wrapper import rank_zero_only
 
 
-class TaskBase(object):
+class TaskBase(ABC):
     def __init__(
         self,
-        config: OmegaConf,
+        config: DefaultBaseConfig,
         initialize: Optional[bool] = True,
         makedirs: Optional[bool] = True,
         dump_configfile: Optional[bool] = True,
@@ -71,22 +69,28 @@ class TaskBase(object):
         config_string = OmegaConf.to_yaml(config, resolve=True)
         logger.info(config_string)
 
-        if makedirs:
-            if not os.path.exists(config.task_dir):
-                os.makedirs(config.task_dir)
-            else:
-                logger.warning(f"Overwrite task dir: {config.task_dir}")
+        self.task_path = Path(config.task_dir)
+        if self.task_path.exists():
+            logger.warning(f"Overwrite task dir: {config.task_dir}")
+        elif makedirs:
+            self.task_path.mkdir(parents=True)
 
         if dump_configfile:
+            config_path = self.task_path / CONFIG_PARAMS_FILENAME
+            if config_path.exists():
+                logger.warning("Config already exists, overwrite it!")
+            logger.info(f"Dumping config into {config_path.absolute()}")
             OmegaConf.save(
                 config,
-                os.path.join(config.task_dir, CONFIG_PARAMS_FILENAME),
+                config_path,
                 resolve=True,
             )
 
+    @abstractmethod
     def train(self, *args, **kwargs):
         raise NotImplementedError
 
+    @abstractmethod
     def eval(self, *args, **kwargs):
         raise NotImplementedError
 
@@ -119,7 +123,7 @@ class TaskBase(object):
         load_optimizer: Optional[bool] = False,
         load_history: Optional[bool] = True,
     ):
-        if os.path.exists(path):
+        if Path(path).exists():
             logger.info("Resume checkpoint from {}".format(path))
         else:
             raise ValueError("Checkpoint does not exist, {}".format(path))
@@ -133,31 +137,31 @@ class TaskBase(object):
 
         if load_config:
             self.config = OmegaConf.load(
-                os.path.join(self.config.task_dir, CONFIG_PARAMS_FILENAME)
+                self.task_path / CONFIG_PARAMS_FILENAME
             )
 
         if load_model:
             if self.model and "model_state" in store_dict:
                 unwrapped_model = accelerator.unwrap_model(self.model)
                 unwrapped_model.load_state_dict(store_dict["model_state"])
-                logger.info("Load model successfully")
+                logger.debug("Load model successfully")
             else:
                 raise ValueError(
                     f"Model loading failed. self.model={self.model}, stored_dict_keys={store_dict.keys()}"
                 )
         else:
-            logger.info("Not load model")
+            logger.debug("Not load model")
 
         if load_optimizer:
             if self.optimizer and "optimizer_state" in store_dict:
                 self.optimizer.load_state_dict(store_dict["optimizer_state"])
-                logger.info("Load optimizer successfully")
+                logger.debug("Load optimizer successfully")
             else:
                 raise ValueError(
                     f"Model loading failed. self.optimizer={self.optimizer}, stored_dict_keys={store_dict.keys()}"
                 )
         else:
-            logger.info("Not load optimizer")
+            logger.debug("Not load optimizer")
 
         if load_history:
             history = store_dict.pop("history")
@@ -165,7 +169,7 @@ class TaskBase(object):
             if history is not None:
                 self.history = history
             else:
-                logger.info(
+                logger.debug(
                     "Loaded history is None, reset history to empty.", level="WARNING"
                 )
 
@@ -214,19 +218,19 @@ class TaskBase(object):
         torch.save(store_dict, path)
 
     def save_ckpt(self, identifier: Optional[str] = BEST_IDENTIFIER):
-        ckpt_dir = os.path.join(self.config.task_dir, CHECKPOINT_DIRNAME)
-        if not os.path.exists(ckpt_dir):
-            os.makedirs(ckpt_dir)
+        ckpt_dir = self.task_path / CHECKPOINT_DIRNAME
+        if not ckpt_dir.exists():
+            ckpt_dir.mkdir(parents=True)
 
         ckpt_name = CHECKPOINT_FILENAME_TEMPLATE.format(
             self.model.__class__.__name__, identifier
         )
-        self.save(os.path.join(ckpt_dir, ckpt_name))
+        self.save(ckpt_dir / ckpt_name)
 
     @classmethod
     def from_config(
         cls,
-        config: OmegaConf,
+        config: Union[DefaultBaseConfig, DictConfig],
         update_config: Optional[dict] = None,
         **kwargs,
     ):
@@ -249,7 +253,7 @@ class TaskBase(object):
         **kwargs,
     ):
         logger.info(f"Initializing from configuration file: {config_filepath}")
-        config = OmegaConf.load(config_filepath)
+        config: DictConfig = OmegaConf.load(config_filepath)
 
         return cls.from_config(config, **kwargs)
 

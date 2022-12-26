@@ -1,9 +1,9 @@
-from typing import Any, List, Type, Union
+from typing import Any, List, Tuple, Union
 
 
 def find_all_positions(
     long: Union[List[Any], str], sub: Union[List[Any], str]
-) -> List[List[int]]:
+) -> List[Tuple[int]]:
     """Find all sub list positions in the long list
 
     Args:
@@ -37,7 +37,7 @@ def find_all_positions(
         len_sub = len(sub)
         for idx in range(0, len(long) - len(sub) + 1):
             if sub == long[idx : idx + len_sub]:
-                positions.append([idx, idx + len_sub])
+                positions.append((idx, idx + len_sub))
         return positions
     else:
         raise TypeError("types of the two input must be str or list")

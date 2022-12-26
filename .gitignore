@@ -142,3 +142,4 @@ rex/templates/data/cache
 rex/templates/data/formatted
 ac.yaml
 new_task/
+.aim/

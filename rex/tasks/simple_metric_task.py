@@ -8,10 +8,8 @@ from rex.utils.dict import get_dict_content
 from rex.utils.io import dump_json, dump_jsonlines
 from rex.utils.logging import logger
 from rex.utils.progress_bar import pbar
-from rex.utils.registry import register
 
 
-@register("task")
 class SimpleMetricTask(SimpleTask):
     def __init__(self, config, **kwargs) -> None:
         super().__init__(config, **kwargs)
@@ -51,7 +49,7 @@ class SimpleMetricTask(SimpleTask):
         eval_loss = 0.0
         tot_batch_results = []
         for batch in loader:
-            out = self.model(**batch)
+            out = self.model(**batch, is_eval=True)
             eval_loss += out["loss"].item()
             batch_results: dict = self.metric(batch, out)
             batch_metric_score = get_dict_content(

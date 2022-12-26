@@ -1,9 +1,9 @@
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import torch
-from omegaconf import OmegaConf
+from omegaconf import DictConfig
 
 from rex import accelerator
 from rex.data.data_manager import DataManager
@@ -14,19 +14,17 @@ from rex.utils.dict import get_dict_content
 from rex.utils.io import dump_json
 from rex.utils.logging import logger
 from rex.utils.param import calc_module_params
-from rex.utils.progress_bar import pbar, rbar
-from rex.utils.registry import register
-from rex.utils.tensor_move import move_to_device
+from rex.utils.progress_bar import pbar
 from rex.utils.wrapper import safe_try
+from rex.utils.config import DefaultBaseConfig
 
 
-@register("task")
 class SimpleTask(TaskBase):
     """Simple task with one model, one optimizer and (maybe) one lr scheduler"""
 
     def __init__(
         self,
-        config: OmegaConf,
+        config: Union[DefaultBaseConfig, DictConfig],
         initialize: Optional[bool] = True,
         makedirs: Optional[bool] = True,
         dump_configfile: Optional[bool] = True,
@@ -47,27 +45,17 @@ class SimpleTask(TaskBase):
         self.model = self.init_model()
         num_model_params = calc_module_params(self.model)
         logger.debug(f"#ModelParams: {num_model_params}")
+        logger.debug("Prepare model")
+        self.model = accelerator.prepare_model(self.model)
 
-        if self.config.skip_train:
-            self.optimizer = None
-            self.lr_scheduler = None
-        else:
-            logger.debug("Init optimizer")
-            self.optimizer = self.init_optimizer()
-            logger.debug("Init lr_scheduler")
-            self.lr_scheduler = self.init_lr_scheduler()
+        self.optimizer = None
+        self.lr_scheduler = None
 
         self.after_initialized()
         logger.debug("SimpleTask initialised")
 
     def after_initialized(self):
-        logger.debug("Prepare model")
-        self.model = accelerator.prepare(self.model)
-        logger.debug("Prepare optimizer")
-        self.optimizer = accelerator.prepare(self.optimizer)
-        if self.lr_scheduler is not None:
-            logger.debug("Prepare lr_scheduler")
-            self.lr_scheduler = accelerator.prepare(self.lr_scheduler)
+        pass
 
     def init_transform(self):
         raise NotImplementedError
@@ -83,6 +71,9 @@ class SimpleTask(TaskBase):
 
     def init_lr_scheduler(self):
         return None
+
+    def after_whole_train(self):
+        pass
 
     @torch.no_grad()
     def _get_eval_results_impl(
@@ -118,8 +109,13 @@ class SimpleTask(TaskBase):
         loader = self.data_manager.load_loader(
             dataset_name, is_eval=is_eval, epoch=epoch
         )
-        loader = accelerator.prepare(loader)
         return loader
+
+    def log_loss(self, idx: int, loss_item: float, step_or_epoch: str, dataset_name: str):
+        pass
+
+    def log_metrics(self, idx: int, metrics: dict, step_or_epoch: str, dataset_name: str):
+        pass
 
     @safe_try
     def train(self):
@@ -127,6 +123,17 @@ class SimpleTask(TaskBase):
             raise RuntimeError(
                 "Training procedure started while config.skip_train is True!"
             )
+        else:
+            logger.debug("Init optimizer")
+            self.optimizer = self.init_optimizer()
+            logger.debug("Prepare optimizer")
+            self.optimizer = accelerator.prepare_optimizer(self.optimizer)
+            logger.debug("Init lr_scheduler")
+            self.lr_scheduler = self.init_lr_scheduler()
+            if self.lr_scheduler is not None:
+                logger.debug("Prepare lr_scheduler")
+                self.lr_scheduler = accelerator.prepare_scheduler(self.lr_scheduler)
+
         if self.config.resumed_training_path is not None:
             self.load(
                 self.config.resumed_training_path,
@@ -178,6 +185,7 @@ class SimpleTask(TaskBase):
                 loss_item = result["loss"].item()
                 self.history["current_train_loss"] += loss_item
                 loader.set_postfix({"loss": loss_item})
+                self.log_loss(total_steps, loss_item, "step", "train")
 
                 if self.config.max_grad_norm > 0:
                     accelerator.clip_grad_norm_(
@@ -226,6 +234,13 @@ class SimpleTask(TaskBase):
             test_loss, test_measures = self.eval(
                 "test", verbose=True, dump=True, postfix="final"
             )
+            self.log_loss(0, test_loss, "final", "test")
+            self.log_metrics(0, test_measures, "final", "test")
+            return test_loss, test_measures
+
+        self.after_whole_train()
+
+        return self.history["best_loss"], self.history["best_metric"]
 
     def _eval_during_train(self, eval_on: Optional[str] = "epoch"):
         """Evaluation during training to record eval info, and control training process
@@ -277,6 +292,8 @@ class SimpleTask(TaskBase):
             eval_loss, eval_measures = self.eval(
                 dataset_name, verbose=False, postfix=history_index_identifier
             )
+            self.log_loss(history_index, eval_loss, eval_on, dataset_name)
+            self.log_metrics(history_index, eval_measures, eval_on, dataset_name)
             self.history[eval_on][dataset_name]["metrics"][
                 history_index
             ] = eval_measures
@@ -423,10 +440,8 @@ class SimpleTask(TaskBase):
         output = []
         # raw_batch: dict
         for batch in loader:
-            out = self.model(**batch)
+            out = self.model(**batch, is_eval=True)
             eval_loss += out["loss"].item()
-            # all_batch = accelerator.gather(batch)
-            # all_out = accelerator.gather(out)
             origin.append(batch)
             output.append(out)
 

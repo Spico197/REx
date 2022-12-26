@@ -2,6 +2,17 @@
 
 ## Working on
 
+- v0.1.9beta
+  - change logo image
+  - add `CachedTransformBase` and `CachedTransformOneBase`
+  - remove `register` decorator in `SimpleTask` and `SimpleMetricTask`, so that code completion could be hinted
+  - remove param type in `register_on_namespace`
+  - change the return value of `find_all_positions` from `List[List[int]]` to `List[Tuple[int]]`
+  - add `dataset_name` argument when calling transforming ([#12](https://github.com/Spico197/REx/issues/12))
+  - add `is_eval=True` argument to call `model()` when evaluating to indicating it returns predictions ([#16](https://github.com/Spico197/REx/issues/16))
+  - change `os.path` into `pathlib.Path` to remove `os` mixup usage
+  - move `init_optimizer` and `init_lr_scheduler` into `train` call to alleviate unexpected train set transformation during evaluating
+  - add `log_loss` and `log_metrics` interfaces to support aimhubio/tensorboard logging in inherited sub-tasks
 
 ## Previous versions
 
