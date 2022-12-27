@@ -22,7 +22,7 @@ def test_cmd_args(tmp_path):
     custom_path = tmp_path / "custom_config.yaml"
     OmegaConf.save(custom_config, custom_path)
 
-    args = [f"--base-config-filepath={base_path}", f"-c={custom_path}", *add_args]
+    args = [f"--config-filepath={base_path}", f"-c={custom_path}", *add_args]
     config = ConfigParser.parse_cmd(cmd_args=args)
 
     assert config.train == {
@@ -56,7 +56,7 @@ def test_resolve_update(tmp_path):
     custom_path = tmp_path / "custom_config.yaml"
     OmegaConf.save(custom_config, custom_path)
 
-    args = [f"--base-config-filepath={base_path}", f"-c={custom_path}"]
+    args = [f"--config-filepath={base_path}", f"-c={custom_path}"]
     config = ConfigParser.parse_cmd(cmd_args=args)
     assert config.data_type == "test"
 

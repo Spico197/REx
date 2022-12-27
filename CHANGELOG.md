@@ -13,6 +13,8 @@
   - change `os.path` into `pathlib.Path` to remove `os` mixup usage
   - move `init_optimizer` and `init_lr_scheduler` into `train` call to alleviate unexpected train set transformation during evaluating ([#15](https://github.com/Spico197/REx/issues/15))
   - add `log_loss` and `log_metrics` interfaces to support aimhubio/tensorboard logging in inherited sub-tasks
+  - remove `base_configpath`, use multiple `-c` instead. e.g. `rex train -d -c 1.yaml -c 2.yaml -a a=1 b=2`
+  - fix overwrite warning when creating new task directory
 
 ## Previous versions
 

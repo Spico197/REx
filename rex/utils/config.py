@@ -56,15 +56,10 @@ class ConfigParser(argparse.ArgumentParser):
             help="whether to use internal base config",
         )
         self.add_argument(
-            "-b",
-            "--base-config-filepath",
-            type=pathlib.Path,
-            help="base configuration filepath, could be a template, lowest priority",
-        )
-        self.add_argument(
             "-c",
-            "--custom-config-filepath",
+            "--config-filepath",
             type=pathlib.Path,
+            action="append",
             help="configuration filepath, customised configs, middle priority",
         )
         self.add_argument(
@@ -84,12 +79,13 @@ class ConfigParser(argparse.ArgumentParser):
     @classmethod
     def parse_args_config(cls, parser, args):
         if parser._inited:
-            for path in ["base_config_filepath", "custom_config_filepath"]:
-                # arg: pathlib.Path
-                arg = getattr(args, path)
-                if arg is not None:
-                    assert arg.exists() is True and arg.is_file() is True
-                    setattr(args, path, str(arg.absolute()))
+            cname = "config_filepath"
+            # arg: a list of pathlib.Path
+            cpaths = getattr(args, cname)
+            if cpaths is not None:
+                for path in cpaths:
+                    assert path.exists() is True and path.is_file() is True
+                setattr(args, cname, [str(path.absolute()) for path in cpaths])
 
         config = parser.convert_args_to_config(args)
 
@@ -100,12 +96,11 @@ class ConfigParser(argparse.ArgumentParser):
         cls, *args, cmd_args: Optional[List[str]] = None, **kwargs
     ) -> DictConfig:
         """
-        Get command arguments from `base_config_filepath`, `custom_config_filepath` and `additional_args`.
+        Get command arguments from `config_filepath` and `additional_args`.
 
         To make configurations flexible, configs are split into three levels:
-            - `base_config_filepath`: path to basic configuration file in yaml format, lowest priority
-            - `custom_config_filepath`: path to customised config file in yaml format, middle priority.
-                If this file is loaded, it will override configs in the `base_config_filepath`.
+            - `config_filepath`: path to customised config file in yaml format, middle priority.
+                If files are loaded, the latter one will override the former one.
             - `additional_args`: additional args in dot-list format, highest priority.
                 If these args are set, it will override configs in the previous files.
 
@@ -116,13 +111,12 @@ class ConfigParser(argparse.ArgumentParser):
 
         Examples:
             $ python run.py -d
-            $ python run.py -b conf/config.yaml
             $ python run.py -c conf/re/sent_ipre.yaml
             $ python run.py -a lr.encoder=1e-4 dropout=0.6
-            $ python run.py -b conf/config.yaml -c conf/re/sent_ipre.yaml
-            $ python run.py -b conf/config.yaml -a lr.encoder=1e-4 dropout=0.6
+            $ python run.py -c conf/config.yaml -c conf/re/sent_ipre.yaml
+            $ python run.py -c conf/config.yaml -a lr.encoder=1e-4 dropout=0.6
             $ python run.py -c conf/re/sent_ipre.yaml -a lr.encoder=1e-4 dropout=0.6
-            $ python run.py -b conf/config.yaml -c conf/re/sent_ipre.yaml -a lr.encoder=1e-4 dropout=0.6
+            $ python run.py -c conf/config.yaml -c conf/re/sent_ipre.yaml -a lr.encoder=1e-4 dropout=0.6
         """
         parser, args = cls.parse_cmd_args(*args, cmd_args=cmd_args, **kwargs)
         config = cls.parse_args_config(parser, args)
@@ -143,17 +137,12 @@ class ConfigParser(argparse.ArgumentParser):
                 config.merge_with(asdict(default_config))
 
         if self._inited:
-            base_config_filepath = args.base_config_filepath
-            if base_config_filepath is not None:
-                base_config = OmegaConf.load(base_config_filepath)
-                config.merge_with(base_config)
-                config._config_info.base_filepath = base_config_filepath
-
-            custom_config_filepath = args.custom_config_filepath
-            if custom_config_filepath is not None:
-                custom_config = OmegaConf.load(custom_config_filepath)
-                config.merge_with(custom_config)
-                config._config_info.custom_config_filepath = custom_config_filepath
+            config_filepaths = args.config_filepath
+            if config_filepaths is not None:
+                config._config_info.config_filepath = config_filepaths
+                for path in config_filepaths:
+                    _custom_config = OmegaConf.load(path)
+                    config.merge_with(_custom_config)
 
             additional_args = args.additional_args
             if additional_args is not None:
@@ -162,7 +151,7 @@ class ConfigParser(argparse.ArgumentParser):
                 config._config_info.additional_args = additional_args
 
         kwargs = dict(args._get_kwargs())
-        for k in ["base_config_filepath", "custom_config_filepath", "additional_args"]:
+        for k in ["config_filepath", "additional_args"]:
             if k in kwargs:
                 kwargs.pop(k)
         config.merge_with(kwargs)

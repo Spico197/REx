@@ -70,10 +70,11 @@ class TaskBase(ABC):
         logger.info(config_string)
 
         self.task_path = Path(config.task_dir)
-        if self.task_path.exists():
+        if self.task_path.joinpath(CONFIG_PARAMS_FILENAME).exists():
             logger.warning(f"Overwrite task dir: {config.task_dir}")
         elif makedirs:
-            self.task_path.mkdir(parents=True)
+            # exist_ok=True since log may exist before param dumped
+            self.task_path.mkdir(parents=True, exist_ok=True)
 
         if dump_configfile:
             config_path = self.task_path / CONFIG_PARAMS_FILENAME
