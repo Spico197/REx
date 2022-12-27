@@ -4,7 +4,7 @@ from rex.utils import position
 
 
 def test_find_all_positions():
-    assert position.find_all_positions("123123123", "123") == [[0, 3], [3, 6], [6, 9]]
+    assert position.find_all_positions("123123123", "123") == [(0, 3), (3, 6), (6, 9)]
 
 
 def test_construct_relative_positions():

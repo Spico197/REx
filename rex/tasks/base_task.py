@@ -1,6 +1,6 @@
 import logging
-from pathlib import Path
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Optional, Union
 
 import torch
@@ -136,9 +136,7 @@ class TaskBase(ABC):
             store_dict = torch.load(path, map_location=accelerator.device)
 
         if load_config:
-            self.config = OmegaConf.load(
-                self.task_path / CONFIG_PARAMS_FILENAME
-            )
+            self.config = OmegaConf.load(self.task_path / CONFIG_PARAMS_FILENAME)
 
         if load_model:
             if self.model and "model_state" in store_dict:

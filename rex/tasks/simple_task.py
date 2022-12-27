@@ -10,13 +10,13 @@ from rex.data.data_manager import DataManager
 from rex.data.transforms.base import TransformBase
 from rex.metrics import safe_division
 from rex.tasks.base_task import TaskBase
+from rex.utils.config import DefaultBaseConfig
 from rex.utils.dict import get_dict_content
 from rex.utils.io import dump_json
 from rex.utils.logging import logger
 from rex.utils.param import calc_module_params
 from rex.utils.progress_bar import pbar
 from rex.utils.wrapper import safe_try
-from rex.utils.config import DefaultBaseConfig
 
 
 class SimpleTask(TaskBase):
@@ -111,10 +111,14 @@ class SimpleTask(TaskBase):
         )
         return loader
 
-    def log_loss(self, idx: int, loss_item: float, step_or_epoch: str, dataset_name: str):
+    def log_loss(
+        self, idx: int, loss_item: float, step_or_epoch: str, dataset_name: str
+    ):
         pass
 
-    def log_metrics(self, idx: int, metrics: dict, step_or_epoch: str, dataset_name: str):
+    def log_metrics(
+        self, idx: int, metrics: dict, step_or_epoch: str, dataset_name: str
+    ):
         pass
 
     @safe_try
