@@ -15,6 +15,9 @@
   - add `log_loss` and `log_metrics` interfaces to support aimhubio/tensorboard logging in inherited sub-tasks
   - remove `base_configpath`, use multiple `-c` instead. e.g. `rex train -d -c 1.yaml -c 2.yaml -a a=1 b=2`
   - fix overwrite warning when creating new task directory
+  - log debug message to record types of model, data_manager, transform
+  - add `gen_conf` command to generate configuration template
+  - [ ] integrate Learn-REx example
 
 ## Previous versions
 

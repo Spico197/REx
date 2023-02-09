@@ -23,7 +23,7 @@ from rex.utils.wrapper import rank_zero_only
 class TaskBase(ABC):
     def __init__(
         self,
-        config: DefaultBaseConfig,
+        config: Union[DefaultBaseConfig, DictConfig],
         initialize: Optional[bool] = True,
         makedirs: Optional[bool] = True,
         dump_configfile: Optional[bool] = True,

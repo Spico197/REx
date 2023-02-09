@@ -38,11 +38,15 @@ class SimpleTask(TaskBase):
 
         logger.debug("Init transform")
         self.transform: TransformBase = self.init_transform()
+        logger.debug(f"transform: {type(self.transform)}")
         logger.debug("Init data_manager")
         self.data_manager: DataManager = self.init_data_manager()
+        logger.debug(f"data manager: {type(self.data_manager)}")
 
         logger.debug("Init model")
         self.model = self.init_model()
+        logger.debug(f"model: {type(self.model)}")
+        logger.debug(f"model: {self.model}")
         num_model_params = calc_module_params(self.model)
         logger.debug(f"#ModelParams: {num_model_params}")
         logger.debug("Prepare model")
@@ -57,19 +61,19 @@ class SimpleTask(TaskBase):
     def after_initialized(self):
         pass
 
-    def init_transform(self):
+    def init_transform(self) -> TransformBase:
         raise NotImplementedError
 
-    def init_data_manager(self):
+    def init_data_manager(self) -> DataManager:
         raise NotImplementedError
 
-    def init_model(self):
+    def init_model(self) -> torch.nn.Module:
         raise NotImplementedError
 
-    def init_optimizer(self):
+    def init_optimizer(self) -> torch.optim.Optimizer:
         raise NotImplementedError
 
-    def init_lr_scheduler(self):
+    def init_lr_scheduler(self) -> Union[None, torch.optim.lr_scheduler._LRScheduler]:
         return None
 
     def after_whole_train(self):
@@ -130,11 +134,13 @@ class SimpleTask(TaskBase):
         else:
             logger.debug("Init optimizer")
             self.optimizer = self.init_optimizer()
+            logger.debug(f"optimizer: {self.optimizer}")
             logger.debug("Prepare optimizer")
             self.optimizer = accelerator.prepare_optimizer(self.optimizer)
             logger.debug("Init lr_scheduler")
             self.lr_scheduler = self.init_lr_scheduler()
             if self.lr_scheduler is not None:
+                logger.debug(f"lr_scheduler: {type(self.lr_scheduler)}")
                 logger.debug("Prepare lr_scheduler")
                 self.lr_scheduler = accelerator.prepare_scheduler(self.lr_scheduler)
 
@@ -277,9 +283,8 @@ class SimpleTask(TaskBase):
         ), f"{self.config.select_best_on_data} is not included in eval_on_data: {self.config.eval_on_data}"
 
         if len(self.config.eval_on_data) < 1:
-            logger.info(
+            logger.warning(
                 "Does not provide any data to evaluate during training, continue training",
-                level="WARNING",
             )
             return True
 

@@ -1,11 +1,12 @@
 import argparse
-import importlib
 import pathlib
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import Iterable, List, Optional, Union
 
 from omegaconf import DictConfig, OmegaConf
+
+from rex.utils.io import dump_json
 
 
 class ConfigArgument(object):
@@ -162,9 +163,17 @@ class ConfigParser(argparse.ArgumentParser):
 @dataclass
 class DefaultBaseConfig:
     # task
+    task_type: str = field(
+        default="TaskType",
+        metadata={"help": "class name of the task if using `task` registry"},
+    )
     task_name: str = field(
         default="temp_task",
         metadata={"help": "name of task, used for creating task directory"},
+    )
+    comment: str = field(
+        default="This is the comment for this trial",
+        metadata={"help": "experiment comments"},
     )
     # filepaths
     output_dir: str = field(
@@ -191,7 +200,6 @@ class DefaultBaseConfig:
         default="test.jsonl", metadata={"help": "filepath to test set"}
     )
     # training control
-    device: str = field(default="cpu", metadata={"help": "device string"})
     random_seed: int = field(default=1227, metadata={"help": "random seed"})
     num_epochs: int = field(
         default=50, metadata={"help": "max number of training epochs"}
@@ -281,6 +289,18 @@ class DefaultBaseConfig:
     main_process_logging: bool = field(
         default=True, metadata={"help": "whether to logging in only master node"}
     )
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+    def to_yaml_string(self) -> str:
+        return OmegaConf.to_yaml(self.to_dict(), resolve=False, sort_keys=False)
+
+    def dump_json(self, output_filepath: str):
+        dump_json(self.to_dict(), output_filepath)
+
+    def dump_yaml(self, output_filepath: str):
+        OmegaConf.save(self.to_dict(), output_filepath, resolve=False)
 
 
 if __name__ == "__main__":
