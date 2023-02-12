@@ -30,3 +30,9 @@ def test_type_check():
 def test_relative_position_construction_err():
     with pytest.raises(ValueError):
         position.construct_relative_positions(81, 80)
+
+
+def test_find_element():
+    elems = [1, 2, 3, 1, 5]
+    res = position.find_element_in_list(elems, 1)
+    assert res == [0, 3]

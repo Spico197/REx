@@ -6,7 +6,7 @@ from rex.utils.batch import (
     group_instances_into_batch,
     validate_instance_has_the_same_keys,
 )
-from rex.utils.iteration import flatten_all
+from rex.utils.iteration import flatten_all_iter
 
 
 class GeneralCollateFn(object):
@@ -50,7 +50,7 @@ class GeneralCollateFn(object):
                 key2type[key] = self.DEFAULT_TYPE_MAP[val_type]
             elif val_type == list:
                 item_types = set()
-                for item in flatten_all(val):
+                for item in flatten_all_iter(val):
                     item_types.add(type(item))
                 if len(item_types) == 1:
                     key2type[key] = self.DEFAULT_TYPE_MAP.get(item_types.pop())

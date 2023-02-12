@@ -17,6 +17,10 @@
   - fix overwrite warning when creating new task directory
   - log debug message to record types of model, data_manager, transform
   - add `gen_conf` command to generate configuration template
+  - rename `utils.iteration.flatten_all` to `flatten_all_iter`
+  - add `utils.iteration.windowed_queue_iter` to get windowed batch elements
+  - add `utils.position.find_element_in_list` to get all indices of an element in a list
+  - add `utils.segmentation.split_list_by_element` to split a list into segments by one element
   - [ ] integrate Learn-REx example
 
 ## Previous versions

@@ -1,6 +1,6 @@
 import pytest
 
-from rex.utils.segmentation import sent_seg
+from rex.utils.segmentation import sent_seg, split_list_by_element
 
 
 def test_seg():
@@ -21,3 +21,11 @@ def test_seg():
     case = "abcdefg;cgcg.wfwf."
     sents = sent_seg(case, lang="en", punctuations=set(";"))
     assert sents == ["abcdefg;", "cgcg.", "wfwf."]
+
+
+def test_split_list():
+    case = [1, 2, 1, 4, 5]
+    res = split_list_by_element(case, 1, keep_empty_segments=False)
+    assert res == [[2], [4, 5]]
+    res = split_list_by_element(case, 1, keep_empty_segments=True)
+    assert res == [[], [2], [4, 5]]

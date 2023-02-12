@@ -5,9 +5,9 @@ from rex.utils.registry import NAMESPACE_REGISTRY, get_registered, register
 from rex.version import __version__
 
 from .emb import emb
+from .gen_conf import gen_conf
 from .new import new
 from .train import train
-from .gen_conf import gen_conf
 
 
 @register("rex_init_call")

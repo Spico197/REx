@@ -61,3 +61,7 @@ def construct_relative_positions(pos: int, max_length: int) -> List[int]:
     positions = list(range(0, max_length, 1))
     positions = list(map(lambda x: abs(x - pos), positions))
     return positions
+
+
+def find_element_in_list(elements: List[Any], element: Any) -> List:
+    return [i for i, el in enumerate(elements) if el == element]
