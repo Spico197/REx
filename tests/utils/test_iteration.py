@@ -15,3 +15,11 @@ def test_windowed_queue():
     for elems in iteration.windowed_queue_iter(queue, 2):
         res.append(elems)
     assert res == [[1, 2], [3, 4], [5]]
+    res = []
+    for elems in iteration.windowed_queue_iter(queue, 2, 1, drop_last=True):
+        res.append(elems)
+    assert res == [[1, 2], [2, 3], [3, 4], [4, 5]]
+    res = []
+    for elems in iteration.windowed_queue_iter(queue, 2, 1, drop_last=False):
+        res.append(elems)
+    assert res == [[1, 2], [2, 3], [3, 4], [4, 5], [5]]
