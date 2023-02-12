@@ -1,5 +1,5 @@
 import re
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Union, MutableSet
 
 from .iteration import windowed_queue_iter
 from .position import find_element_in_list
@@ -9,7 +9,7 @@ def sent_seg(
     text: str,
     special_seg_indicators: Optional[List] = None,
     lang: Optional[str] = "zh",
-    punctuations: Union[set[str], None] = None,
+    punctuations: Union[MutableSet[str], None] = None,
     quotation_seg_mode: Optional[bool] = True,
 ) -> List[str]:
     """Cut texts into sentences (in Chinese or English).
@@ -79,7 +79,7 @@ def sent_seg(
 
 
 def split_list_by_element(
-    elements: list[Any], delimiter: Any, keep_empty_segments: bool = False
+    elements: List[Any], delimiter: Any, keep_empty_segments: bool = False
 ) -> List[List[Any]]:
     res = []
     pos = find_element_in_list(elements, delimiter)
