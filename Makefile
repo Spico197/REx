@@ -1,4 +1,4 @@
-all: format clean test build docs
+all: format clean pre test build docs
 	echo 'finished'
 
 .PHONY: build
@@ -28,6 +28,10 @@ test:
 	coverage run --source rex -m pytest -vv .
 	coverage report -m
 	flake8
+
+.PHONY: pre
+pre:
+	pre-commit run --all-files
 
 .PHONY: debug
 debug:

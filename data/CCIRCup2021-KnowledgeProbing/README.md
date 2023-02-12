@@ -1,4 +1,4 @@
-# CCF BDCI & CCIR Cup 2021: 
+# CCF BDCI & CCIR Cup 2021:
 
 Download dataset into `raw/` folder from: [[This Link]](https://www.datafountain.cn/competitions/509/datasets) .
 

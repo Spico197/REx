@@ -21,7 +21,7 @@
   - add `utils.iteration.windowed_queue_iter` to get windowed batch elements
   - add `utils.position.find_element_in_list` to get all indices of an element in a list
   - add `utils.segmentation.split_list_by_element` to split a list into segments by one element
-  - [ ] integrate Learn-REx example
+  - integrate Learn-REx example
 
 ## Previous versions
 

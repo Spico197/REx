@@ -1,5 +1,5 @@
 [flake8]
-ignore = 
+ignore =
     # whitespace before ':'
     E203,
     # max length constraint

@@ -143,3 +143,4 @@ rex/templates/data/formatted
 ac.yaml
 new_task/
 .aim/
+data/peoples_daily_ner/data

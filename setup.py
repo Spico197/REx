@@ -44,6 +44,7 @@ setuptools.setup(
             "pre-commit",
             "sphinx_rtd_theme",
             "sphinx",
+            "datasets",
         ]
     },
     include_package_data=True,

@@ -131,6 +131,11 @@ dmypy.json
 # self-defined
 data/cache/
 data/formatted/cache/
+data/formatted/train.jsonl
+data/formatted/validation.jsonl
+data/formatted/test.jsonl
+data/formatted/label2id.json
 *.cache
 *.pth
 outputs/
+*.out

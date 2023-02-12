@@ -8,13 +8,12 @@ from transformers.optimization import get_linear_schedule_with_warmup
 from rex import accelerator
 from rex.data.data_manager import DataManager
 from rex.data.dataset import CachedDataset
+from rex.data.transforms.mrc_ner import CachedPointerTaggingTransform
+from rex.metrics.mrc_ner import MrcNERMetric
+from rex.models.mrc_ner import PlmMRCModel
 from rex.tasks.simple_metric_task import SimpleMetricTask
 from rex.utils.io import load_jsonlines
 from rex.utils.registry import register
-
-from .metric import MrcNERMetric
-from .model import PlmMRCModel
-from .transform import CachedPointerTaggingTransform
 
 
 @register("task")
