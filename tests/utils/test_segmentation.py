@@ -24,8 +24,8 @@ def test_seg():
 
 
 def test_split_list():
-    case = [1, 2, 1, 4, 5]
+    case = [1, 2, 1, 4, 5, 6, 1, 7, 1]
     res = split_list_by_element(case, 1, keep_empty_segments=False)
-    assert res == [[2], [4, 5]]
+    assert res == [[2], [4, 5, 6], [7]]
     res = split_list_by_element(case, 1, keep_empty_segments=True)
-    assert res == [[], [2], [4, 5]]
+    assert res == [[], [2], [4, 5, 6], [7], []]

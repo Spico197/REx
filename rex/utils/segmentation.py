@@ -1,5 +1,5 @@
 import re
-from typing import Any, List, Optional, Union, MutableSet
+from typing import Any, List, MutableSet, Optional, Union
 
 from .iteration import windowed_queue_iter
 from .position import find_element_in_list
@@ -86,7 +86,7 @@ def split_list_by_element(
     if not pos:
         return elements
     res.append(elements[: pos[0]])
-    for batch in windowed_queue_iter(pos, 2):
+    for batch in windowed_queue_iter(pos, 2, 1, drop_last=True):
         res.append(elements[batch[0] + 1 : batch[1]])
     res.append(elements[pos[-1] + 1 :])
 

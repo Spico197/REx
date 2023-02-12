@@ -1,4 +1,4 @@
-from typing import Any, Iterable, Iterator, List
+from typing import Any, Iterable, Iterator, List, Union
 
 
 def flatten_all_iter(iterable: Iterable) -> Iterator:
@@ -9,7 +9,12 @@ def flatten_all_iter(iterable: Iterable) -> Iterator:
             yield from flatten_all_iter(elem)
 
 
-def windowed_queue_iter(queue: List[Any], window: int, stride: int = None, drop_last: bool = False) -> Iterator:
+def windowed_queue_iter(
+    queue: List[Any],
+    window: int,
+    stride: Union[int, None] = None,
+    drop_last: bool = False,
+) -> Iterator:
     if not stride:
         stride = window
     if len(queue) <= window:
