@@ -195,15 +195,16 @@ class SimpleTask(TaskBase):
                 loss_item = result["loss"].item()
                 self.history["current_train_loss"] += loss_item
                 loader.set_postfix({"loss": loss_item})
-                self.log_loss(total_steps, loss_item, "step", "train")
+                self.log_loss(self.history["total_steps"], loss_item, "step", "train")
 
                 if self.config.max_grad_norm > 0:
                     accelerator.clip_grad_norm_(
                         self.model.parameters(), max_norm=self.config.max_grad_norm
                     )
-                if ((batch_idx + 1) % self.config.grad_accum_steps) == 0 or (
-                    batch_idx + 1
-                ) == len(loader):
+                if (
+                    ((batch_idx + 1) % self.config.grad_accum_steps) == 0
+                    or (batch_idx + 1) == len(loader)
+                ):
                     self.optimizer.step()
                     if self.lr_scheduler is not None:
                         self.lr_scheduler.step()
@@ -211,16 +212,18 @@ class SimpleTask(TaskBase):
 
                 if (
                     self.config.step_eval_interval > 0
-                    and (total_steps + 1) % self.config.step_eval_interval
+                    and (self.history["total_steps"] + 1) % self.config.step_eval_interval == 0
                 ):
                     self._eval_during_train("step")
                     if not self._check_patience():
                         break
                 total_steps += 1
+                self.history["total_steps"] += 1
 
             logger.info(loader)
-            if (self.config.epoch_eval_interval > 0) and (
-                ((epoch_idx + 1) % self.config.epoch_eval_interval) == 0
+            if (
+                (self.config.epoch_eval_interval > 0)
+                and (((epoch_idx + 1) % self.config.epoch_eval_interval) == 0)
             ):
                 self._eval_during_train("epoch")
                 if not self._check_patience():
@@ -260,71 +263,77 @@ class SimpleTask(TaskBase):
         """
         curr_epoch_idx = self.history["curr_epoch"]
         curr_total_steps = self.history["total_steps"]
-        history_index = curr_epoch_idx if eval_on == "epoch" else curr_total_steps
-        history_index_identifier = f"{eval_on}.{history_index}"
+        history_idx = curr_epoch_idx if eval_on == "epoch" else curr_total_steps
+        history_idx_identifier = f"{eval_on}.{history_idx}"
 
         # make sure the model save at least one checkpoint no matter
         #   evaluation or not
         if self.config.save_every_ckpt:
-            self.save_ckpt(f"{history_index_identifier}")
+            self.save_ckpt(f"{history_idx_identifier}")
 
         # validate
-        assert eval_on in [
-            "epoch",
-            "step",
-        ], f"eval_on: {eval_on} must eq `epoch` or `step`"
-        assert self.config.select_best_by_key in [
-            "metric",
-            "loss",
-        ], f"select_best_by_key is {self.config.select_best_by_key}, while candidates are: `metric` and `loss`"
-        assert (self.config.select_best_by_key == "train") or (
-            self.config.select_best_by_key != "train"
-            and self.config.select_best_on_data in self.config.eval_on_data
-        ), f"{self.config.select_best_on_data} is not included in eval_on_data: {self.config.eval_on_data}"
-
+        if eval_on not in ["epoch", "step"]:
+            raise ValueError(f"eval_on: {eval_on} must eq `epoch` or `step`")
+        if self.config.select_best_by_key not in ["metric", "loss"]:
+            raise ValueError(
+                f"select_best_by_key is {self.config.select_best_by_key}, while candidates are: `metric` and `loss`"
+            )
+        if self.config.select_best_on_data not in self.config.eval_on_data:
+            raise ValueError(
+                f"{self.config.select_best_on_data} is not included in eval_on_data: {self.config.eval_on_data}"
+            )
         if len(self.config.eval_on_data) < 1:
             logger.warning(
-                "Does not provide any data to evaluate during training, continue training",
+                "Does not provide any data to evaluate during training",
             )
-            return True
 
         # init
         this_eval_result = {}  # to dump results
-        logger.info(f"Start evaluating at {history_index_identifier}")
+        logger.info(f"Start evaluating at {history_idx_identifier}")
 
         # eval to get measurements and loss
         eval_on_datasets = set()
         for dataset_name in self.config.eval_on_data:
             dataset_name = DataManager._get_normalized_dataset_name(dataset_name)
-            eval_on_datasets.add(dataset_name)
+            if dataset_name != "train":
+                eval_on_datasets.add(dataset_name)
+            elif self.config.select_best_by_key != "loss":
+                raise ValueError(
+                    "Only `select_best_by_key=loss` is allowed when `eval_on_data=train`"
+                )
         for dataset_name in eval_on_datasets:
             eval_loss, eval_measures = self.eval(
-                dataset_name, verbose=False, postfix=history_index_identifier
+                dataset_name, verbose=False, postfix=history_idx_identifier
             )
-            self.log_loss(history_index, eval_loss, eval_on, dataset_name)
-            self.log_metrics(history_index, eval_measures, eval_on, dataset_name)
-            self.history[eval_on][dataset_name]["metrics"][
-                history_index
-            ] = eval_measures
-            self.history[eval_on][dataset_name]["loss"][history_index] = eval_loss
+            self.log_loss(history_idx, eval_loss, eval_on, dataset_name)
+            self.log_metrics(history_idx, eval_measures, eval_on, dataset_name)
+            self.history[eval_on][dataset_name]["metrics"][history_idx] = eval_measures
+            self.history[eval_on][dataset_name]["loss"][history_idx] = eval_loss
             this_eval_result[f"{eval_on}.{dataset_name}.metrics"] = eval_measures
             this_eval_result[f"{eval_on}.{dataset_name}.loss"] = eval_loss
-
-        this_eval_result["train_loss"] = self.history["current_train_loss"]
 
         # update the best
         select_best_on_data = DataManager._get_normalized_dataset_name(
             self.config.select_best_on_data
         )
-        metric = self.history[eval_on][select_best_on_data]["metrics"][history_index]
-        metric = get_dict_content(metric, self.config.best_metric_field)
+        metric = -1.0
         is_best_metric = False
-        if metric > self.history["best_metric"]:
-            is_best_metric = True
-            self.history["best_metric"] = metric
-        this_eval_result["is_best_metric"] = is_best_metric
+        if not (
+            select_best_on_data == "train" and self.config.select_best_by_key == "loss"
+        ):
+            metric = self.history[eval_on][select_best_on_data]["metrics"][history_idx]
+            metric = get_dict_content(metric, self.config.best_metric_field)
+            if metric > self.history["best_metric"]:
+                is_best_metric = True
+                self.history["best_metric"] = metric
+            this_eval_result["is_best_metric"] = is_best_metric
 
-        loss = self.history[eval_on][select_best_on_data]["loss"][history_index]
+        this_eval_result["train_loss"] = self.history["current_train_loss"]
+        if select_best_on_data == "train" and self.config.select_best_by_key == "loss":
+            loss = this_eval_result["train_loss"]
+            self.log_loss(history_idx, loss, eval_on, "sum_train_loss")
+        else:
+            loss = self.history[eval_on][select_best_on_data]["loss"][history_idx]
         is_best_loss = False
         if loss < self.history["best_loss"]:
             is_best_loss = True
@@ -356,14 +365,12 @@ class SimpleTask(TaskBase):
 
         # print results
         logger.info(
-            f"Eval on {eval_on}, Idx: {history_index_identifier}, is_best: {is_best}"
+            f"Eval on {eval_on}, Idx: {history_idx_identifier}, is_best: {is_best}"
         )
         logger.info(f"Train loss: {self.history['current_train_loss']:.5f}")
         for dataset_name in eval_on_datasets:
-            eval_measures = self.history[eval_on][dataset_name]["metrics"][
-                history_index
-            ]
-            eval_loss = self.history[eval_on][dataset_name]["loss"][history_index]
+            eval_measures = self.history[eval_on][dataset_name]["metrics"][history_idx]
+            eval_loss = self.history[eval_on][dataset_name]["loss"][history_idx]
             logger.info(
                 (
                     f"{dataset_name} - "
@@ -383,7 +390,7 @@ class SimpleTask(TaskBase):
         )
         dump_json(
             this_eval_result,
-            self.measures_path.joinpath(f"{history_index_identifier}.json"),
+            self.measures_path.joinpath(f"{history_idx_identifier}.json"),
             indent=2,
         )
 
