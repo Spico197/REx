@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable, Optional, Union
+from typing import Callable, Optional, Type, Union
 
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.distributed import DistributedSampler
@@ -28,7 +28,7 @@ class DataManager(object):
         train_filepath: str,
         dev_filepath: str,
         test_filepath: str,
-        dataset_class: Dataset,
+        dataset_class: Type[Dataset],
         transform: Callable,
         load_fn: Callable,
         train_batch_size: int,

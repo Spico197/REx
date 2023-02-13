@@ -1,5 +1,5 @@
-import re
 import random
+import re
 from typing import Any, List, MutableSet, Optional, Union
 
 from .iteration import windowed_queue_iter
@@ -97,7 +97,9 @@ def split_list_by_element(
         return list(filter(lambda el: el, res))
 
 
-def split_data_with_portion(data: list, ratios: List[float], shuffle: bool = False) -> List[list]:
+def split_data_with_portion(
+    data: list, ratios: List[float], shuffle: bool = False
+) -> List[list]:
     """
     Split data into multiple portions, if sum(ratios) < 1.0, then the data will be cut into `len(ratios) + 1` portions.
     """

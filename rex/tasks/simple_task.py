@@ -201,10 +201,9 @@ class SimpleTask(TaskBase):
                     accelerator.clip_grad_norm_(
                         self.model.parameters(), max_norm=self.config.max_grad_norm
                     )
-                if (
-                    ((batch_idx + 1) % self.config.grad_accum_steps) == 0
-                    or (batch_idx + 1) == len(loader)
-                ):
+                if ((batch_idx + 1) % self.config.grad_accum_steps) == 0 or (
+                    batch_idx + 1
+                ) == len(loader):
                     self.optimizer.step()
                     if self.lr_scheduler is not None:
                         self.lr_scheduler.step()
@@ -212,7 +211,9 @@ class SimpleTask(TaskBase):
 
                 if (
                     self.config.step_eval_interval > 0
-                    and (self.history["total_steps"] + 1) % self.config.step_eval_interval == 0
+                    and (self.history["total_steps"] + 1)
+                    % self.config.step_eval_interval
+                    == 0
                 ):
                     self._eval_during_train("step")
                     if not self._check_patience():
@@ -221,9 +222,8 @@ class SimpleTask(TaskBase):
                 self.history["total_steps"] += 1
 
             logger.info(loader)
-            if (
-                (self.config.epoch_eval_interval > 0)
-                and (((epoch_idx + 1) % self.config.epoch_eval_interval) == 0)
+            if (self.config.epoch_eval_interval > 0) and (
+                ((epoch_idx + 1) % self.config.epoch_eval_interval) == 0
             ):
                 self._eval_during_train("epoch")
                 if not self._check_patience():
@@ -398,8 +398,11 @@ class SimpleTask(TaskBase):
         self.history["current_train_loss"] = 0.0
 
         # save checkpoints
-        if is_best and self.config.save_best_ckpt:
-            self.save_ckpt("best")
+        if is_best:
+            if self.config.save_best_ckpt == "all":
+                self.save_ckpt(f"best.{history_idx_identifier}")
+            elif self.config.save_best_ckpt:
+                self.save_ckpt("best")
 
     def _check_patience(self):
         """Check patience, returns False if training process should be stopped, else returns True"""
