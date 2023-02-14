@@ -219,7 +219,8 @@ class SimpleTask(TaskBase):
                     if not self._check_patience():
                         break
                 total_steps += 1
-                self.history["total_steps"] += 1
+                if not resumed_training:
+                    self.history["total_steps"] += 1
 
             logger.info(loader)
             if (self.config.epoch_eval_interval > 0) and (
@@ -265,6 +266,7 @@ class SimpleTask(TaskBase):
         curr_total_steps = self.history["total_steps"]
         history_idx = curr_epoch_idx if eval_on == "epoch" else curr_total_steps
         history_idx_identifier = f"{eval_on}.{history_idx}"
+        logger.info(f"Start evaluating at {history_idx_identifier}")
 
         # make sure the model save at least one checkpoint no matter
         #   evaluation or not
@@ -289,7 +291,6 @@ class SimpleTask(TaskBase):
 
         # init
         this_eval_result = {}  # to dump results
-        logger.info(f"Start evaluating at {history_idx_identifier}")
 
         # eval to get measurements and loss
         eval_on_datasets = set()

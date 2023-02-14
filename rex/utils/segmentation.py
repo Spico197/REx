@@ -87,9 +87,11 @@ def split_list_by_element(
     if not pos:
         return elements
     res.append(elements[: pos[0]])
-    for batch in windowed_queue_iter(pos, 2, 1, drop_last=True):
-        res.append(elements[batch[0] + 1 : batch[1]])
-    res.append(elements[pos[-1] + 1 :])
+    for batch in windowed_queue_iter(pos, 2, 1, drop_last=False):
+        if len(batch) == 1:
+            res.append(elements[batch[0] + 1 :])
+        else:
+            res.append(elements[batch[0] + 1 : batch[1]])
 
     if keep_empty_segments:
         return res
