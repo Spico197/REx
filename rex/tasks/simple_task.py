@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple, Union
 
 import torch
+import torch.nn as nn
 from omegaconf import DictConfig
 
 from rex import accelerator
@@ -36,6 +37,16 @@ class SimpleTask(TaskBase):
         self.measures_path = Path(config.task_dir).joinpath("measures")
         self.measures_path.mkdir(parents=True, exist_ok=True)
 
+        self.optimizer = None
+        self.lr_scheduler = None
+        self.transform: TransformBase
+        self.data_manager: DataManager
+        self.model: nn.Module
+
+        self.initialize()
+        self.after_initialization()
+
+    def initialize(self):
         logger.debug("Init transform")
         self.transform: TransformBase = self.init_transform()
         logger.debug(f"transform: {type(self.transform)}")
@@ -52,13 +63,7 @@ class SimpleTask(TaskBase):
         logger.debug("Prepare model")
         self.model = accelerator.prepare_model(self.model)
 
-        self.optimizer = None
-        self.lr_scheduler = None
-
-        self.after_initialized()
-        logger.debug("SimpleTask initialised")
-
-    def after_initialized(self):
+    def after_initialization(self):
         pass
 
     def init_transform(self) -> TransformBase:
@@ -193,7 +198,8 @@ class SimpleTask(TaskBase):
                 result["loss"] /= self.config.grad_accum_steps
                 accelerator.backward(result["loss"])
                 loss_item = result["loss"].item()
-                self.history["current_train_loss"] += loss_item
+                self.history["current_train_loss"]["epoch"] += loss_item
+                self.history["current_train_loss"]["step"] += loss_item
                 loader.set_postfix({"loss": loss_item})
                 self.log_loss(self.history["total_steps"], loss_item, "step", "train")
 
@@ -329,7 +335,7 @@ class SimpleTask(TaskBase):
                 self.history["best_metric"] = metric
             this_eval_result["is_best_metric"] = is_best_metric
 
-        this_eval_result["train_loss"] = self.history["current_train_loss"]
+        this_eval_result["train_loss"] = self.history["current_train_loss"][eval_on]
         if select_best_on_data == "train" and self.config.select_best_by_key == "loss":
             loss = this_eval_result["train_loss"]
             self.log_loss(history_idx, loss, eval_on, "sum_train_loss")
@@ -368,7 +374,7 @@ class SimpleTask(TaskBase):
         logger.info(
             f"Eval on {eval_on}, Idx: {history_idx_identifier}, is_best: {is_best}"
         )
-        logger.info(f"Train loss: {self.history['current_train_loss']:.5f}")
+        logger.info(f"Train loss: {this_eval_result['train_loss']:.5f}")
         for dataset_name in eval_on_datasets:
             eval_measures = self.history[eval_on][dataset_name]["metrics"][history_idx]
             eval_loss = self.history[eval_on][dataset_name]["loss"][history_idx]
@@ -396,7 +402,7 @@ class SimpleTask(TaskBase):
         )
 
         # reset current training loss
-        self.history["current_train_loss"] = 0.0
+        self.history["current_train_loss"][eval_on] = 0.0
 
         # save checkpoints
         if is_best:

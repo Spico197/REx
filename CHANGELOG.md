@@ -25,6 +25,9 @@
   - fix select model by training loss bugs in `tasks.simple_task.SimpleTask`
   - add `utils.segmentation.split_data_with_portion` to help split data into multiple portions
   - add `config.save_best_ckpt == "all"` option to save every best model`
+  - fix loss resetting behaviour in [#20](https://github.com/Spico197/REx/issues/20)
+  - rename `after_initialize` into `after_initialization`
+  - add `initialize` method in `SimpleTask`, move `init_metric` calling from `after_initialization` into inherited `initialize`
 
 ## Previous versions
 

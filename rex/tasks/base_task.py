@@ -58,7 +58,7 @@ class TaskBase(ABC):
             "curr_epoch": 0,
             "curr_batch": 0,
             "total_steps": 0,
-            "current_train_loss": 0.0,
+            "current_train_loss": {"step": 0.0, "epoch": 0.0},
         }
 
         if initialize:
@@ -108,7 +108,7 @@ class TaskBase(ABC):
         self.history["curr_epoch"] = 0
         self.history["curr_batch"] = 0
         self.history["total_steps"] = 0
-        self.history["current_train_loss"] = 0.0
+        self.history["current_train_loss"] = {"step": 0.0, "epoch": 0.0}
 
         if reset_all:
             for type_key in ["epoch", "step"]:

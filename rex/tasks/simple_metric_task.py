@@ -14,9 +14,8 @@ class SimpleMetricTask(SimpleTask):
     def __init__(self, config, **kwargs) -> None:
         super().__init__(config, **kwargs)
 
-    def after_initialized(self):
-        super().after_initialized()
-
+    def initialize(self):
+        super().initialize()
         logger.debug("Init metric")
         self.metric = self.init_metric()
 
