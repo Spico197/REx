@@ -59,7 +59,7 @@ class SimpleMetricTask(SimpleTask):
             tot_batch_results.append(batch_results)
 
         logger.info(loader)
-        measurements = self.metric.get_results()
+        measurements = self.metric.compute()
 
         if verbose:
             logger.info(f"Eval dataset: {dataset_name}")

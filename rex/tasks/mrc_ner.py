@@ -3,6 +3,7 @@ from collections import defaultdict
 from typing import List
 
 import torch.optim as optim
+from torch.utils.tensorboard import SummaryWriter
 from transformers.optimization import get_linear_schedule_with_warmup
 
 from rex import accelerator
@@ -12,6 +13,7 @@ from rex.data.transforms.mrc_ner import CachedPointerTaggingTransform
 from rex.metrics.mrc_ner import MrcNERMetric
 from rex.models.mrc_ner import PlmMRCModel
 from rex.tasks.simple_metric_task import SimpleMetricTask
+from rex.utils.dict import flatten_dict
 from rex.utils.io import load_jsonlines
 from rex.utils.registry import register
 
@@ -20,6 +22,28 @@ from rex.utils.registry import register
 class MrcTaggingTask(SimpleMetricTask):
     def __init__(self, config, **kwargs) -> None:
         super().__init__(config, **kwargs)
+
+    def after_initialization(self):
+        self.tb_logger: SummaryWriter = SummaryWriter(
+            log_dir=self.task_path / "tb_summary",
+            comment=self.config.comment,
+        )
+
+    def after_whole_train(self):
+        self.tb_logger.close()
+
+    def log_loss(
+        self, idx: int, loss_item: float, step_or_epoch: str, dataset_name: str
+    ):
+        self.tb_logger.add_scalar(
+            f"loss/{dataset_name}/{step_or_epoch}", loss_item, idx
+        )
+
+    def log_metrics(
+        self, idx: int, metrics: dict, step_or_epoch: str, dataset_name: str
+    ):
+        metrics = flatten_dict(metrics)
+        self.tb_logger.add_scalars(f"{dataset_name}/{step_or_epoch}", metrics, idx)
 
     def init_transform(self):
         return CachedPointerTaggingTransform(

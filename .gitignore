@@ -144,3 +144,6 @@ ac.yaml
 new_task/
 .aim/
 data/peoples_daily_ner/data
+data/msra_ner/cache
+data/weibo_ner/
+!data/weibo_ner/convert.py

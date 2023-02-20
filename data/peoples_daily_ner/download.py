@@ -40,11 +40,12 @@ for key in datasets:
 
 lbe.save_pretrained(os.path.join(dump_dir, "label2id.json"))
 
+# https://github.com/ShannonAI/mrc-for-flat-nested-ner/blob/fix%2Fyuxian/ner2mrc/queries/zh_msra.json
 dump_json(
     {
-        "LOC": "地名地理位置",
-        "PER": "人名公民居民老百姓名人明星",
-        "ORG": "公司法院企业集团学校医院单位",
+        "LOC": "按照地理位置划分的国家,城市,乡镇,大洲",
+        "PER": "人名和虚构的人物形象",
+        "ORG": "组织包括公司,政府党派,学校,政府,新闻机构",
     },
     os.path.join(dump_dir, "role2query.json"),
 )

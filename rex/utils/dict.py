@@ -11,6 +11,17 @@ def get_dict_content(dict_item: dict, key: str):
     return val
 
 
+def flatten_dict(d, parent_key="", sep="."):
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+
 def _pretty_format(
     obj: dict, decimal=3, return_percentage=False, add_percentage_symbol=True
 ):

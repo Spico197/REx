@@ -28,6 +28,9 @@
   - fix loss resetting behaviour in [#20](https://github.com/Spico197/REx/issues/20)
   - rename `after_initialize` into `after_initialization`
   - add `initialize` method in `SimpleTask`, move `init_metric` calling from `after_initialization` into inherited `initialize`
+  - add `Lion` optimizer in `rex.optim`
+  - add `utils.dict.flatten_dict` to help flatten nested dict object into level-1 dict
+  - change `MetricBase.get_results` to `compute`
 
 ## Previous versions
 
@@ -55,13 +58,14 @@
   - add `type_idx=None` to support micro-averaged-only `tagging_f1` scores calculation
 
 - v0.1.6
-    - add `warmup_proportion` to default config. ref to [#7](https://github.com/Spico197/REx/issues/7)
-    - add `rex version` command
-    - fix train loss == eval loss problem in issue [#6](https://github.com/Spico197/REx/issues/6)
-    - fix type err in [#9](https://github.com/Spico197/REx/issues/9)
-    - add `encode_one` and `decode_one` into `LabelEncoder`
-    - add json-friendly dumping type convertion function (as a `dump_json*` built-in convertion)
-    - add tests for relation extraction tasks
+  - add `warmup_proportion` to default config. ref to [#7](https://github.com/Spico197/REx/issues/7)
+  - add `rex version` command
+  - fix train loss == eval loss problem in issue [#6](https://github.com/Spico197/REx/issues/6)
+  - fix type err in [#9](https://github.com/Spico197/REx/issues/9)
+  - add `encode_one` and `decode_one` into `LabelEncoder`
+  - add json-friendly dumping type convertion function (as a `dump_json*` built-in convertion)
+  - add tests for relation extraction tasks
+
 - v0.1.5: add `update_before_tensorify` into `GeneralCollateFn`, fix logging level displaying problem
 - v0.1.4: move accelerate to `rex.__init__`, update multi process tqdm & logging (only show in the main process in default), remove cache in debug mode, fix bugs in `rex.cmds.new`, add `rank_zero_only` in task dump, `load_best_ckpt` if `resumed_training`
 - v0.1.3: fix emb import

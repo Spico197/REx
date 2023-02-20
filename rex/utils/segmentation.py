@@ -85,12 +85,13 @@ def split_list_by_element(
     res = []
     pos = find_element_in_list(elements, delimiter)
     if not pos:
-        return elements
+        return [elements]
+    last_index = len(elements)
+    if last_index not in pos:
+        pos.append(last_index)
     res.append(elements[: pos[0]])
     for batch in windowed_queue_iter(pos, 2, 1, drop_last=False):
-        if len(batch) == 1:
-            res.append(elements[batch[0] + 1 :])
-        else:
+        if len(batch) == 2:
             res.append(elements[batch[0] + 1 : batch[1]])
 
     if keep_empty_segments:

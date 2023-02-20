@@ -406,10 +406,10 @@ class SimpleTask(TaskBase):
 
         # save checkpoints
         if is_best:
+            if self.config.save_best_ckpt:
+                self.save_ckpt("best")
             if self.config.save_best_ckpt == "all":
                 self.save_ckpt(f"best.{history_idx_identifier}")
-            elif self.config.save_best_ckpt:
-                self.save_ckpt("best")
 
     def _check_patience(self):
         """Check patience, returns False if training process should be stopped, else returns True"""
