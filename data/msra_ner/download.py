@@ -3,8 +3,7 @@ import os
 # pip install datasets
 from datasets import load_dataset
 
-from rex.utils.io import dump_jsonlines, dump_json
-
+from rex.utils.io import dump_json, dump_jsonlines
 
 cache_dir = "data/msra_ner/cache"
 dump_dir = "data/msra_ner/formatted"

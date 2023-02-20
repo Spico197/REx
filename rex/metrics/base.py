@@ -18,7 +18,7 @@ class MetricBase(object):
         self.golds.clear()
 
     def compute(self, golds: Optional[list] = None, preds: Optional[list] = None):
-        if ((golds is None) ^ (preds is None)):
+        if (golds is None) ^ (preds is None):
             raise ValueError(
                 "Please make sure golds and preds are both None or both not None"
             )
