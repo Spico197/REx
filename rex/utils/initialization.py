@@ -6,8 +6,8 @@ import numpy as np
 import torch
 from omegaconf.omegaconf import OmegaConf
 
-from rex.tasks import CONFIG_PARAMS_FILENAME, LOG_FILENAME
 from rex.utils.logging import logger
+from rex.utils.vars import CONFIG_PARAMS_FILENAME, LOG_FILENAME
 
 
 def set_seed(seed: Optional[int] = 1227, set_cudnn: Optional[bool] = False):

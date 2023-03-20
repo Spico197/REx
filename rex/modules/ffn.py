@@ -45,8 +45,8 @@ class FFN(nn.Module):
                 modules.extend(
                     [
                         nn.Linear(mid_dims[i], mid_dims[i + 1]),
-                        nn.Dropout(dropout),
                         act_fn,
+                        nn.Dropout(dropout),
                     ]
                 )
             modules.append(nn.Linear(mid_dims[-2], mid_dims[-1]))

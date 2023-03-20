@@ -130,7 +130,7 @@ class SimpleTask(TaskBase):
     ):
         pass
 
-    @safe_try
+    # @safe_try
     def train(self):
         if self.config.skip_train:
             raise RuntimeError(

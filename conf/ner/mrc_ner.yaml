@@ -1,6 +1,6 @@
 # task
 task_type: MrcTaggingTask
-task_name: bert_mrc_ner_msra
+task_name: bert_mrc_ner_msra_rbt3
 comment: 'bert mrc for NER'
 
 # data preprocessing
@@ -8,7 +8,8 @@ max_seq_len: 80
 debug_mode: false
 
 # filepaths
-plm_dir: /data/tzhu/PLM/hfl_rbt6   # hfl/minirbt-h288
+# plm_dir: hfl/minirbt-h288
+plm_dir: /data/tzhu/PLM/hfl--rbt3
 # data_dir: data/peoples_daily_ner/data/formatted
 data_dir: data/msra_ner/formatted
 output_dir: outputs
@@ -34,7 +35,7 @@ epoch_patience: 5
 train_batch_size: 16
 eval_batch_size: 32
 learning_rate: !!float 2e-5
-other_learning_rate: !!float 1e-3
+other_learning_rate: !!float 2e-5
 
 # model
 dropout: 0.3

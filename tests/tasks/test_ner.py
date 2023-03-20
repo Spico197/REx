@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from rex.tasks.mrc_ner import MrcTaggingTask
+from rex.tasks.named_entity_recognition import MrcTaggingTask
 from rex.utils.config import ConfigParser
 
 

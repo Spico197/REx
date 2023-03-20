@@ -2,7 +2,12 @@
 
 ## Working on
 
-- v0.1.9beta
+- v0.1.10
+  -
+
+## Previous versions
+
+- v0.1.9
   - change logo image
   - add `CachedTransformBase` and `CachedTransformOneBase`
   - remove `register` decorator in `SimpleTask` and `SimpleMetricTask`, so that code completion could be hinted
@@ -31,8 +36,15 @@
   - add `Lion` optimizer in `rex.optim`
   - add `utils.dict.flatten_dict` to help flatten nested dict object into level-1 dict
   - change `MetricBase.get_results` to `compute`
-
-## Previous versions
+  - update vars in `rex.tasks` to `rex.utils.vars`
+  - add tensor type support when collating
+  - support `update_datapath` to add self-defined new datasets in `data_manager`
+  - update `tagging_prf1` to be neat
+  - move `act_fn` between `linear` and `dropout` in `FFN`
+  - rename `mrc_ner.py` to `named_entity_recognition.py`
+  - better pretty dumps in `SimpleMetricTask`, no need to decompose batch for post-analyzation
+  - remove `@safe_try` to catch error when training
+  - add `split_filepath` in `rex.utils.io`
 
 - v0.1.8
   - fix wrong call in `MetricBase`

@@ -38,9 +38,10 @@ def tagging_prf1(gold_ents, pred_ents, type_idx=1) -> dict:
     """
     measure_results = {
         "micro": DEFAULT_PRF1_RESULT_DICT.copy(),
-        "macro": DEFAULT_PRF1_RESULT_DICT.copy(),
-        "types": defaultdict(lambda: DEFAULT_PRF1_RESULT_DICT.copy()),
     }
+    if type_idx is not None:
+        measure_results["macro"] = DEFAULT_PRF1_RESULT_DICT.copy()
+        measure_results["types"] = defaultdict(lambda: DEFAULT_PRF1_RESULT_DICT.copy())
     for one_ins_gold_ents, one_ins_pred_ents in zip(gold_ents, pred_ents):
         _result = get_measures_from_sets(set(one_ins_gold_ents), set(one_ins_pred_ents))
         measure_results["micro"]["tp"] += _result["tp"]

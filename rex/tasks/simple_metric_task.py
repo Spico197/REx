@@ -56,7 +56,11 @@ class SimpleMetricTask(SimpleTask):
             )
             loader.set_postfix({self.config.best_metric_field: batch_metric_score})
 
-            tot_batch_results.append(batch_results)
+            batch_instances = [
+                {"gold": gold, "pred": pred}
+                for gold, pred in zip(batch_results["gold"], batch_results["pred"])
+            ]
+            tot_batch_results.extend(batch_instances)
 
         logger.info(loader)
         measurements = self.metric.compute()

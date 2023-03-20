@@ -7,16 +7,16 @@ import torch
 from omegaconf import DictConfig, OmegaConf
 
 from rex import accelerator
-from rex.tasks import (
+from rex.utils.config import DefaultBaseConfig
+from rex.utils.initialization import init_all
+from rex.utils.logging import logger
+from rex.utils.vars import (
     BEST_CHECKPOINT_FILENAME_TEMPLATE,
     BEST_IDENTIFIER,
     CHECKPOINT_DIRNAME,
     CHECKPOINT_FILENAME_TEMPLATE,
     CONFIG_PARAMS_FILENAME,
 )
-from rex.utils.config import DefaultBaseConfig
-from rex.utils.initialization import init_all
-from rex.utils.logging import logger
 from rex.utils.wrapper import rank_zero_only
 
 

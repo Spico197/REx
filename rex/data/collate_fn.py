@@ -87,7 +87,15 @@ class GeneralCollateFn(object):
 
         for key, val_type in self.key2type.items():
             if val_type is not None and all(val is not None for val in final_data[key]):
-                final_data[key] = torch.tensor(final_data[key], dtype=val_type)
+                if isinstance(final_data[key], torch.Tensor):
+                    if final_data[key].dtype != val_type:
+                        final_data[key] = final_data[key].to(val_type)
+                elif isinstance(final_data[key][0], torch.Tensor):
+                    final_data[key] = torch.stack(final_data[key], dim=0)
+                    if final_data[key].dtype != val_type:
+                        final_data[key] = final_data[key].to(val_type)
+                else:
+                    final_data[key] = torch.tensor(final_data[key], dtype=val_type)
 
         return final_data
 

@@ -106,7 +106,7 @@ class DataManager(object):
         dataset_name = dataset_name.lower().strip()
         result_name = DataManager._NAME_TO_NORMALIZED.get(dataset_name)
         if result_name is None:
-            raise ValueError(f"Dataset: {dataset_name} cannot be normalized!")
+            result_name = dataset_name
         return result_name
 
     def _get_dataset_from_name(self, dataset_name: str):
@@ -128,6 +128,11 @@ class DataManager(object):
     def _update_loader(self, dataset_name: str, loader: DataLoader):
         _dataset_name = self._get_normalized_dataset_name(dataset_name)
         self._dataset_name_to_loader[_dataset_name] = loader
+
+    def update_datapath(self, dataset_name: str, filepath: str):
+        self._dataset_name_to_filepath[dataset_name] = filepath
+        self._dataset_name_to_dataset[dataset_name] = None
+        self._dataset_name_to_loader[dataset_name] = None
 
     def load_dataset(self, dataset_name: str):
         dataset = self._get_dataset_from_name(dataset_name)
@@ -178,7 +183,7 @@ class DataManager(object):
     @staticmethod
     def guess_eval_from_name(dataset_name: str):
         _dataset_name = DataManager._get_normalized_dataset_name(dataset_name)
-        return _dataset_name == "train"
+        return _dataset_name != "train"
 
     def load_loader(
         self,

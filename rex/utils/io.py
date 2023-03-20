@@ -1,5 +1,6 @@
 import json
 import pickle
+from pathlib import Path
 from typing import Any, DefaultDict, Iterable, List, Optional, OrderedDict
 
 import numpy as np
@@ -186,3 +187,13 @@ def dump_iterable(obj: Iterable, filepath: str):
     with open(filepath, "wt", encoding="utf-8") as fout:
         for line in obj:
             fout.write(f"{line}\n")
+
+
+def split_filepath(filepath: str) -> tuple:
+    """Split filepath into folder path, filename, prefix and suffix"""
+    path = Path(filepath)
+    folder = str(path.absolute().parent)
+    filename = path.name
+    suffix = path.suffix
+    prefix = filename.removesuffix(suffix)
+    return folder, filename, prefix, suffix
