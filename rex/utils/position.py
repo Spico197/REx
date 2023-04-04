@@ -84,3 +84,49 @@ def extract_positions_from_start_end_label(
                 positions.append((start_idx, end_idx))
                 break
     return positions
+
+
+def decode_pointer_mat_path(
+    batch_mat: torch.LongTensor, offsets: list[int] = None
+) -> list[list[tuple[int]]]:
+    batch_paths = []
+    for i in range(len(batch_mat)):
+        offset = offsets[i] if offsets else 0
+        coordinates = (batch_mat[i, 0] == 1).nonzero().tolist()
+        paths = []
+        for s, e in coordinates:
+            path = tuple(range(s - offset, e + 1 - offset))
+            paths.append(path)
+        batch_paths.append(paths)
+    return batch_paths
+
+
+def decode_pointer_mat_span(
+    batch_mat: torch.LongTensor, offsets: list[int] = None
+) -> list[list[tuple[int]]]:
+    batch_spans = []
+    for i in range(len(batch_mat)):
+        offset = offsets[i] if offsets else 0
+        coordinates = (batch_mat[i, 0] == 1).nonzero().tolist()
+        spans = []
+        for s, e in coordinates:
+            span = (s - offset, e + 1 - offset)
+            spans.append(span)
+        batch_spans.append(spans)
+    return batch_spans
+
+
+def decode_multi_class_pointer_mat_span(
+    batch_mat: torch.LongTensor, offsets: list[int] = None
+) -> list[list[tuple[int]]]:
+    batch_spans = []
+    for i in range(len(batch_mat)):
+        offset = offsets[i] if offsets else 0
+        spans = []
+        for j in range(len(batch_mat[i])):
+            coordinates = (batch_mat[i, j] == 1).nonzero().tolist()
+            for s, e in coordinates:
+                span = (s - offset, e + 1 - offset, j)
+                spans.append(span)
+        batch_spans.append(spans)
+    return batch_spans

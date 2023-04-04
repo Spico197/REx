@@ -3,7 +3,12 @@
 ## Working on
 
 - v0.1.10
-  -
+  - add [USM](https://arxiv.org/abs/2301.03282) and [GlobalPointer](https://arxiv.org/abs/2208.03054) models
+  - add no activation placeholder in `NoAct` in `rex.modules.activation`
+  - add `Biaffine` in `rex.modules.affine`
+  - add default `act_fn` in `FFN` when only one layer is created
+  - add pointer decoding algorithms in `rex.utils.position`
+  - add `retry`, `memorize`, `timing` and `email_on_failure` decorators in `rex.utils.wrapper`
 
 ## Previous versions
 

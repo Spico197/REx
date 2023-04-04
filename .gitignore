@@ -147,3 +147,7 @@ data/peoples_daily_ner/data
 data/msra_ner/cache
 data/weibo_ner/
 !data/weibo_ner/convert.py
+data/EncyclopediaDS/**/*.jsonl
+data/EncyclopediaDS/**/*.zip
+data/EncyclopediaDS/**/*.tar.bz2
+data/EncyclopediaDS/**/*.npy
