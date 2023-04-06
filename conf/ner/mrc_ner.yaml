@@ -1,6 +1,6 @@
 # task
 task_type: MrcTaggingTask
-task_name: bert_mrc_ner_msra_rbt3
+task_name: bert_mrc_ner_msra_robertabasewwm
 comment: 'bert mrc for NER'
 
 # data preprocessing
@@ -9,7 +9,8 @@ debug_mode: false
 
 # filepaths
 # plm_dir: hfl/minirbt-h288
-plm_dir: /data/tzhu/PLM/hfl--rbt3
+# plm_dir: /data/tzhu/PLM/hfl--rbt3
+plm_dir: /data/tzhu/PLM/hfl--chinese-roberta-wwm-ext
 # data_dir: data/peoples_daily_ner/data/formatted
 data_dir: data/msra_ner/formatted
 output_dir: outputs
