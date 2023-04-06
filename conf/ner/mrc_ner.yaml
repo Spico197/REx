@@ -1,10 +1,10 @@
 # task
 task_type: MrcTaggingTask
-task_name: bert_mrc_ner_msra_robertabasewwm
+task_name: bert_mrc_ner_msrav2_robertabasewwm
 comment: 'bert mrc for NER'
 
 # data preprocessing
-max_seq_len: 80
+max_seq_len: 512
 debug_mode: false
 
 # filepaths
@@ -12,11 +12,12 @@ debug_mode: false
 # plm_dir: /data/tzhu/PLM/hfl--rbt3
 plm_dir: /data/tzhu/PLM/hfl--chinese-roberta-wwm-ext
 # data_dir: data/peoples_daily_ner/data/formatted
-data_dir: data/msra_ner/formatted
+# data_dir: data/msra_ner/formatted
+data_dir: data/MSRAv2/formatted
 output_dir: outputs
 task_dir: ${output_dir}/${task_name}
 train_filepath: ${data_dir}/train.jsonl
-dev_filepath: ${data_dir}/test.jsonl
+dev_filepath: ${data_dir}/dev.jsonl
 test_filepath: ${data_dir}/test.jsonl
 ent_type2query_filepath: ${data_dir}/role2query.json
 dump_cache_dir: ${data_dir}/cache
