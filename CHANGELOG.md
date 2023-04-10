@@ -9,6 +9,7 @@
   - add default `act_fn` in `FFN` when only one layer is created
   - add pointer decoding algorithms in `rex.utils.position`
   - add `retry`, `memorize`, `timing` and `email_on_failure` decorators in `rex.utils.wrapper`
+  - fix new version of `loguru.logger` compatibility
 
 ## Previous versions
 
