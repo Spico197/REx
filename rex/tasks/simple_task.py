@@ -336,9 +336,9 @@ class SimpleTask(TaskBase):
             this_eval_result["is_best_metric"] = is_best_metric
 
         this_eval_result["train_loss"] = self.history["current_train_loss"][eval_on]
+        self.log_loss(history_idx, this_eval_result["train_loss"], eval_on, "sum_train_loss")
         if select_best_on_data == "train" and self.config.select_best_by_key == "loss":
             loss = this_eval_result["train_loss"]
-            self.log_loss(history_idx, loss, eval_on, "sum_train_loss")
         else:
             loss = self.history[eval_on][select_best_on_data]["loss"][history_idx]
         is_best_loss = False
