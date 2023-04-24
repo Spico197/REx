@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from rex.utils.io import dump_jsonlines, load_csv, dump_json
+from rex.utils.io import dump_json, dump_jsonlines, load_csv
 
 if __name__ == "__main__":
     type2query = {

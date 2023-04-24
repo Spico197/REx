@@ -208,7 +208,9 @@ class DataManager(object):
         batch_size = self.eval_batch_size if is_eval else self.train_batch_size
 
         # use whole dataset for each process when evaluating
-        if self.distributed_mode and not is_eval:
+        if self.use_stream_transform:
+            sampler = None
+        elif self.distributed_mode and not is_eval:
             sampler = DistributedSampler(dataset, shuffle=shuffle_flag)
             sampler.set_epoch(epoch_idx)
         elif shuffle_flag:

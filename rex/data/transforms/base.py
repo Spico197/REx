@@ -88,3 +88,17 @@ class CachedTransformOneBase(TransformBase):
         #   unexpected color tags (e.g. <tag>, </tag>) are included in the data
         logger.opt(colors=False).debug(f"{final_data[:num_samples]}")
         return final_data
+
+
+class StreamTransformOneBase(TransformBase):
+    @abstractmethod
+    def transform(self, instance: dict, **kwargs) -> dict:
+        raise NotImplementedError
+
+    def predict_transform(self, *args, **kwargs) -> dict:
+        raise NotImplementedError
+
+    def __call__(
+        self, instance: dict, dataset_name: str = None, **kwargs
+    ) -> List[dict]:
+        return self.transform(instance, dataset_name=dataset_name, **kwargs)

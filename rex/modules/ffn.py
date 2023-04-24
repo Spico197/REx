@@ -33,9 +33,7 @@ class FFN(nn.Module):
 
         if mid_dims is None:
             self.ffn = nn.Sequential(
-                nn.Linear(input_dim, output_dim),
-                act_fn,
-                nn.Dropout(dropout)
+                nn.Linear(input_dim, output_dim), act_fn, nn.Dropout(dropout)
             )
         else:
             mid_dims = list(mid_dims)

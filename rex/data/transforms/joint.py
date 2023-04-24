@@ -1,6 +1,7 @@
 from transformers.models.bert.tokenization_bert_fast import BertTokenizerFast
-from rex.data.transforms.base import CachedTransformOneBase
+
 from rex.data.collate_fn import GeneralCollateFn
+from rex.data.transforms.base import CachedTransformOneBase
 
 
 class MaxLengthExceedException(Exception):
@@ -15,9 +16,17 @@ class USMTransform(CachedTransformOneBase):
         self.lm_token = "[LM]"
         self.lp_token = "[LP]"
         self.text_token = "[T]"
-        num_added = self.tokenizer.add_tokens([self.lm_token, self.lp_token, self.text_token], special_tokens=True)
+        num_added = self.tokenizer.add_tokens(
+            [self.lm_token, self.lp_token, self.text_token], special_tokens=True
+        )
         assert num_added == 3
-        self.lm_token_id, self.lp_token_id, self.text_token_id = self.tokenizer.convert_tokens_to_ids([self.lm_token, self.lp_token, self.text_token])
+        (
+            self.lm_token_id,
+            self.lp_token_id,
+            self.text_token_id,
+        ) = self.tokenizer.convert_tokens_to_ids(
+            [self.lm_token, self.lp_token, self.text_token]
+        )
 
         self.max_seq_len = max_seq_len
 
@@ -56,7 +65,13 @@ class USMTransform(CachedTransformOneBase):
         return input_ids, input_tokens, mask, label_map, label_str_to_idx
 
     def build_input_seq(self, tokens: list, ent_labels: set, rel_labels: set):
-        input_ids, input_tokens, mask, label_map, label_str_to_idx = self.build_label_seq(ent_labels, rel_labels)
+        (
+            input_ids,
+            input_tokens,
+            mask,
+            label_map,
+            label_str_to_idx,
+        ) = self.build_label_seq(ent_labels, rel_labels)
         input_tokens.append(self.text_token)
         mask.append(6)
         offset = len(mask)
@@ -87,8 +102,13 @@ class USMTransform(CachedTransformOneBase):
         rel_labels = set(x[1] for x in instance["relations"])
         rel_labels.update(x[1] for e in instance["events"] for x in e["arguments"])
         # TODO
-        input_ids, input_tokens, mask, label_map, label_str_to_idx = self.build_label_seq(ent_labels, rel_labels)
-
+        (
+            input_ids,
+            input_tokens,
+            mask,
+            label_map,
+            label_str_to_idx,
+        ) = self.build_label_seq(ent_labels, rel_labels)
 
         offset = len(input_ids)
         return instance

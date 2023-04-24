@@ -1,8 +1,9 @@
 import sys
 
+import pkg_resources
+
 from rex.utils.config import ConfigArgument, ConfigParser
 from rex.utils.registry import NAMESPACE_REGISTRY, get_registered, register
-from rex.version import __version__
 
 from .emb import emb
 from .gen_conf import gen_conf
@@ -12,7 +13,8 @@ from .train import train
 
 @register("rex_init_call")
 def version(*args, **kwargs):
-    print(f"{__version__}")
+    version = pkg_resources.get_distribution("pytorch-rex").version
+    print(f"{version}")
 
 
 def main():
@@ -24,7 +26,7 @@ def main():
         ),
         init_priority_args=False,
         cmd_args=sys.argv[1:2],
-        description=f"REx (version: {__version__}) - A toolkit for Relation, Event eXtraction (REx) and more...",
+        description=f"REx (version: {version()}) - A toolkit for Relation, Event eXtraction (REx) and more...",
     )
 
     if args.command in NAMESPACE_REGISTRY["rex_init_call"]:

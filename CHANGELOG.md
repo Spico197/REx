@@ -2,7 +2,7 @@
 
 ## Working on
 
-- v0.1.10
+- v0.1.10beta
   - add [USM](https://arxiv.org/abs/2301.03282) and [GlobalPointer](https://arxiv.org/abs/2208.03054) models
   - add no activation placeholder in `NoAct` in `rex.modules.activation`
   - add `Biaffine` in `rex.modules.affine`
@@ -10,6 +10,7 @@
   - add pointer decoding algorithms in `rex.utils.position`
   - add `retry`, `memorize`, `timing` and `email_on_failure` decorators in `rex.utils.wrapper`
   - fix new version of `loguru.logger` compatibility
+  - update stream reading abilities, fix model checkpoint filename mismatch issue when saving in ddp
 
 ## Previous versions
 

@@ -3,6 +3,7 @@ global-exclude __pycache__ *.py[cod]
 include README.md
 include LICENSE
 include MANIFEST.in
+include VERSION
 
 include rex/templates/data/download.py
 include rex/templates/.gitignore

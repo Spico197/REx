@@ -179,7 +179,8 @@ class TaskBase(ABC):
         load_history: Optional[bool] = True,
     ):
         _task_dir = Path(self.config.task_dir)
-        model_name = self.model.__class__.__name__
+        model = accelerator.unwrap_model(self.model)
+        model_name = model.__class__.__name__
         ckpt_filepath = str(
             _task_dir.joinpath(
                 CHECKPOINT_DIRNAME,
@@ -221,8 +222,9 @@ class TaskBase(ABC):
         if not ckpt_dir.exists():
             ckpt_dir.mkdir(parents=True)
 
+        model = accelerator.unwrap_model(self.model)
         ckpt_name = CHECKPOINT_FILENAME_TEMPLATE.format(
-            self.model.__class__.__name__, identifier
+            model.__class__.__name__, identifier
         )
         self.save(ckpt_dir / ckpt_name)
 

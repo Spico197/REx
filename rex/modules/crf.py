@@ -1201,7 +1201,6 @@ class ConstraintCRF(torch.nn.Module):
         )
 
         if has_start_end_restrictions:
-
             if allowed_end_transitions is None:
                 allowed_end_transitions = torch.zeros(num_tags)
             if allowed_start_transitions is None:
