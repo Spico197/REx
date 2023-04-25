@@ -11,6 +11,8 @@
   - add `retry`, `memorize`, `timing` and `email_on_failure` decorators in `rex.utils.wrapper`
   - fix new version of `loguru.logger` compatibility
   - update stream reading abilities, fix model checkpoint filename mismatch issue when saving in ddp
+  - add `generate_random_string_with_datetime` in `rex.utils.random`
+  - add `get_now_string` in `rex.utils.__init__.py`
 
 ## Previous versions
 

@@ -14,7 +14,7 @@ from .train import train
 @register("rex_init_call")
 def version(*args, **kwargs):
     version = pkg_resources.get_distribution("pytorch-rex").version
-    print(f"{version}")
+    return version
 
 
 def main():
