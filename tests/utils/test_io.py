@@ -17,4 +17,7 @@ def test_find_files():
         assert set(found_files) == {os.path.join(tmpdir, f"{i}.txt") for i in range(2)}
 
         found_recursive_files = find_files(r".*\.txt", tmpdir)
-        assert set(found_recursive_files) == {*found_files, os.path.join(tmpdir, "a", "sub.txt")}
+        assert set(found_recursive_files) == {
+            *found_files,
+            os.path.join(tmpdir, "a", "sub.txt"),
+        }
