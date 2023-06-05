@@ -27,7 +27,7 @@ I would like to cut some features to make this going smoothly.
 
 ## ⚙️Installation
 
-[Python](https://www.python.org/) (**>=3.7**) and [pytorch](http://pytorch.org/) (**>=1.7.1**) are preliminaries for REx.
+[Python](https://www.python.org/) (**>=3.10**) and [pytorch](http://pytorch.org/) (**>=2.0.1**) are preliminaries for REx.
 
 ```bash
 # 1. install from source
