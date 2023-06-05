@@ -13,6 +13,7 @@
   - update stream reading abilities, fix model checkpoint filename mismatch issue when saving in ddp
   - add `generate_random_string_with_datetime` in `rex.utils.random`
   - add `get_now_string` in `rex.utils.__init__.py`
+  - add `find_files` in `rex.utils.io` to help find files in sub folders with regex
 
 ## Previous versions
 

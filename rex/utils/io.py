@@ -1,3 +1,5 @@
+import re
+import os
 import json
 import pickle
 from pathlib import Path
@@ -197,3 +199,16 @@ def split_filepath(filepath: str) -> tuple:
     suffix = path.suffix
     prefix = filename.removesuffix(suffix)
     return folder, filename, prefix, suffix
+
+
+def find_files(regex: str, folder: str, recursive: bool = True) -> List[str]:
+    """Find files with regex in a folder"""
+    regex = re.compile(regex)
+    files = []
+    for root, _, filenames in os.walk(folder):
+        for filename in filenames:
+            if regex.match(filename):
+                files.append(os.path.join(root, filename))
+        if not recursive:
+            break
+    return files
