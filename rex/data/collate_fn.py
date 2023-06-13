@@ -31,12 +31,14 @@ class GeneralCollateFn(object):
         key2type: Optional[Dict[str, Any]],
         guessing: Optional[bool] = False,
         missing_key_as_null: Optional[bool] = False,
+        discard_missing: Optional[bool] = False,
     ) -> None:
         self.key2type = {}
         if isinstance(key2type, dict) and len(key2type) > 0:
             self.key2type.update(key2type)
         self.guessing = guessing
         self.missing_key_as_null = missing_key_as_null
+        self.discard_missing = discard_missing
 
     def update_type_mapping(self, key2type: dict):
         for key, val_type in key2type.items():
@@ -72,14 +74,15 @@ class GeneralCollateFn(object):
 
     def __call__(self, data: List[Dict[str, Any]]) -> Dict[str, Any]:
         validate_instance_has_the_same_keys(data)
-        if len(self.key2type) == 0 and self.guessing:
-            self.guess_types(data[0], update=True)
+        if not self.discard_missing:
+            if len(self.key2type) == 0 and self.guessing:
+                self.guess_types(data[0], update=True)
 
-        if self.missing_key_as_null:
-            for d in data:
-                missing_keys = set(d.keys()) - set(self.key2type.keys())
-                for mkey in missing_keys:
-                    self.key2type[mkey] = None
+            if self.missing_key_as_null:
+                for d in data:
+                    missing_keys = set(d.keys()) - set(self.key2type.keys())
+                    for mkey in missing_keys:
+                        self.key2type[mkey] = None
 
         data = self.update_data(data)
         final_data = group_instances_into_batch(data, self.key2type.keys())

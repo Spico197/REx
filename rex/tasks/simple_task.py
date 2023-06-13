@@ -4,6 +4,7 @@ from typing import List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
+from accelerate import Accelerator, DistributedDataParallelKwargs
 from omegaconf import DictConfig
 
 from rex import accelerator
@@ -42,6 +43,13 @@ class SimpleTask(TaskBase):
         self.transform: TransformBase
         self.data_manager: DataManager
         self.model: nn.Module
+
+        global accelerator
+        ddp_args = DistributedDataParallelKwargs(find_unused_parameters=True)
+        accelerator = Accelerator(
+            kwargs_handlers=[ddp_args],
+            gradient_accumulation_steps=config.grad_accum_steps,
+        )
 
         self.initialize()
         self.after_initialization()
@@ -184,49 +192,54 @@ class SimpleTask(TaskBase):
             )
             loader = pbar(epoch_train_loader, desc=f"Train(e{epoch_idx})")
             for batch_idx, batch in enumerate(loader):
-                if not resumed_training:
-                    self.history["curr_batch"] = batch_idx
-                    self.history["total_steps"] = total_steps
-                if resumed_training and total_steps < self.history["total_steps"]:
-                    total_steps += 1
-                    continue
-                elif resumed_training and total_steps == self.history["total_steps"]:
-                    resumed_training = False
+                with accelerator.accumulate(self.model):
+                    if not resumed_training:
+                        self.history["curr_batch"] = batch_idx
+                        self.history["total_steps"] = total_steps
+                    if resumed_training and total_steps < self.history["total_steps"]:
+                        total_steps += 1
+                        continue
+                    elif (
+                        resumed_training and total_steps == self.history["total_steps"]
+                    ):
+                        resumed_training = False
 
-                result = self.model(**batch)
+                    result = self.model(**batch)
 
-                result["loss"] /= self.config.grad_accum_steps
-                accelerator.backward(result["loss"])
-                loss_item = result["loss"].item()
-                self.history["current_train_loss"]["epoch"] += loss_item
-                self.history["current_train_loss"]["step"] += loss_item
-                loader.set_postfix({"loss": loss_item})
-                self.log_loss(self.history["total_steps"], loss_item, "step", "train")
-
-                if self.config.max_grad_norm > 0:
-                    accelerator.clip_grad_norm_(
-                        self.model.parameters(), max_norm=self.config.max_grad_norm
+                    # result["loss"] /= self.config.grad_accum_steps
+                    accelerator.backward(result["loss"])
+                    loss_item = result["loss"].item()
+                    self.history["current_train_loss"]["epoch"] += loss_item
+                    self.history["current_train_loss"]["step"] += loss_item
+                    loader.set_postfix({"loss": loss_item})
+                    self.log_loss(
+                        self.history["total_steps"], loss_item, "step", "train"
                     )
-                if ((batch_idx + 1) % self.config.grad_accum_steps) == 0 or (
-                    batch_idx + 1
-                ) == len(loader):
+
+                    if self.config.max_grad_norm > 0:
+                        accelerator.clip_grad_norm_(
+                            self.model.parameters(), max_norm=self.config.max_grad_norm
+                        )
+                    # if ((batch_idx + 1) % self.config.grad_accum_steps) == 0 or (
+                    #     batch_idx + 1
+                    # ) == len(loader):
                     self.optimizer.step()
                     if self.lr_scheduler is not None:
                         self.lr_scheduler.step()
                     self.optimizer.zero_grad()
 
-                if (
-                    self.config.step_eval_interval > 0
-                    and (self.history["total_steps"] + 1)
-                    % self.config.step_eval_interval
-                    == 0
-                ):
-                    self._eval_during_train("step")
-                    if not self._check_patience():
-                        break
-                total_steps += 1
-                if not resumed_training:
-                    self.history["total_steps"] += 1
+                    if (
+                        self.config.step_eval_interval > 0
+                        and (self.history["total_steps"] + 1)
+                        % self.config.step_eval_interval
+                        == 0
+                    ):
+                        self._eval_during_train("step")
+                        if not self._check_patience():
+                            break
+                    total_steps += 1
+                    if not resumed_training:
+                        self.history["total_steps"] += 1
 
             logger.info(loader)
             if (self.config.epoch_eval_interval > 0) and (

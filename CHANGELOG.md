@@ -14,6 +14,10 @@
   - add `generate_random_string_with_datetime` in `rex.utils.random`
   - add `get_now_string` in `rex.utils.__init__.py`
   - add `find_files` in `rex.utils.io` to help find files in sub folders with regex
+  - add `discard_missing (default=False)` key in collate function, which discards keys without specified types
+  - add `ignore_error=True` in `CachedTransformOneBase`, which skips data processing errors
+  - add Universal Data Interface (UDI) checking tool and UIE-to-UDI format converter
+  - change manual gradient accumulation to `accelerate`
 
 ## Previous versions
 

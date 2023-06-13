@@ -48,6 +48,11 @@ class CachedTransformBase(TransformBase):
 
 
 class CachedTransformOneBase(TransformBase):
+    def __init__(self, ignore_error: bool = True) -> None:
+        super().__init__()
+
+        self.ignore_error = ignore_error
+
     @abstractmethod
     def transform(self, instance: dict, **kwargs) -> dict:
         raise NotImplementedError
@@ -70,10 +75,21 @@ class CachedTransformOneBase(TransformBase):
         transform_loader = pbar(dataset, desc=desc, disable=disable_pbar)
 
         final_data = []
+        num_err = 0
         for ins in transform_loader:
-            transformed_one = self.transform(ins, **kwargs)
-            if transformed_one is None:
-                continue
+            try:
+                transformed_one = self.transform(ins, **kwargs)
+                if transformed_one is None:
+                    continue
+            except KeyboardInterrupt:
+                raise KeyboardInterrupt
+            except Exception:
+                num_err += 1
+                logger.error(f"#{num_err} Error when transforming {ins}")
+                if self.ignore_error:
+                    continue
+                else:
+                    raise
 
             if isinstance(transformed_one, dict):
                 final_data.append(transformed_one)
