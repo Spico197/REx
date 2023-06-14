@@ -33,6 +33,8 @@ def extract(dataset):
 vocab_files = []
 for key in datasets:
     data, tokens = extract(datasets[key])
+    if key == "validation":
+        key = "dev"
     dump_jsonlines(data, os.path.join(dump_dir, f"{key}.jsonl"))
     vocab_filepath = os.path.join(cache_dir, f"{key}.vocab")
     vocab_files.append(vocab_filepath)
