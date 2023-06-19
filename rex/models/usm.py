@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 import torch.nn as nn
 
 from rex.models.global_pointer import BertTokenEncoder, GlobalPointer
@@ -80,10 +82,10 @@ class USM(nn.Module):
 
     def decode(
         self,
-        ttl_pred: list[tuple],
-        ltl_pred: list[tuple],
-        tll_pred: list[tuple],
-        label_map: list[dict[int, dict]],  # `m` or `p`,
+        ttl_pred: List[tuple],
+        ltl_pred: List[tuple],
+        tll_pred: List[tuple],
+        label_map: List[Dict[int, dict]],  # `m` or `p`,
     ):
         # pred: batch[[(h, t, type_index)], ...]
         # label_map: batch[{label index: {"type": "m"/"p", "string": "person"}, ...}, ...]

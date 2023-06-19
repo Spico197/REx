@@ -87,8 +87,8 @@ def extract_positions_from_start_end_label(
 
 
 def decode_pointer_mat_path(
-    batch_mat: torch.LongTensor, offsets: list[int] = None
-) -> list[list[tuple[int]]]:
+    batch_mat: torch.LongTensor, offsets: List[int] = None
+) -> List[List[Tuple[int]]]:
     batch_paths = []
     for i in range(len(batch_mat)):
         offset = offsets[i] if offsets else 0
@@ -102,8 +102,8 @@ def decode_pointer_mat_path(
 
 
 def decode_pointer_mat_span(
-    batch_mat: torch.LongTensor, offsets: list[int] = None
-) -> list[list[tuple[int]]]:
+    batch_mat: torch.LongTensor, offsets: List[int] = None
+) -> List[List[Tuple[int]]]:
     batch_spans = []
     for i in range(len(batch_mat)):
         offset = offsets[i] if offsets else 0
@@ -117,8 +117,8 @@ def decode_pointer_mat_span(
 
 
 def decode_multi_class_pointer_mat_span(
-    batch_mat: torch.LongTensor, offsets: list[int] = None
-) -> list[list[tuple[int]]]:
+    batch_mat: torch.LongTensor, offsets: List[int] = None
+) -> List[List[Tuple[int]]]:
     batch_spans = []
     for i in range(len(batch_mat)):
         offset = offsets[i] if offsets else 0

@@ -203,7 +203,7 @@ def split_filepath(filepath: str) -> tuple:
 
 def find_files(regex: str, folder: str, recursive: bool = True) -> List[str]:
     """Find files with regex in a folder"""
-    regex = re.compile(regex)
+    regex = re.compile(regex, flags=re.DOTALL)
     files = []
     for root, _, filenames in os.walk(folder):
         for filename in filenames:
