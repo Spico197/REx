@@ -163,7 +163,7 @@ class TaskBase(ABC):
             logger.debug("Not load optimizer")
 
         if load_history:
-            history = store_dict.pop("history")
+            history = store_dict.pop("history", None)
             self.reset_history(reset_all=True)
             if history is not None:
                 self.history = history
@@ -265,6 +265,7 @@ class TaskBase(ABC):
         load_best_model: Optional[bool] = True,
         load_best_optimizer: Optional[bool] = False,
         load_config: Optional[bool] = False,
+        load_history: Optional[bool] = False,
         **kwargs,
     ):
         _task_dir = Path(task_dir)
@@ -272,6 +273,8 @@ class TaskBase(ABC):
         ins = cls.from_configfile(config_filepath, **kwargs)
         if load_best_model:
             ins.load_best_ckpt(
-                load_optimizer=load_best_optimizer, load_config=load_config
+                load_optimizer=load_best_optimizer,
+                load_config=load_config,
+                load_history=load_history,
             )
         return ins
