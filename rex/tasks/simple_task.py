@@ -43,9 +43,8 @@ class SimpleTask(TaskBase):
         self.data_manager: DataManager
         self.model: nn.Module
 
-        global accelerator
         ddp_args = DistributedDataParallelKwargs(find_unused_parameters=True)
-        accelerator = Accelerator(
+        self.accelerator = Accelerator(
             kwargs_handlers=[ddp_args],
             gradient_accumulation_steps=config.grad_accum_steps,
         )
@@ -68,7 +67,7 @@ class SimpleTask(TaskBase):
         num_model_params = calc_module_params(self.model)
         logger.debug(f"#ModelParams: {num_model_params}")
         logger.debug("Prepare model")
-        self.model = accelerator.prepare_model(self.model)
+        self.model = self.accelerator.prepare_model(self.model)
 
     def after_initialization(self):
         pass
@@ -148,13 +147,13 @@ class SimpleTask(TaskBase):
             self.optimizer = self.init_optimizer()
             logger.debug(f"optimizer: {self.optimizer}")
             logger.debug("Prepare optimizer")
-            self.optimizer = accelerator.prepare_optimizer(self.optimizer)
+            self.optimizer = self.accelerator.prepare_optimizer(self.optimizer)
             logger.debug("Init lr_scheduler")
             self.lr_scheduler = self.init_lr_scheduler()
             if self.lr_scheduler is not None:
                 logger.debug(f"lr_scheduler: {type(self.lr_scheduler)}")
                 logger.debug("Prepare lr_scheduler")
-                self.lr_scheduler = accelerator.prepare_scheduler(self.lr_scheduler)
+                self.lr_scheduler = self.accelerator.prepare_scheduler(self.lr_scheduler)
 
         if self.config.resumed_training_path is not None:
             self.load(
@@ -191,7 +190,7 @@ class SimpleTask(TaskBase):
             )
             loader = pbar(epoch_train_loader, desc=f"Train(e{epoch_idx})")
             for batch_idx, batch in enumerate(loader):
-                with accelerator.accumulate(self.model):
+                with self.accelerator.accumulate(self.model):
                     if not resumed_training:
                         self.history["curr_batch"] = batch_idx
                         self.history["total_steps"] = total_steps
@@ -206,7 +205,7 @@ class SimpleTask(TaskBase):
                     result = self.model(**batch)
 
                     # result["loss"] /= self.config.grad_accum_steps
-                    accelerator.backward(result["loss"])
+                    self.accelerator.backward(result["loss"])
                     loss_item = result["loss"].item()
                     self.history["current_train_loss"]["epoch"] += loss_item
                     self.history["current_train_loss"]["step"] += loss_item
@@ -216,7 +215,7 @@ class SimpleTask(TaskBase):
                     )
 
                     if self.config.max_grad_norm > 0:
-                        accelerator.clip_grad_norm_(
+                        self.accelerator.clip_grad_norm_(
                             self.model.parameters(), max_norm=self.config.max_grad_norm
                         )
                     # if ((batch_idx + 1) % self.config.grad_accum_steps) == 0 or (
