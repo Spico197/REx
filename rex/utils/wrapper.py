@@ -11,8 +11,6 @@ import traceback
 from email.mime.text import MIMEText
 from typing import Callable, Optional
 
-from accelerate.state import AcceleratorState
-
 from rex.utils.logging import logger
 
 

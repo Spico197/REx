@@ -1,5 +1,6 @@
-from accelerate.state import AcceleratorState
 from tqdm import tqdm as _tqdm
+
+from rex.utils.distributed import is_global_rank0
 
 
 class pbar(_tqdm):
@@ -10,7 +11,7 @@ class pbar(_tqdm):
             kwargs["ascii"] = True
 
         main_process_logging = kwargs.pop("main_process_logging", True)
-        if main_process_logging and AcceleratorState().local_process_index != 0:
+        if main_process_logging and not is_global_rank0():
             kwargs["disable"] = True
 
         super().__init__(*args, **kwargs)

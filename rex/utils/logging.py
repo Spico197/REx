@@ -1,7 +1,8 @@
-from accelerate.state import AcceleratorState
 from loguru._logger import Core as _Core
 from loguru._logger import Logger as _Logger
 from tqdm import tqdm as _tqdm
+
+from rex.utils.distributed import is_global_rank0
 
 
 class MultiProcessLogger(_Logger):
@@ -13,9 +14,7 @@ class MultiProcessLogger(_Logger):
     @staticmethod
     def _should_log(main_process_only):
         "Check if log should be performed"
-        return not main_process_only or (
-            main_process_only and AcceleratorState().local_process_index == 0
-        )
+        return not main_process_only or (main_process_only and is_global_rank0())
 
     def _log(self, *args):
         """
