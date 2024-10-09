@@ -7,7 +7,6 @@ import torch.nn as nn
 from accelerate import Accelerator, DistributedDataParallelKwargs
 from omegaconf import DictConfig
 
-from rex import accelerator
 from rex.data.data_manager import DataManager
 from rex.data.transforms.base import TransformBase
 from rex.metrics import safe_division

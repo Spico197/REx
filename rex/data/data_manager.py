@@ -1,11 +1,11 @@
 from pathlib import Path
 from typing import Callable, Optional, Type, Union
 
+from accelerate import Accelerator
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.distributed import DistributedSampler
 from torch.utils.data.sampler import RandomSampler, SequentialSampler
 
-from rex import accelerator
 from rex.utils.deprecation import deprecation_warning
 from rex.utils.io import dump_pickle, load_pickle
 from rex.utils.logging import logger
@@ -25,6 +25,7 @@ class DataManager(object):
 
     def __init__(
         self,
+        accelerator: Accelerator,
         train_filepath: str,
         dev_filepath: str,
         test_filepath: str,
@@ -48,6 +49,7 @@ class DataManager(object):
         dump_cache_dir: Optional[str] = None,
         regenerate_cache: Optional[bool] = False,
     ):
+        self.accelerator = accelerator
         self._dataset_name_to_filepath = {
             "train": train_filepath,
             "dev": dev_filepath,
@@ -226,7 +228,7 @@ class DataManager(object):
             collate_fn=self.collate_fn,
             **kwargs,
         )
-        loader = accelerator.prepare_data_loader(loader)
+        loader = self.accelerator.prepare_data_loader(loader)
         return loader
 
     def load(self, dataset_name: str):

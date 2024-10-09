@@ -5,8 +5,8 @@ from typing import Optional, Union
 
 import torch
 from omegaconf import DictConfig, OmegaConf
+from accelerate import Accelerator, DistributedDataParallelKwargs
 
-from rex import accelerator
 from rex.utils.config import DefaultBaseConfig
 from rex.utils.initialization import init_all
 from rex.utils.logging import logger
@@ -30,8 +30,11 @@ class TaskBase(ABC):
     ) -> None:
         self.config = config
 
+        ddp_args = DistributedDataParallelKwargs(find_unused_parameters=True)
+        self.accelerator = Accelerator(kwargs_handlers=[ddp_args])
+
         # `batch_size` in config is the total batch size number
-        self.device = accelerator.device
+        self.device = self.accelerator.device
 
         self.model = None
         self.optimizer = None
@@ -133,15 +136,15 @@ class TaskBase(ABC):
             logger.debug("Load store_dict into cpu")
             store_dict = torch.load(path, map_location="cpu")
         else:
-            logger.debug(f"Load store_dict into {accelerator.device}")
-            store_dict = torch.load(path, map_location=accelerator.device)
+            logger.debug(f"Load store_dict into {self.accelerator.device}")
+            store_dict = torch.load(path, map_location=self.accelerator.device)
 
         if load_config:
             self.config = OmegaConf.load(self.task_path / CONFIG_PARAMS_FILENAME)
 
         if load_model:
             if self.model and "model_state" in store_dict:
-                unwrapped_model = accelerator.unwrap_model(self.model)
+                unwrapped_model = self.accelerator.unwrap_model(self.model)
                 unwrapped_model.load_state_dict(store_dict["model_state"])
                 logger.debug("Load model successfully")
             else:
@@ -179,7 +182,7 @@ class TaskBase(ABC):
         load_history: Optional[bool] = True,
     ):
         _task_dir = Path(self.config.task_dir)
-        model = accelerator.unwrap_model(self.model)
+        model = self.accelerator.unwrap_model(self.model)
         model_name = model.__class__.__name__
         ckpt_filepath = str(
             _task_dir.joinpath(
@@ -202,7 +205,7 @@ class TaskBase(ABC):
         store_dict = {}
 
         if self.model:
-            model = accelerator.unwrap_model(self.model)
+            model = self.accelerator.unwrap_model(self.model)
             model_state = model.state_dict()
             store_dict["model_state"] = model_state
         else:
@@ -222,7 +225,7 @@ class TaskBase(ABC):
         if not ckpt_dir.exists():
             ckpt_dir.mkdir(parents=True)
 
-        model = accelerator.unwrap_model(self.model)
+        model = self.accelerator.unwrap_model(self.model)
         ckpt_name = CHECKPOINT_FILENAME_TEMPLATE.format(
             model.__class__.__name__, identifier
         )

@@ -3,6 +3,7 @@
 ## Working on
 
 - v0.1.10beta
+  - remove `accelerator` from the `rex` root `__init__.py`, move it to `TaskBase` instead
   - add [USM](https://arxiv.org/abs/2301.03282) and [GlobalPointer](https://arxiv.org/abs/2208.03054) models
   - add no activation placeholder in `NoAct` in `rex.modules.activation`
   - add `Biaffine` in `rex.modules.affine`

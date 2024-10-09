@@ -6,7 +6,6 @@ import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 from transformers.optimization import get_linear_schedule_with_warmup
 
-from rex import accelerator
 from rex.data.data_manager import DataManager
 from rex.data.dataset import CachedDataset
 from rex.data.transforms.mrc_ner import CachedPointerTaggingTransform
@@ -110,8 +109,6 @@ class MrcTaggingTask(SimpleMetricTask):
         raw_dataset = self.transform.predict_transform(texts)
         text_ids = sorted(list({ins["id"] for ins in raw_dataset}))
         loader = self.data_manager.prepare_loader(raw_dataset)
-        # to prepare input device
-        loader = accelerator.prepare_data_loader(loader)
         id2ents = defaultdict(set)
         for batch in loader:
             batch_out = self.model(**batch, decode=True)

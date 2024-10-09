@@ -29,6 +29,7 @@ class MCMLSentRelationClassificationTask(SimpleTask):
 
     def init_data_manager(self):
         dm = DataManager(
+            self.accelerator,
             self.config.train_filepath,
             self.config.dev_filepath,
             self.config.test_filepath,
@@ -111,6 +112,7 @@ class MCBagRelationClassificationTask(SimpleTask):
 
     def init_data_manager(self):
         dm = DataManager(
+            self.accelerator,
             self.config.train_filepath,
             self.config.dev_filepath,
             self.config.test_filepath,

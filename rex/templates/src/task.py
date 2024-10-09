@@ -5,7 +5,6 @@ from typing import List
 import torch.optim as optim
 from transformers.optimization import get_linear_schedule_with_warmup
 
-from rex import accelerator
 from rex.data.data_manager import DataManager
 from rex.data.dataset import CachedDataset
 from rex.tasks.simple_metric_task import SimpleMetricTask
@@ -31,6 +30,7 @@ class MrcTaggingTask(SimpleMetricTask):
 
     def init_data_manager(self):
         return DataManager(
+            self.accelerator,
             self.config.train_filepath,
             self.config.dev_filepath,
             self.config.test_filepath,
@@ -87,8 +87,6 @@ class MrcTaggingTask(SimpleMetricTask):
         raw_dataset = self.transform.predict_transform(texts)
         text_ids = sorted(list({ins["id"] for ins in raw_dataset}))
         loader = self.data_manager.prepare_loader(raw_dataset)
-        # to prepare input device
-        loader = accelerator.prepare_data_loader(loader)
         id2ents = defaultdict(set)
         for batch in loader:
             batch_out = self.model(**batch, decode=True)
