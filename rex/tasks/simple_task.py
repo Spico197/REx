@@ -145,7 +145,7 @@ class SimpleTask(TaskBase):
         else:
             logger.debug("Init optimizer")
             self.optimizer = self.init_optimizer()
-            logger.debug(f"optimizer: {self.optimizer}")
+            logger.debug(f"optimizer: {type(self.optimizer)}")
             logger.debug("Prepare optimizer")
             self.optimizer = self.accelerator.prepare_optimizer(self.optimizer)
             logger.debug("Init lr_scheduler")

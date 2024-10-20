@@ -9,6 +9,7 @@ from .emb import emb
 from .gen_conf import gen_conf
 from .new import new
 from .train import train
+from .dryrun import dryrun
 
 
 @register("rex_init_call")
