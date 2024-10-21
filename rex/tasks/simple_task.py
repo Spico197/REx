@@ -153,7 +153,9 @@ class SimpleTask(TaskBase):
             if self.lr_scheduler is not None:
                 logger.debug(f"lr_scheduler: {type(self.lr_scheduler)}")
                 logger.debug("Prepare lr_scheduler")
-                self.lr_scheduler = self.accelerator.prepare_scheduler(self.lr_scheduler)
+                self.lr_scheduler = self.accelerator.prepare_scheduler(
+                    self.lr_scheduler
+                )
 
         if self.config.resumed_training_path is not None:
             self.load(
@@ -228,10 +230,9 @@ class SimpleTask(TaskBase):
 
                     if (
                         self.config.step_eval_interval > 0
-                        and (self.history["total_steps"] + 1)
-                        % self.config.step_eval_interval
-                        == 0
-                    ):
+                        and (self.history["total_steps"] + 1) % self.config.step_eval_interval == 0
+                        and (self.history["total_steps"] + 1) > self.config.step_eval_skip
+                    ):  # fmt: skip
                         self._eval_during_train("step")
                         if not self._check_patience():
                             break
@@ -240,8 +241,10 @@ class SimpleTask(TaskBase):
                         self.history["total_steps"] += 1
 
             logger.info(loader)
-            if (self.config.epoch_eval_interval > 0) and (
-                ((epoch_idx + 1) % self.config.epoch_eval_interval) == 0
+            if (
+                (self.config.epoch_eval_interval > 0)
+                and (((epoch_idx + 1) % self.config.epoch_eval_interval) == 0)
+                and (epoch_idx + 1) > self.config.epoch_eval_skip
             ):
                 self._eval_during_train("epoch")
                 if not self._check_patience():

@@ -3,6 +3,7 @@
 ## Working on
 
 - v0.1.10beta
+  - add `step_eval_skip` and `epoch_eval_skip` in `SimpleTask` for skipping steps and epochs before evaluation to avoid slow decoding on under-trained models
   - remove long optimizer state printing
   - add `dryrun` command for quick config testing
   - add `send_to_feishu` and `send_to_wechat` in `rex.utils.notification`

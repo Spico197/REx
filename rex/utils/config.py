@@ -255,8 +255,14 @@ class DefaultBaseConfig:
     step_eval_interval: int = field(
         default=-1, metadata={"help": "evaluation interval steps. `-1` if not use"}
     )
+    step_eval_skip: int = field(
+        default=0, metadata={"help": "skip steps before evaluation"}
+    )
     epoch_eval_interval: int = field(
         default=1, metadata={"help": "evaluation interval epochs. `-1` if not use"}
+    )
+    epoch_eval_skip: int = field(
+        default=0, metadata={"help": "skip epochs before evaluation"}
     )
     eval_on_data: list = field(
         default_factory=lambda: ["dev"],
