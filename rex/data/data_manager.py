@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Callable, Optional, Type, Union
 
 from accelerate import Accelerator
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, IterableDataset
 from torch.utils.data.distributed import DistributedSampler
 from torch.utils.data.sampler import RandomSampler, SequentialSampler
 
@@ -210,7 +210,7 @@ class DataManager(object):
         batch_size = self.eval_batch_size if is_eval else self.train_batch_size
 
         # use whole dataset for each process when evaluating
-        if self.use_stream_transform:
+        if self.use_stream_transform or isinstance(dataset, IterableDataset):
             sampler = None
         elif self.distributed_mode and not is_eval:
             sampler = DistributedSampler(dataset, shuffle=shuffle_flag)

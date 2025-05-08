@@ -145,7 +145,7 @@ class TaskBase(ABC):
         if load_model:
             if self.model and "model_state" in store_dict:
                 unwrapped_model = self.accelerator.unwrap_model(self.model)
-                unwrapped_model.load_state_dict(store_dict["model_state"])
+                unwrapped_model.load_state_dict(store_dict["model_state"], strict=False)
                 logger.debug("Load model successfully")
             else:
                 raise ValueError(

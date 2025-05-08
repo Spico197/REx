@@ -35,7 +35,7 @@ class ConfigParser(argparse.ArgumentParser):
         self,
         *args: Iterable[ConfigArgument],
         init_priority_args: Optional[bool] = True,
-        **kwargs
+        **kwargs,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -85,7 +85,9 @@ class ConfigParser(argparse.ArgumentParser):
             cpaths = getattr(args, cname)
             if cpaths is not None:
                 for path in cpaths:
-                    assert path.exists() is True and path.is_file() is True
+                    assert (
+                        path.exists() is True and path.is_file() is True
+                    ), f"Config file {path} does not exist"
                 setattr(args, cname, [str(path.absolute()) for path in cpaths])
 
         config = parser.convert_args_to_config(args)

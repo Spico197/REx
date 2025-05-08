@@ -212,8 +212,18 @@ class SimpleTask(TaskBase):
                     self.history["current_train_loss"]["epoch"] += loss_item
                     self.history["current_train_loss"]["step"] += loss_item
                     loader.set_postfix({"loss": loss_item})
+                    # self.log_loss(
+                    #     self.history["total_steps"], loss_item, "step", "train"
+                    # )
                     self.log_loss(
-                        self.history["total_steps"], loss_item, "step", "train"
+                        self.history["total_steps"],
+                        {
+                            "loss": result["loss"],
+                            "task_loss": result.get("task_loss"),
+                            "aux_loss": result.get("aux_loss"),
+                        },
+                        "step",
+                        "train",
                     )
 
                     if self.config.max_grad_norm > 0:
@@ -268,7 +278,15 @@ class SimpleTask(TaskBase):
             test_loss, test_measures = self.eval(
                 "test", verbose=True, dump=True, postfix="final"
             )
-            self.log_loss(0, test_loss, "final", "test")
+            # self.log_loss(0, test_loss, "final", "test")
+            self.log_loss(
+                0,
+                {
+                    "loss": test_loss,
+                },
+                "final",
+                "test",
+            )
             self.log_metrics(0, test_measures, "final", "test")
             return test_loss, test_measures
 
@@ -326,7 +344,15 @@ class SimpleTask(TaskBase):
             eval_loss, eval_measures = self.eval(
                 dataset_name, verbose=False, postfix=history_idx_identifier
             )
-            self.log_loss(history_idx, eval_loss, eval_on, dataset_name)
+            # self.log_loss(history_idx, eval_loss, eval_on, dataset_name)
+            self.log_loss(
+                history_idx,
+                {
+                    "loss": eval_loss,
+                },
+                eval_on,
+                dataset_name,
+            )
             self.log_metrics(history_idx, eval_measures, eval_on, dataset_name)
             self.history[eval_on][dataset_name]["metrics"][history_idx] = eval_measures
             self.history[eval_on][dataset_name]["loss"][history_idx] = eval_loss
@@ -350,8 +376,14 @@ class SimpleTask(TaskBase):
             this_eval_result["is_best_metric"] = is_best_metric
 
         this_eval_result["train_loss"] = self.history["current_train_loss"][eval_on]
+        # self.log_loss(
+        #     history_idx, this_eval_result["train_loss"], eval_on, "sum_train_loss"
+        # )
         self.log_loss(
-            history_idx, this_eval_result["train_loss"], eval_on, "sum_train_loss"
+            history_idx,
+            {"loss": this_eval_result["train_loss"]},
+            eval_on,
+            "sum_train_loss",
         )
         if select_best_on_data == "train" and self.config.select_best_by_key == "loss":
             loss = this_eval_result["train_loss"]
